@@ -1,3 +1,3 @@
 # α-Beryllene
 
-Investigate the structural, electronic, optical, and topological properties of α-Beryllene.
+Investigate the structural, electronic, optical, and topological properties of a series of Beryllene.
