@@ -196,6 +196,9 @@ def identify_parameters(directory="."):
     # Check file existence
     if not os.path.exists(vasprun_path) or not os.path.exists(kpoints_path) or not os.path.exists(contcar_path):
         print(f"Required files not found in {directory}. Skipping this directory.")
+        if not os.path.exists(vasprun_path): print("no vasprun.xml")
+        elif not os.path.exists(kpoints_path): print("no KPOINTS")
+        elif not os.path.exists(contcar_path): print("no CONTCAR")
         return None
 
     try:
