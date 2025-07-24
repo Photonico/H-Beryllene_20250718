@@ -2021,7 +2021,7 @@ def plot_cohesive_energy_kpoints_single(suptitle, *args_list):
     # Set custom tick labels for x-axis to show K-points configurations
     plt.xticks(ticks=range(len(kpoints_labels_plot)), labels=kpoints_labels_plot, rotation=45, ha="right")
 
-    plt.legend(loc="best")
+    # plt.legend(loc="best")
     plt.tight_layout()
 
 def plot_cohesive_energy_kpoints(suptitle, kpoints_list):
@@ -2211,7 +2211,7 @@ def plot_cohesive_energy_encut_single(suptitle, *args_list):
     plt.title(f"{suptitle}")
     plt.xlabel("Energy cutoff (eV)")
     plt.ylabel("Cohesive energy (eV/atom)")
-    plt.legend(loc="best")
+    # plt.legend(loc="best")
     plt.tight_layout()
 
 def plot_cohesive_energy_encut(suptitle, encut_list):
