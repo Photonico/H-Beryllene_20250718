@@ -1191,7 +1191,7 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
             for bands_index in range(0, len(matter[4])):
                 current_band = [eigenvalue - fermi for eigenvalue in matter[4][bands_index]]
                 if bands_index == 0:
-                    plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], label=f"Bands {current_label}", zorder=4)
+                    plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], label=f"{current_label}", zorder=4)
                 else:
                     plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], zorder=4)
         elif matter[0] in ["bands"]:
@@ -1199,13 +1199,13 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
             for bands_index in range(0, len(matter[4])):
                 current_conduction_band = [eigenvalue - fermi for eigenvalue in matter[4][bands_index]]
                 if bands_index == 0:
-                    plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Conduction bands {current_label}", zorder=4)
+                    plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Conduction bands for {current_label}", zorder=4)
                 else:
                     plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2], linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
             for bands_index in range(0, len(matter[5])):
                 current_valence_band = [eigenvalue - fermi for eigenvalue in matter[5][bands_index]]
                 if bands_index == 0:
-                    plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Valence bands {current_label}", zorder=4)
+                    plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Valence bands for {current_label}", zorder=4)
                 else:
                     plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0], linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
         kpath_start = matter[3][0]
@@ -1336,7 +1336,7 @@ def plot_bsDoS(suptitle, matters_list=None, eigen_range=None, dos_range=None, le
             for bands_index in range(0, len(matter[4])):
                 current_band = [eigenvalue - bs_fermi for eigenvalue in matter[4][bands_index]]
                 if bands_index == 0:
-                    ax1.plot(matter[3], current_band, c=color_sampling(matter[6])[1], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Bands {bs_current_label}", zorder=4)
+                    ax1.plot(matter[3], current_band, c=color_sampling(matter[6])[1], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"{bs_current_label}", zorder=4)
                 else:
                     ax1.plot(matter[3], current_band, c=color_sampling(matter[6])[1], linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
         elif matter[0].lower() in ["bands"]:
@@ -1503,7 +1503,7 @@ def plot_bsPDoS(title, bs_list, pdos_list, eigen_range, dos_range, legend_loc=Fa
             for bands_index in range(0, len(matter[4])):
                 current_band = [eigenvalue - bs_fermi for eigenvalue in matter[4][bands_index]]
                 if bands_index == 0:
-                    ax1.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], label=f"Bands {bs_current_label}", zorder=4)
+                    ax1.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], label=f"{bs_current_label}", zorder=4)
                 else:
                     ax1.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], zorder=4)
         elif matter[0].lower() in ["bands"]:
