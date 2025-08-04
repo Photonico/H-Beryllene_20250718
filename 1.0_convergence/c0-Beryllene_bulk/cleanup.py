@@ -7,8 +7,6 @@ import os
 # List of files to delete
 files_to_delete = [
     "CHG", "CHGCAR", "CONTCAR", "DOSCAR", "EIGENVAL", "IBZKPT", "OSZICAR",
-    # "INCAR",
-    "POSCAR",
     "OUTCAR", "output.txt", "PCDAT", "REPORT", "vasp.log", "vaspout.h5",
     "vasp_cluster.out", "vasprun.xml", "WAVECAR", "XDATCAR"
 ]

@@ -1,5 +1,5 @@
 #!/bin/csh
-#PBS -N bs_c_trilayer
+#PBS -N bs_c_bilayer
 #PBS -q cmt
 #PBS -j oe
 #PBS -l select=1:ncpus=42:mpiprocs=42:mem=200GB
