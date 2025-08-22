@@ -5,11 +5,13 @@
 import os
 
 # List of files to delete
-files_to_delete = [
-    "CHG", "CONTCAR", "DOSCAR", "EIGENVAL", "IBZKPT", "OSZICAR",
-    "OUTCAR", "output.txt", "PCDAT", "REPORT", "vasp.log", "vaspout.h5",
-    "vasp_cluster.out", "vasprun.xml", "XDATCAR"
-]
+# files_to_delete = [
+#     "CHG", "CONTCAR", "DOSCAR", "EIGENVAL", "IBZKPT", "OSZICAR",
+#     "OUTCAR", "output.txt", "PCDAT", "REPORT", "vasp.log", "vaspout.h5",
+#     "vasp_cluster.out", "vasprun.xml", "XDATCAR"
+# ]
+
+files_to_delete = ["CHGCAR", "WAVECAR"]
 
 def cleanup(files):
     # Traverse current directory and all subdirectories
