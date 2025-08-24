@@ -1159,105 +1159,6 @@ def create_matters_bs(matters_list):
             matters.append([bstype, label, fermi_energy, kpath, conduction_bands, valence_bands, color, lstyle, weight, alpha, current_tolerance])
     return matters
 
-# def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=False):
-#     # Help information
-#     help_info = """
-#     Usage: plot_bandstructure
-#         arg[0]: title;
-#         arg[1]: the range of eigenvalues, from -arg[1] to arg[1];
-#         arg[2]: matters list;
-#         arg[3]: legend location;
-#     """
-#     if title in ["help", "Help"]:
-#         print(help_info)
-#         return
-
-#     # Figure settings
-#     fig_setting = canvas_setting()
-#     plt.figure(figsize=fig_setting[0], dpi = fig_setting[1])
-#     params = fig_setting[2]; plt.rcParams.update(params)
-#     plt.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
-
-#     # Colors calling
-#     fermi_color = color_sampling("Violet")
-#     annotate_color = color_sampling("Grey")
-
-#     # Data calling and plotting
-#     matters = create_matters_bs(matters_list)
-#     for matter in matters:
-#         current_label = matter[1]
-#         if matter[0].lower() in ["monocolor"]:
-#             fermi = matter[2]
-#             for bands_index in range(0, len(matter[4])):
-#                 current_band = [eigenvalue - fermi for eigenvalue in matter[4][bands_index]]
-#                 if bands_index == 0:
-#                     plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], label=f"{current_label}", zorder=4)
-#                 else:
-#                     plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], zorder=4)
-#         elif matter[0] in ["bands"]:
-#             fermi = matter[2]
-#             for bands_index in range(0, len(matter[4])):
-#                 current_conduction_band = [eigenvalue - fermi for eigenvalue in matter[4][bands_index]]
-#                 if bands_index == 0:
-#                     plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Conduction bands for {current_label}", zorder=4)
-#                 else:
-#                     plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2], linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
-#             for bands_index in range(0, len(matter[5])):
-#                 current_valence_band = [eigenvalue - fermi for eigenvalue in matter[5][bands_index]]
-#                 if bands_index == 0:
-#                     plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Valence bands for {current_label}", zorder=4)
-#                 else:
-#                     plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0], linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
-#         kpath_start = matter[3][0]
-#         kpath_end = matter[3][-1]
-#         fermi_last = matter[2]
-
-#     # Fermi energy as a horizon line
-#     plt.axhline(y = 0, color=fermi_color[0], alpha=0.8, linestyle="--", label="Fermi energy", zorder=2)
-#     efermi = fermi_last
-#     kpath_range = kpath_end-kpath_start
-#     # fermi_energy_text = f"Fermi energy\n{efermi:.3f} (eV)"
-#     # plt.text(kpath_start+kpath_range*0.98, eigen_range*0.02, fermi_energy_text, fontsize=10, c=fermi_color[0], rotation=0, va = "bottom", ha="right", zorder=5)
-
-#     # Title
-#     plt.title(f"{title}")
-#     plt.ylabel("Energy (eV)")
-
-#     # y-axis range
-#     demo_boundary = process_boundary(eigen_range)
-#     if demo_boundary[0] is None:
-#         plt.ylim(demo_boundary[1]*(-1), demo_boundary[1])
-#     else: plt.ylim(demo_boundary[0], demo_boundary[1])
-
-#     # x-axis range
-#     plt.xlim(kpath_start, kpath_end)
-
-#     # High symmetry path
-#     directory = matters_list[-1][2]
-#     high_symmetry_paths = kpoints_path(directory)
-#     high_symmetry_positions = list(high_symmetry_paths.values())
-#     high_symmetry_labels = list(high_symmetry_paths.keys())
-
-#     # Check if the KPOINTS file returns to the starting point
-#     if is_kpoints_returning(directory) is True:
-#         high_symmetry_positions.append(kpath_end)
-#         high_symmetry_labels.append(high_symmetry_labels[0])
-#     else: pass
-
-#     plt.xticks(high_symmetry_positions, high_symmetry_labels)
-
-#     for k_loc in high_symmetry_positions[1:-1]:
-#         plt.axvline(x=k_loc, color=annotate_color[1], linestyle="--", alpha=0.8, zorder=1)
-
-#     # Legend
-#     if legend_loc is True:
-#         plt.legend(loc=legend_loc)
-#     elif legend_loc is None or legend_loc is False:
-#         # Do not display the legend
-#         pass
-
-#     plt.tight_layout()
-
 def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=False):
     # Help information
     help_info = """
@@ -1290,41 +1191,33 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
             for bands_index in range(0, len(matter[4])):
                 current_band = [eigenvalue - fermi for eigenvalue in matter[4][bands_index]]
                 if bands_index == 0:
-                    plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1],
-                             linestyle=matter[6], lw=matter[7], alpha=matter[8],
-                             label=f"{current_label}", zorder=4)
+                    plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], label=f"{current_label}", zorder=4)
                 else:
-                    plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1],
-                             linestyle=matter[6], lw=matter[7], alpha=matter[8], zorder=4)
+                    plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], zorder=4)
         elif matter[0] in ["bands"]:
             fermi = matter[2]
             for bands_index in range(0, len(matter[4])):
                 current_conduction_band = [eigenvalue - fermi for eigenvalue in matter[4][bands_index]]
                 if bands_index == 0:
-                    plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2],
-                             linestyle=matter[7], lw=matter[8], alpha=matter[9],
-                             label=f"Conduction bands for {current_label}", zorder=4)
+                    plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Conduction bands for {current_label}", zorder=4)
                 else:
-                    plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2],
-                             linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
+                    plt.plot(matter[3], current_conduction_band, c=color_sampling(matter[6])[2], linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
             for bands_index in range(0, len(matter[5])):
                 current_valence_band = [eigenvalue - fermi for eigenvalue in matter[5][bands_index]]
                 if bands_index == 0:
-                    plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0],
-                             linestyle=matter[7], lw=matter[8], alpha=matter[9],
-                             label=f"Valence bands for {current_label}", zorder=4)
+                    plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"Valence bands for {current_label}", zorder=4)
                 else:
-                    plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0],
-                             linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
+                    plt.plot(matter[3], current_valence_band, c=color_sampling(matter[6])[0], linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
         kpath_start = matter[3][0]
         kpath_end = matter[3][-1]
         fermi_last = matter[2]
 
     # Fermi energy as a horizon line
-    plt.axhline(y=0, color=fermi_color[0], alpha=0.8, linestyle="--",
-                label="Fermi energy", zorder=2)
+    plt.axhline(y = 0, color=fermi_color[0], alpha=0.8, linestyle="--", label="Fermi energy", zorder=2)
     efermi = fermi_last
-    kpath_range = kpath_end - kpath_start
+    kpath_range = kpath_end-kpath_start
+    # fermi_energy_text = f"Fermi energy\n{efermi:.3f} (eV)"
+    # plt.text(kpath_start+kpath_range*0.98, eigen_range*0.02, fermi_energy_text, fontsize=10, c=fermi_color[0], rotation=0, va = "bottom", ha="right", zorder=5)
 
     # Title
     plt.title(f"{title}")
@@ -1334,8 +1227,7 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
     demo_boundary = process_boundary(eigen_range)
     if demo_boundary[0] is None:
         plt.ylim(demo_boundary[1]*(-1), demo_boundary[1])
-    else:
-        plt.ylim(demo_boundary[0], demo_boundary[1])
+    else: plt.ylim(demo_boundary[0], demo_boundary[1])
 
     # x-axis range
     plt.xlim(kpath_start, kpath_end)
@@ -1350,19 +1242,18 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
     if is_kpoints_returning(directory) is True:
         high_symmetry_positions.append(kpath_end)
         high_symmetry_labels.append(high_symmetry_labels[0])
-    else:
-        pass
+    else: pass
 
     plt.xticks(high_symmetry_positions, high_symmetry_labels)
 
-    for k_loc in high_symmetry_positions:
-        plt.axvline(x=k_loc, color=annotate_color[1], linestyle="--",
-                    alpha=0.8, zorder=5, clip_on=False)
+    for k_loc in high_symmetry_positions[1:-1]:
+        plt.axvline(x=k_loc, color=annotate_color[1], linestyle="--", alpha=0.8, zorder=1)
 
     # Legend
     if legend_loc is True:
         plt.legend(loc=legend_loc)
     elif legend_loc is None or legend_loc is False:
+        # Do not display the legend
         pass
 
     plt.tight_layout()
