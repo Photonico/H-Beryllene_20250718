@@ -2,7 +2,7 @@
 #PBS -N geometry
 #PBS -q cmt
 #PBS -j oe
-#PBS -l select=1:ncpus=12:mpiprocs=12:mem=100GB
+#PBS -l select=1:ncpus=24:mpiprocs=24:mem=160GB
 #PBS -l walltime=48:00:00
 #PBS -m a
 #PBS -M luke.niu@sydney.edu.au
@@ -18,4 +18,4 @@ module load hdf/5/1.14.1-2_intel2021
 set VASP=/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_std
 set BIN=/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_std
 
-mpirun -np 12 $VASP > vasp_cluster.out
+mpirun -np 24 $VASP > vasp_cluster.out
