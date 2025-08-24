@@ -6,7 +6,7 @@ Investigate the structural, electronic, optical, and topological properties of g
     0. [a0] α-Beryllium bulk: blue
     1. [a1] α-Beryllene monolayer: orange
     2. [g1] g-Beryllene monolayer: yellow
-    3. [g2a] g-Beryllene bilayer AA stack: green
+    3. [g2a] g-Beryllene bilayer AA stack: cyan
     4. [g2b] g-Beryllene bilayer AB stack: lime
     5. [g3a] g-Beryllene trilayer AAA stack: purple
     6. [g3b] g-Beryllene trilayer ABA stack: violet
