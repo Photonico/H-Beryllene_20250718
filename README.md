@@ -2,11 +2,17 @@
 
 Investigate the structural, electronic, optical, and topological properties of g-Beryllene.
 
-* colors correspondence
-    1. α-Beryllium bulk: purple
-    2. α-Beryllene monolayer: violet
-    3. g-Beryllene monolayer: blue
-    4. c-Beryllene bulk: cyan
-    5. c-Beryllene monolayer: lime
-    6. c-Beryllene bilayer: yellow
-    7. c-Beryllene trilayer: orange
+* colors correspondence: hexagonal family
+    0. α-Beryllium bulk: blue
+    1. α-Beryllene monolayer: orange
+    2. g-Beryllene monolayer: yellow
+    3. g-Beryllene bilayer AA stack: green
+    4. g-Beryllene bilayer AB stack: lime
+    5. g-Beryllene trilayer AAA stack: purple
+    6. g-Beryllene trilayer ABA stack: violet
+
+* colors correspondence: cubic family
+    0. c-Beryllene bulk: blue
+    1. c-Beryllene monolayer: orange
+    2. c-Beryllene bilayer: green
+    3. c-Beryllene trilayer: violet
