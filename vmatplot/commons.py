@@ -259,7 +259,8 @@ def identify_parameters(directory="."):
             parameters["total atom count"] = int(atom_count_tag.text)
 
         # Extract total energy
-        energy_tag = root.find(".//calculation/energy/i[@name='e_fr_energy']")
+        # energy_tag = root.find(".//calculation/energy/i[@name='e_fr_energy']")
+        energy_tag = root.find(".//calculation/energy/i[@name='e_0_energy']")
         if energy_tag is not None:
             parameters["total energy"] = float(energy_tag.text)
 
