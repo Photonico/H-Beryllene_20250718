@@ -8,11 +8,9 @@ Investigate the structural, electronic, optical, and topological properties of g
     2. [g1] g-Beryllene monolayer: yellow
     3. [g2a] g-Beryllene bilayer AA stack: lime solid
     4. [g2b] g-Beryllene bilayer AB stack: lime dashed
-    5. [g3a] g-Beryllene trilayer AAA stack: purple solid
-    6. [g3b] g-Beryllene trilayer ABA stack: purple dashed
-    7. [g4a] g-Beryllene quadlayer AAAA stack: violet solid
-    8. [g4b] g-Beryllene quadlayer ABAB stack: violet dashed
-    9. [g4c] g-Beryllene quadlayer ABBA stack: violet dashdot
+    5. [g3a] g-Beryllene trilayer AAA stack: violet solid
+    6. [g3b] g-Beryllene trilayer AAB stack: violet dashed
+    7. [g3c] g-Beryllene trilayer ABA stack: violet dashdot
 
 * colors correspondence: cubic family
     0. [c0] c-Beryllene bulk: blue
