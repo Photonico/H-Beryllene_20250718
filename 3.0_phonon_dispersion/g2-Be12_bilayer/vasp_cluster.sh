@@ -1,5 +1,5 @@
 #!/bin/csh
-#PBS -N phonon_ABAB
+#PBS -N phonon_Be12_bilayer
 #PBS -q cmt
 #PBS -j oe
 #PBS -l select=1:ncpus=100:mpiprocs=100:mem=500GB
