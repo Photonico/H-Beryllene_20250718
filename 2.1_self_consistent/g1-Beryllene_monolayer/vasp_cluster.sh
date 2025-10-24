@@ -1,5 +1,5 @@
 #!/bin/csh
-#PBS -N SCF_g-Beryllene
+#PBS -N SCF_g1
 #PBS -q cmt
 #PBS -j oe
 #PBS -l select=1:ncpus=42:mpiprocs=42:mem=200GB
