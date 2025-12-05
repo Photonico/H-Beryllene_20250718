@@ -16,6 +16,13 @@ from vmatplot.commons import extract_fermi, get_atoms_count, process_boundary, g
 from vmatplot.dos import extract_dos
 from vmatplot.pdos import extract_dict_pdos, create_matters_pdos
 
+import matplotlib as mpl
+
+mpl.rcParams["lines.solid_capstyle"] = "round"
+mpl.rcParams["lines.dash_capstyle"]  = "round"
+mpl.rcParams["lines.solid_joinstyle"] = "round"
+mpl.rcParams["lines.dash_joinstyle"]  = "round"
+
 global_tolerance = 1e-4
 
 # extract bands

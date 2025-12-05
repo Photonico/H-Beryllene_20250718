@@ -1,51 +1,12 @@
  running   42 mpi-ranks, on    1 nodes
  distrk:  each k-point on   42 cores,    1 groups
- distr:  one band on    1 cores,   42 groups
+ distr:  one band on    6 cores,    7 groups
  vasp.6.5.0 16Dec24 (build Jan 08 2025 16:17:04) complex                        
   
  POSCAR found type information on POSCAR Be
  POSCAR found :  1 types and       1 ions
  Reading from existing POTCAR
  scaLAPACK will be used
- -----------------------------------------------------------------------------
-|                                                                             |
-|           W    W    AA    RRRRR   N    N  II  N    N   GGGG   !!!           |
-|           W    W   A  A   R    R  NN   N  II  NN   N  G    G  !!!           |
-|           W    W  A    A  R    R  N N  N  II  N N  N  G       !!!           |
-|           W WW W  AAAAAA  RRRRR   N  N N  II  N  N N  G  GGG   !            |
-|           WW  WW  A    A  R   R   N   NN  II  N   NN  G    G                |
-|           W    W  A    A  R    R  N    N  II  N    N   GGGG   !!!           |
-|                                                                             |
-|     The value NCORE = 16 specified in the INCAR file was overwritten,       |
-|     because it was not compatible with the 42 processes available:          |
-|     NCORE = 1                                                               |
-|     was used instead, please check that this makes sense for your           |
-|     machine.                                                                |
-|                                                                             |
- -----------------------------------------------------------------------------
-
- -----------------------------------------------------------------------------
-|                                                                             |
-|           W    W    AA    RRRRR   N    N  II  N    N   GGGG   !!!           |
-|           W    W   A  A   R    R  NN   N  II  NN   N  G    G  !!!           |
-|           W    W  A    A  R    R  N N  N  II  N N  N  G       !!!           |
-|           W WW W  AAAAAA  RRRRR   N  N N  II  N  N N  G  GGG   !            |
-|           WW  WW  A    A  R   R   N   NN  II  N   NN  G    G                |
-|           W    W  A    A  R    R  N    N  II  N    N   GGGG   !!!           |
-|                                                                             |
-|     For optimal performance we recommend to set                             |
-|       NCORE = 2 up to number-of-cores-per-socket                            |
-|     NCORE specifies how many cores store one orbital (NPAR=cpu/NCORE).      |
-|     This setting can greatly improve the performance of VASP for DFT.       |
-|     The default, NCORE=1 might be grossly inefficient on modern             |
-|     multi-core architectures or massively parallel machines. Do your        |
-|     own testing! More info at https://www.vasp.at/wiki/index.php/NCORE      |
-|     Unfortunately you need to use the default for GW and RPA                |
-|     calculations (for HF NCORE is supported but not extensively tested      |
-|     yet).                                                                   |
-|                                                                             |
- -----------------------------------------------------------------------------
-
  Reading from existing POTCAR
  LDA part: xc-table for (Slater+PW92), standard interpolation
  -----------------------------------------------------------------------------
@@ -62,27 +23,27 @@
 |     The orbitals not found in the WAVECAR file will be initialized with     |
 |     random numbers, which is usually adequate. For correlated               |
 |     calculations, however, you should redo the groundstate calculation.     |
-|     I found NBANDS = 64. Now, NBANDS = 84.                                  |
+|     I found NBANDS = 64. Now, NBANDS = 70.                                  |
 |                                                                             |
  -----------------------------------------------------------------------------
 
- found WAVECAR, reading the header
-  number of k-points has changed, file:   969 present:  2300
-  trying to continue reading WAVECAR, but it might fail
  POSCAR, INCAR and KPOINTS ok, starting setup
  FFT: planning ... GRIDC
  FFT: planning ... GRID_SOFT
  FFT: planning ... GRID
- reading WAVECAR
- the WAVECAR file was read successfully
+ WAVECAR not read
  entering main loop
        N       E                     dE             d eps       ncg     rms          rms(c)
-DAV:   1    -0.368899272860E+01   -0.36890E+01   -0.10734E+02445074   0.110E+00    0.784E-01
-DAV:   2    -0.367517374671E+01    0.13819E-01   -0.80922E-02445830   0.198E-01    0.485E-01
-DAV:   3    -0.366666416679E+01    0.85096E-02   -0.21675E-03485520   0.445E-02    0.219E-02
-DAV:   4    -0.366662177995E+01    0.42387E-04   -0.13891E-05441210   0.300E-03    0.797E-03
-DAV:   5    -0.366662251909E+01   -0.73914E-06   -0.37185E-07389592   0.275E-04
-   1 F= -.36666225E+01 E0= -.36666190E+01  d E =-.713675E-05
+DAV:   1     0.662782153561E+00    0.66278E+00   -0.11291E+03336784   0.263E+01
+DAV:   2    -0.366325582997E+01   -0.43260E+01   -0.41248E+01384944   0.728E+00
+DAV:   3    -0.369694081777E+01   -0.33685E-01   -0.33615E-01381262   0.634E-01
+DAV:   4    -0.369694222155E+01   -0.14038E-05   -0.14031E-05359366   0.371E-03
+DAV:   5    -0.369694222116E+01    0.38574E-09   -0.16397E-11321188   0.439E-06    0.786E-01
+DAV:   6    -0.367517526872E+01    0.21767E-01   -0.15632E-03367738   0.498E-02    0.484E-01
+DAV:   7    -0.366664453395E+01    0.85307E-02   -0.14499E-03380058   0.521E-02    0.181E-02
+DAV:   8    -0.366662220313E+01    0.22331E-04   -0.54476E-06362796   0.230E-03    0.679E-03
+DAV:   9    -0.366662254269E+01   -0.33956E-06   -0.86546E-07359520   0.744E-04
+   1 F= -.36666225E+01 E0= -.36666190E+01  d E =-.713685E-05
  writing wavefunctions
  optical routines
  imaginary and real dielectric function

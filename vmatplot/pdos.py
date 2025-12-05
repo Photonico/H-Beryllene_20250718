@@ -12,6 +12,13 @@ import matplotlib.gridspec as gridspec
 from vmatplot.commons import extract_fermi, get_or_default, get_elements
 from vmatplot.output_settings import color_sampling, canvas_setting
 
+import matplotlib as mpl
+
+mpl.rcParams["lines.solid_capstyle"] = "round"
+mpl.rcParams["lines.dash_capstyle"]  = "round"
+mpl.rcParams["lines.solid_joinstyle"] = "round"
+mpl.rcParams["lines.dash_joinstyle"]  = "round"
+
 def cal_type_pdos(directory_path):
     kpoints_file_path = os.path.join(directory_path, "KPOINTS")
     kpoints_opt_path = os.path.join(directory_path, "KPOINTS_OPT")

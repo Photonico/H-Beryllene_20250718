@@ -14,6 +14,13 @@ from vmatplot.commons import check_vasprun, identify_parameters, get_or_default
 from vmatplot.algorithms import is_nested_list, fit_birch_murnaghan
 from vmatplot.output_settings import canvas_setting, color_sampling
 
+import matplotlib as mpl
+
+mpl.rcParams["lines.solid_capstyle"] = "round"
+mpl.rcParams["lines.dash_capstyle"]  = "round"
+mpl.rcParams["lines.solid_joinstyle"] = "round"
+mpl.rcParams["lines.dash_joinstyle"]  = "round"
+
 ## Process and calculate data
 
 def cal_cohesive_energy(atom_count, atom_energy, total_energy):
