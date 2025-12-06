@@ -1,80 +1,14 @@
 # Todo list
 
-* dielectric funtion
-    + alpha, beta, trilayer-cubic.
+before commit and push to GitHub repo
 
+MAX=$((99*1024*1024))
 
-real NBANDS
-
-a0 32 k27:  42
-a0 64 k15:  84
-a0 64 k21:  84
-a0 64 k27:  84
-a0 64 k33:  84
-a0 64 k39:  84
-a0 64 k45:  84
-a0 64 k69:  54
-a0 64 k75:  84
-a0 96 k27:  126
-a0 128 k27: 168
-a0 160 k27: 168
-a0 192 k27: 210
-
-alpha 64 k27:   84
-alpha 96 k15:   98
-alpha 96 k21:   98
-alpha 96 k27:   98
-alpha 96 k33:   98
-alpha 96 k39:   98
-alpha 96 k45:   98
-alpha 96 k51:   98
-alpha 96 k57:   98
-alpha 96 k63:   98
-alpha 96 k69:   98
-alpha 96 k75:   98
-alpha 128 k27:  168
-alpha 160 k27:  168
-alpha 192 k27:  210
-alpha 256 k27:  294
-
-beta 64 k27:    84
-beta 96 k15:    98
-beta 96 k21:    98
-beta 96 k27:    98
-beta 96 k33:    98
-beta 96 k39:    98
-beta 96 k45:    98
-beta 96 k69:    98
-beta 96 k75:    98
-beta 128 k27:   168
-beta 160 k27:   168
-beta 192 k27:   210
-beta 256 k27:   294
-
-c0 32 k27:  42
-c0 64 k15:  70
-c0 64 k21:  70
-c0 64 k27:  70
-c0 64 k33:  70
-c0 64 k39:  70
-c0 64 k45:  70
-c0 64 k69:  70
-c0 64 k75:  70
-c0 96 k27:  126
-c0 128 k27: 168
-c0 160 k27: 168
-
-c3 64 k25:  84
-c3 96 k15:  126
-c3 96 k21:  126
-c3 96 k25:  126
-c3 96 k27:  126
-c3 96 k33:  126
-c3 96 k39:  126
-c3 96 k45:  126
-c3 96 k69:  126
-c3 96 k75:  126
-c3 128 k25: 168
-c3 160 k25: 168
-c3 192 k25: 210
-c3 256 k25: 294
+git status --porcelain -z | while IFS= read -r -d '' entry; do
+  f=${entry:3}
+  [ -e "$f" ] || continue
+  size=$(wc -c < "$f" 2>/dev/null || echo 0)
+  if [ "$size" -le "$MAX" ]; then
+    git add -- "$f"
+  fi
+done
