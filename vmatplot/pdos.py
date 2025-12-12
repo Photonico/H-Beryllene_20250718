@@ -2111,10 +2111,8 @@ def extract_dict_pdos(directory_path, index=None):
             raise ValueError("extract_index_pdos returned None. Check the directory and indices.")
         if len(pdos_data) < 18:
             raise ValueError(f"extract_index_pdos returned incomplete data. Data length: {len(pdos_data)}")
-
         total_p_orbitals = pdos_data[10] + pdos_data[11] + pdos_data[12]
         total_d_orbitals = pdos_data[13] + pdos_data[14] + pdos_data[15] + pdos_data[16] + pdos_data[17]
-
         pdos_dict = {
             "efermi": pdos_data[0],
             "ions_number": pdos_data[1],
@@ -2137,14 +2135,11 @@ def extract_dict_pdos(directory_path, index=None):
             "d_zx": pdos_data[16],
             "d_x2-y2": pdos_data[17],
         }
-
         dos_total_data = read_total_dos_from_doscar(directory_path)
         if dos_total_data is not None:
             efermi_dos, energy_dos_shift, total_dos = dos_total_data
-
             if "efermi" in pdos_dict and abs(pdos_dict["efermi"] - efermi_dos) > 1e-3:
                 pass
-
             if len(energy_dos_shift) == len(pdos_dict["dos_shifted_energy"]):
                 pdos_dict["dos_shifted_energy"] = energy_dos_shift
                 pdos_dict["total_dos"] = total_dos
@@ -2155,7 +2150,6 @@ def extract_dict_pdos(directory_path, index=None):
         else:
             pdos_dict["total_dos"] = None
             pdos_dict["interstitial"] = None
-
         aliases = {
             "total": "total_pdos",
             "integrated": "integrated_pdos",
@@ -2165,11 +2159,8 @@ def extract_dict_pdos(directory_path, index=None):
         }
         for alias, key in aliases.items():
             pdos_dict[alias] = pdos_dict[key]
-
         pdos_dict["dos"] = pdos_dict["total_dos"] if pdos_dict.get("total_dos", None) is not None else pdos_dict["total_pdos"]
-
         return pdos_dict
-
     except Exception as e:
         print(f"Error in extract_dict_pdos: {e}")
         return None
