@@ -2423,6 +2423,7 @@ def plot_single_pdos(title, matters_list=None, x_range=None, y_top=None):
     plt.ylabel("Density of States")
     plt.xlim(-x_range, x_range)
     plt.ylim(0, y_top)
-    plt.legend(loc="upper right")
+    # plt.legend(loc="upper right")
+    plt.legend(loc="best")
     plt.tight_layout()
     # plt.show()
