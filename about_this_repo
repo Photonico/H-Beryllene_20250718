@@ -4,27 +4,12 @@
 
 MAX=$((95*1024*1024))
 
-git status --porcelain -z | while IFS= read -r -d '' entry; do
-  f=${entry:3}
-  [ -e "$f" ] || continue
-  size=$(wc -c < "$f" 2>/dev/null || echo 0)
-  if [ "$size" -le "$MAX" ]; then
-    git add -- "$f"
-  fi
-done
-
-# or
-
-MAX=$((95*1024*1024))
-
-git add -u
-
-while IFS= read -r -d '' f; do
+git ls-files -m -o --exclude-standard -z | while IFS= read -r -d '' f; do
   [ -e "$f" ] || continue
   size=$(wc -c < "$f" 2>/dev/null || echo 0)
   if [ "$size" -le "$MAX" ]; then
     git add -- "$f"
   else
-    echo "skip large: $f ($size bytes)" >&2
+    echo "skip large: $f ($size bytes)"
   fi
-done < <(git ls-files -m -o --exclude-standard -z)
+done
