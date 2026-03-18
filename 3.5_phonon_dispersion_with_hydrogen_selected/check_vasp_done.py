@@ -7,11 +7,12 @@ import sys
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-TASK_MARKERS = ("INCAR", "POSCAR", "KPOINTS", "POTCAR")  # 用
+TASK_MARKERS = ("INCAR", "POSCAR", "KPOINTS", "POTCAR")
 
 def is_task_dir(d: Path) -> bool:
     """Heuristic: directory contains typical VASP input files."""
-    return any((d / name).is_file() for name in TASK_MARKERS)
+    # return any((d / name).is_file() for name in TASK_MARKERS)
+    return all((d / name).is_file() for name in TASK_MARKERS)
 
 def vasprun_complete_fast(vxml: Path, tail_bytes: int = 8192) -> bool:
     """
@@ -83,6 +84,7 @@ def main():
     incomplete = []
 
     for d in iter_dirs(root):
+        # print("Scanning:", d)
         # Decide whether to treat as a "task dir"
         if args.only_task_dirs and not is_task_dir(d):
             continue
