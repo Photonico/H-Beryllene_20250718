@@ -1,13 +1,16 @@
-# geometry information and cohesive energy
+# systems information
 
 * single atom energy
   * Hydrogen atom:    `E_H = -.14200286E-01`
   * Beryllium atom:   `E_Be = -.38385171E-01`
 
-* General information
+* general information
   * energy cutoff:    `ENCUT = 600`
   * xenes k-points:   `105 105 1`
   * bulks k-points:   `105 105 105`
+
+* cohesive energy formula: `E_tot - m*E_Be - n*E_H`
+* aborption energy formula: `E_tot - E_base - n*E_H`
 
 ## α-family
 
@@ -15,24 +18,29 @@
   * material energy:  `E_a_bulk = -.75339682E+01`
   * cohesive energy:  `E_a_bulk - 2*E_Be = -7.457197858`
   * lattice constant: `2.2664238526360245`
-  * occupied staets:
-  * angle: `120.000`
+  * occupied staets:  `2/66`
+  * angle:            `120.000`
 
 * α-Beryllene xene
   * material energy:  `E_a_xene = -.29724647E+01`
   * cohesive energy:  `E_a_xene - 1*E_Be = -2.934079529`
   * lattice constant: `2.1289827591301242`
   * occupied staets:  `2/133`
-  * angle: `120.000`
+  * thickness:        `2*1.98`
+  * angle:            `120.000`
+
 
 ## α-family with Hydrogen adhesion
 
 * α-Beryllene double side adhension
   * material energy:  `E_a_hh = -.10406248E+02`
   * cohesive energy:  `E_a_hh - 1*E_Be - 2*E_H = -10.339462257`
+  * absorption:       `E_a_hh - E_a_xene - 2*E_H = -7.405382728`  
   * lattice constant: `2.322032201315347`
+  * H-Be bond length: `1.59940(0), 1.59941(0), (2:1)`
   * occupied staets:  `2/140`
-  * angle: `120.000`
+  * thickness:        `0.04361280878130169 + 2*0.70`
+  * angle:            `120.000`
 
 ## β-family
 
@@ -40,24 +48,31 @@
   * material energy:  `E_b_xene = -.66470385E+01`
   * cohesive energy:  `E_b_xene - 2*E_Be = -6.570268158`
   * lattice constant: `2.1469504557842742`
-  * occupied staets:
-  * angle: `119.800`
+  * occupied staets:  `3/133`
+  * thickness:        `0.0473771641975619 + 2*1.98`
+  * angle:            `119.800`
 
 ## β-family with Hydrogen adhesion
 
 * β-Beryllene single side adhension
   * material energy:  `E_b_b = -.10116602E+02`
   * cohesive energy:  `E_b_b - 2*E_Be - 1*E_H = -10.025631372`
+  * absorption:       `E_b_b - E_b_xene - 1*E_H = -3.455363214`
   * lattice constant: `2.322152643164112`
-  * occupied staets:
-  * angle: `116.989`
+  * H-Be bond length: `1.45061(0), 1.45058(0), (1:1)`
+  * occupied staets:  `3/140`
+  * thickness:        `0.07108860259770651 + 0.70 + 1.98`
+  * angle:            `116.989`
 
 * β-Beryllene double side adhension
   * material energy:  `E_b_bb = -.13775686E+02`
   * cohesive energy:  `E_b_bb - 2*E_Be - 2*E_H = -13.670515086`
+  * absorption:       `E_b_bb - E_b_xene - 2*E_H = -7.100246928`
   * lattice constant: `2.5960359691490167`
-  * occupied staets:
-  * angle: `132.726`
+  * H-Be bond length: `1.44653(0), 1.44642(0), (1:1)`
+  * occupied staets:  `3/140`
+  * thickness:        `0.0948207854203246 + 2*0.70`
+  * angle:            `132.726`
 
 ## cubic family
 
@@ -65,12 +80,13 @@
   * material energy:  `E_c_bulk = -.36661415E+01`
   * cohesive energy:  `E_c_bulk - 1*E_Be = -3.627756329`
   * lattice constant: `2.1663874890984025`
-  * occupied staets:
-  * angle: `90.000`
+  * occupied staets:  `1/70`
+  * angle:            `90.000`
 
 * cubic-Beryllene trilayer xene
   * material energy:  `E_c3 = -.10008456E+02`
   * cohesive energy:  `E_c3 - 3*E_Be = -9.893300487`
   * lattice constant: `2.18374554`
-  * occupied staets:
-  * angle: `90.000`
+  * occupied staets:  `4/133`
+  * thickness         `0.0751622445053417 + 2*1.98`
+  * angle:            `90.000`
