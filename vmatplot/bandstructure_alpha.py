@@ -1,6 +1,4 @@
 #### Bandstructure
-# This module provides VASP bandstructure plotting utilities.
-# High-symmetry labels are read directly from KPOINTS/KPOINTS_OPT and preserve Unicode labels such as Γ, K′, and M′.
 # pylint: disable = C0103, C0114, C0116, C0301, C0302, C0321, R0913, R0914, R0915, W0612, W0105
 
 # Necessary packages invoking
@@ -26,104 +24,6 @@ mpl.rcParams["lines.solid_joinstyle"] = "round"
 mpl.rcParams["lines.dash_joinstyle"]  = "round"
 
 global_tolerance = 1e-4
-
-# Bandstructure plotting type aliases.
-# These helpers make the plotting routines handle spin/non-spin aliases consistently.
-_MONOCOLOR_TYPES = {
-    "monocolor",
-    "monocolor nonpolarized",
-    "monocolor spin up",
-    "spin up monocolor",
-    "monocolor spin down",
-    "spin down monocolor",
-}
-
-_BANDS_TYPES = {
-    "bands",
-    "bands nonpolarized",
-    "bands spin up",
-    "spin up bands",
-    "bands spin down",
-    "spin down bands",
-}
-
-
-def _normalize_bstype(bstype):
-    """Normalize a bandstructure style string for robust comparisons."""
-    return str(bstype).strip().lower()
-
-
-def _is_monocolor_type(bstype):
-    """Return True for all monocolor bandstructure style aliases."""
-    return _normalize_bstype(bstype) in _MONOCOLOR_TYPES
-
-
-def _is_bands_type(bstype):
-    """Return True for all conduction/valence bandstructure style aliases."""
-    return _normalize_bstype(bstype) in _BANDS_TYPES
-
-
-def _clean_kpoints_label(label):
-    """Clean a KPOINTS label while preserving Unicode labels such as Γ, K′, and M′.
-
-    The function intentionally does not remap Greek names such as Gamma -> Γ.
-    The preferred input style is to write Unicode labels directly in KPOINTS.
-    Only prime notation is normalized so that K', K′, and K$^\\prime$ are handled consistently.
-    """
-    if label is None:
-        return ""
-
-    s = str(label).strip().strip('"').strip()
-
-    # Normalize common prime notations to the Unicode prime symbol.
-    s = s.replace("$^{\\prime}$", "′")
-    s = s.replace("$^\\prime$", "′")
-    s = s.replace("^{\\prime}", "′")
-    s = s.replace("^\\prime", "′")
-    s = s.replace("\\prime", "′")
-    s = s.replace("'", "′")
-
-    # If the label is a simple math wrapper after prime normalization, strip the wrapper.
-    # Example: $M′$ -> M′.  Do not strip wrappers such as $\\Gamma$.
-    if s.startswith("$") and s.endswith("$") and s.count("$") == 2:
-        inner = s[1:-1].strip()
-        if "\\" not in inner:
-            s = inner
-
-    return s.strip()
-
-
-def _split_kpoints_coord_label(line):
-    """Parse one KPOINTS line and return (coords, label).
-
-    Supported examples:
-        0.0 0.0 0.0 Γ
-        0.5 0.0 0.0 K′
-        0.5 0.0 0.0 K'
-        0.5 0.0 0.0 ! K′
-
-    Returns (None, None) when the line does not contain a valid coordinate-label pair.
-    """
-    tokens = line.strip().split()
-    if len(tokens) < 4:
-        return None, None
-
-    try:
-        coords = (float(tokens[0]), float(tokens[1]), float(tokens[2]))
-    except ValueError:
-        return None, None
-
-    if tokens[3] == "!":
-        label = " ".join(tokens[4:]).strip() if len(tokens) > 4 else ""
-    else:
-        label = tokens[3]
-
-    label = _clean_kpoints_label(label)
-    if not label:
-        return None, None
-
-    return coords, label
-
 
 # extract bands
 
@@ -223,12 +123,12 @@ def is_kpoints_returning(directory):
         # Ensure it's a line-mode KPOINTS file
         if lines[2][0].lower() != "l":
             return False
-        # Extract high-symmetry labels.  Keep Unicode labels such as Γ, K′, and M′.
+        # Extract high symmetry points
         high_symmetry_points = []
         for line in lines[4:]:
-            _coords, label = _split_kpoints_coord_label(line)
-            if label:
-                high_symmetry_points.append(label)
+            tokens = line.strip().split()
+            if tokens and tokens[-1].isalpha():  # Check if the last token is a label
+                high_symmetry_points.append(tokens[-1])
         # Check if the first and last points are the same
         return high_symmetry_points and high_symmetry_points[0] == high_symmetry_points[-1]
     except Exception:
@@ -280,11 +180,11 @@ def extract_high_sym(directory):
         raise ValueError(f"Expected 'L' on the third line of KPOINTS file, got: {KPOINTS[2]}")
     # Initialize a list to store high symmetry points
     high_symmetry_points = []
-    # Read the high-symmetry labels from the KPOINTS file.
+    # Read the high symmetry points from the KPOINTS file
     for i in range(4, len(KPOINTS)):
-        _coords, label = _split_kpoints_coord_label(KPOINTS[i])
-        if label:
-            high_symmetry_points.append(label)
+        tokens = KPOINTS[i].strip().split()
+        if tokens and tokens[-1].isalpha():
+            high_symmetry_points.append(tokens[-1])
     # Remove duplicates except for the first and last points
     if len(high_symmetry_points) > 2:
         unique_points = [high_symmetry_points[0]]   # Keep the first point
@@ -548,11 +448,11 @@ def extract_high_symlines(directory):
     kpoints_format = "cartesian" if KPOINTS[3][0] in ["c", "C"] else "reciprocal"
     # Initialize a set to store unique high symmetry points
     high_symmetry_points = set()
-    # Read the high-symmetry labels from the KPOINTS file.
+    # Read the high symmetry points from the KPOINTS file
     for i in range(4, len(KPOINTS)):
-        _coords, label = _split_kpoints_coord_label(KPOINTS[i])
-        if label:
-            high_symmetry_points.add(label)
+        tokens = KPOINTS[i].strip().split()
+        if tokens and tokens[-1].isalpha():
+            high_symmetry_points.add(tokens[-1])
     # The number of unique high symmetry lines
     lines = len(high_symmetry_points)
     # The set of high symmetry points
@@ -695,29 +595,25 @@ def extract_bands_count(directory):
     return len(eigen_lines)
 
 def kpoints_coordinate(directory):
-    """Return a dictionary mapping KPOINTS labels to coordinates.
-
-    The parser preserves Unicode labels such as Γ, K′, and M′.  Repeated labels map to
-    the last occurrence, which matches the historical behavior of this helper.  For
-    repeated high-symmetry boundaries in plots, use kpoints_path_lists instead.
-    """
     kpoints_file_path = os.path.join(directory, "KPOINTS")
     kpoints_opt_path = os.path.join(directory, "KPOINTS_OPT")
-
     if os.path.exists(kpoints_opt_path):
         kpoints_file = kpoints_opt_path
     elif os.path.exists(kpoints_file_path):
         kpoints_file = kpoints_file_path
-    else:
-        raise FileNotFoundError("KPOINTS file not found in the directory.")
 
     high_symmetry_points = {}
     with open(kpoints_file, "r", encoding="utf-8") as file:
-        for line in file.readlines()[4:]:
-            coords, label = _split_kpoints_coord_label(line)
-            if coords is not None and label:
-                high_symmetry_points[label] = coords
-
+        lines = file.readlines()
+        # Assume high symmetry points start from the fifth line in the KPOINTS file
+        for line in lines[4:]:      # High symmetry points coordinates usually start from line 5
+            if line.strip():        # Ignore empty lines
+                parts = line.split()
+                if len(parts) == 4: # A line with coordinates should have four parts
+                    # Assume the coordinates and label are separated by spaces, with the label being the last part
+                    coords = tuple(map(float, parts[:3]))   # Convert the first three parts to float coordinates
+                    label = parts[3]                        # The last part is the label of the high symmetry point
+                    high_symmetry_points[label] = coords
     return high_symmetry_points
 
 def kpoints_index(directory):
@@ -764,67 +660,50 @@ def kpoints_path(directory):
 
 
 def extract_kpoints_high_sym_boundaries(directory, return_coords=False):
-    """Parse line-mode KPOINTS/KPOINTS_OPT and return high-symmetry boundaries.
-
-    This implementation keeps repeated labels and labels with prime symbols, such as
-    Γ, K′, and M′.  It does not use str.isalpha(), because prime symbols are not
-    alphabetic and would be incorrectly filtered out.
-
-    If return_coords is False, return [label, ...].
-    If return_coords is True, return [(label, (kx, ky, kz)), ...].
+    """Parse VASP KPOINTS/KPOINTS_OPT line-mode file and return boundary high-symmetry points.
+    This keeps repeats and supports branched paths (segments that restart from a different point).
+    If return_coords=False: returns [label, ...]
+    If return_coords=True : returns [(label, (kx,ky,kz)), ...]
     """
     kpoints_file_path = os.path.join(directory, "KPOINTS")
     kpoints_opt_path = os.path.join(directory, "KPOINTS_OPT")
-
     if os.path.exists(kpoints_opt_path):
         kpoints_file = kpoints_opt_path
     elif os.path.exists(kpoints_file_path):
         kpoints_file = kpoints_file_path
-    else:
-        raise FileNotFoundError("KPOINTS file not found in the directory.")
-
+    else: raise FileNotFoundError("KPOINTS file not found in the directory.")
     with open(kpoints_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
-
     if len(lines) < 4 or lines[2].strip()[:1].lower() != "l":
         raise ValueError(
             f"Expected a line-mode KPOINTS file (3rd line starts with 'L'), got: "
             f"{lines[2] if len(lines) > 2 else '<missing>'}"
         )
-
     endpoints = []
     for line in lines[4:]:
-        coords, label = _split_kpoints_coord_label(line)
-        if coords is None:
-            continue
+        tokens = line.strip().split()
+        if len(tokens) < 4: continue
+        label = tokens[-1]
+        if not label.isalpha(): continue
+        try: coords = (float(tokens[0]), float(tokens[1]), float(tokens[2]))
+        except ValueError: continue
         endpoints.append((label, coords))
-
     if not endpoints:
-        return []
-
-    # Pair endpoints into line segments: (start, end), (start, end), ...
+        return [] if not return_coords else []
+    # Pair into segments (start,end), (start,end), ...
     segments = []
     for i in range(0, len(endpoints) - 1, 2):
         segments.append((endpoints[i], endpoints[i + 1]))
-
-    if not segments:
-        return []
-
     boundaries = [segments[0][0]]
-    for si, (_start, end) in enumerate(segments):
+    for si, (start, end) in enumerate(segments):
         boundaries.append(end)
-
-        # If the next segment starts from a different k-point, keep that restart point.
-        # This supports branched paths and disconnected path pieces.
         if si + 1 < len(segments):
             next_start = segments[si + 1][0]
             if np.linalg.norm(np.array(next_start[1]) - np.array(end[1])) > 1e-10:
                 boundaries.append(next_start)
-
     if return_coords:
         return boundaries
-
-    return [label for (label, _coords) in boundaries]
+    return [lbl for (lbl, _c) in boundaries]
 
 def kpoints_path_lists(directory):
     """Return (positions, labels) for x-ticks along the bandstructure path.
@@ -1516,7 +1395,7 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
     matters = create_matters_bs(matters_list)
     for matter in matters:
         current_label = matter[1]
-        if _is_monocolor_type(matter[0]):
+        if matter[0].lower() in ["monocolor"]:
             fermi = matter[2]
             for bands_index in range(0, len(matter[4])):
                 current_band = [eigenvalue - fermi for eigenvalue in matter[4][bands_index]]
@@ -1524,7 +1403,7 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
                     plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], label=f"{current_label}", zorder=4)
                 else:
                     plt.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], zorder=4)
-        elif _is_bands_type(matter[0]):
+        elif matter[0] in ["bands"]:
             fermi = matter[2]
             for bands_index in range(0, len(matter[4])):
                 current_conduction_band = [eigenvalue - fermi for eigenvalue in matter[4][bands_index]]
@@ -1598,36 +1477,30 @@ def create_matters_bsdos(matters_list):
         current_tolerance = get_or_default(optional[4] if len(optional) > 4 else None, 0)
         # Common operations for extracting data
         fermi_energy = extract_fermi(bs_dir)
-        kpath, breaks = extract_kpath(bs_dir, return_breaks=True)
+        kpath = extract_kpath(bs_dir)
         dos = extract_dos(dos_dir)
         # Handle different bandstructure types
         if bstype.lower() in ["monocolor", "monocolor nonpolarized"]:
             bands = extract_eigenvalues_bands_nonpolarized(bs_dir)
-            kpath_plot, bands = _apply_breaks_insert_nan(kpath, breaks, bands)
-            matters.append([bstype, label, fermi_energy, kpath_plot, bands, dos, color, lstyle, weight, alpha, current_tolerance])
+            matters.append([bstype, label, fermi_energy, kpath, bands, dos, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["monocolor spin up", "spin up monocolor"]:
             bands = extract_eigenvalues_bands_spinUp(bs_dir)
-            kpath_plot, bands = _apply_breaks_insert_nan(kpath, breaks, bands)
-            matters.append([bstype, label, fermi_energy, kpath_plot, bands, dos, color, lstyle, weight, alpha, current_tolerance])
+            matters.append([bstype, label, fermi_energy, kpath, bands, dos, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["monocolor spin down", "spin down monocolor"]:
             bands = extract_eigenvalues_bands_spinDown(bs_dir)
-            kpath_plot, bands = _apply_breaks_insert_nan(kpath, breaks, bands)
-            matters.append([bstype, label, fermi_energy, kpath_plot, bands, dos, color, lstyle, weight, alpha, current_tolerance])
+            matters.append([bstype, label, fermi_energy, kpath, bands, dos, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["bands", "bands nonpolarized"]:
             conduction_bands = extract_eigenvalues_conductionBands_nonpolarized(bs_dir, current_tolerance)
             valence_bands = extract_eigenvalues_valenceBands_nonpolarized(bs_dir, current_tolerance)
-            kpath_plot, conduction_bands, valence_bands = _apply_breaks_insert_nan(kpath, breaks, conduction_bands, valence_bands)
-            matters.append([bstype, label, fermi_energy, kpath_plot, conduction_bands, valence_bands, dos, color, lstyle, weight, alpha, current_tolerance])
+            matters.append([bstype, label, fermi_energy, kpath, conduction_bands, valence_bands, dos, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["bands spin up", "spin up bands"]:
             conduction_bands = extract_eigenvalues_conductionBands_spinUp(bs_dir, current_tolerance)
             valence_bands = extract_eigenvalues_valenceBands_spinUp(bs_dir, current_tolerance)
-            kpath_plot, conduction_bands, valence_bands = _apply_breaks_insert_nan(kpath, breaks, conduction_bands, valence_bands)
-            matters.append([bstype, label, fermi_energy, kpath_plot, conduction_bands, valence_bands, dos, color, lstyle, weight, alpha, current_tolerance])
+            matters.append([bstype, label, fermi_energy, kpath, conduction_bands, valence_bands, dos, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["bands spin down", "spin down bands"]:
             conduction_bands = extract_eigenvalues_conductionBands_spinDown(bs_dir, current_tolerance)
             valence_bands = extract_eigenvalues_valenceBands_spinDown(bs_dir, current_tolerance)
-            kpath_plot, conduction_bands, valence_bands = _apply_breaks_insert_nan(kpath, breaks, conduction_bands, valence_bands)
-            matters.append([bstype, label, fermi_energy, kpath_plot, conduction_bands, valence_bands, dos, color, lstyle, weight, alpha, current_tolerance])
+            matters.append([bstype, label, fermi_energy, kpath, conduction_bands, valence_bands, dos, color, lstyle, weight, alpha, current_tolerance])
     return matters
 
 def plot_bsDoS(suptitle, matters_list=None, eigen_range=None, dos_range=None, legend_loc=False):
@@ -1657,7 +1530,7 @@ def plot_bsDoS(suptitle, matters_list=None, eigen_range=None, dos_range=None, le
     for matter in matters:
         # print(matter[7], matter[8], matter[9], matter[10])
         bs_current_label = matter[1]
-        if _is_monocolor_type(matter[0]):
+        if matter[0].lower() in ["monocolor"]:
             bs_label = "mono"
             bs_fermi = matter[2]
             for bands_index in range(0, len(matter[4])):
@@ -1666,7 +1539,7 @@ def plot_bsDoS(suptitle, matters_list=None, eigen_range=None, dos_range=None, le
                     ax1.plot(matter[3], current_band, c=color_sampling(matter[6])[1], linestyle=matter[7], lw=matter[8], alpha=matter[9], label=f"{bs_current_label}", zorder=4)
                 else:
                     ax1.plot(matter[3], current_band, c=color_sampling(matter[6])[1], linestyle=matter[7], lw=matter[8], alpha=matter[9], zorder=4)
-        elif _is_bands_type(matter[0]):
+        elif matter[0].lower() in ["bands"]:
             bs_fermi = matter[2]
             bs_label = "bands"
             for bands_index in range(0, len(matter[4])):
@@ -1715,11 +1588,11 @@ def plot_bsDoS(suptitle, matters_list=None, eigen_range=None, dos_range=None, le
     ax2.set_title("DoS (a.u.)", fontsize=fig_setting[3][1])
     for matter in matters:
         DoS_current_label = matter[1]
-        if _is_monocolor_type(matter[0]):
+        if matter[0].lower() in ["monocolor"]:
             dos_efermi = matter[5][0]
             plt.plot(matter[5][6], matter[5][5], c=color_sampling(matter[6])[1], lw=matter[8], alpha=matter[9], label=f"Total DoS {DoS_current_label}", zorder = 2)
 
-        elif _is_bands_type(matter[0]):
+        elif matter[0].lower() in ["bands"]:
             dos_efermi = matter[6][0]
             # plt.plot(matter[6][6], matter[6][5], c=color_sampling(matter[7])[1], label=f"Total DoS {current_label}", zorder = 2)
             dos_data = matter[6][6]
@@ -1813,7 +1686,7 @@ def plot_bsPDoS(title, bs_list, pdos_list, eigen_range, dos_range, legend_loc=Fa
 
     for matter in bs_matters:
         bs_current_label = matter[1]
-        if _is_monocolor_type(matter[0]):
+        if matter[0].lower() in ["monocolor"]:
             bs_label = "mono"
             bs_fermi = matter[2]
             for bands_index in range(0, len(matter[4])):
@@ -1822,7 +1695,7 @@ def plot_bsPDoS(title, bs_list, pdos_list, eigen_range, dos_range, legend_loc=Fa
                     ax1.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], label=f"{bs_current_label}", zorder=4)
                 else:
                     ax1.plot(matter[3], current_band, c=color_sampling(matter[5])[1], linestyle=matter[6], lw=matter[7], alpha=matter[8], zorder=4)
-        elif _is_bands_type(matter[0]):
+        elif matter[0].lower() in ["bands"]:
             bs_fermi = matter[2]
             bs_label = "bands"
             for bands_index in range(0, len(matter[4])):
