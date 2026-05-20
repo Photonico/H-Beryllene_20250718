@@ -92,48 +92,38 @@ def _clean_kpoints_label(label):
 
     return s.strip()
 
+
 def _split_kpoints_coord_label(line):
     """Parse one KPOINTS line and return (coords, label).
+
     Supported examples:
         0.0 0.0 0.0 Γ
+        0.5 0.0 0.0 K′
         0.5 0.0 0.0 K'
-        0.5 0.0 0.0 K'
-        0.5 0.0 0.0 ! K'
+        0.5 0.0 0.0 ! K′
+
     Returns (None, None) when the line does not contain a valid coordinate-label pair.
     """
     tokens = line.strip().split()
     if len(tokens) < 4:
         return None, None
+
     try:
         coords = (float(tokens[0]), float(tokens[1]), float(tokens[2]))
     except ValueError:
         return None, None
+
     if tokens[3] == "!":
         label = " ".join(tokens[4:]).strip() if len(tokens) > 4 else ""
     else:
         label = tokens[3]
+
     label = _clean_kpoints_label(label)
     if not label:
         return None, None
 
     return coords, label
 
-def _select_kpoints_file(directory):
-    """
-    Select the k-point path file.
-    For HSE06 band structure, KPOINTS_OPT contains the line-mode path.
-    For ordinary GGA/PBE band structure, KPOINTS contains the line-mode path.
-    """
-    kpoints_opt_path = os.path.join(directory, "KPOINTS_OPT")
-    kpoints_path = os.path.join(directory, "KPOINTS")
-
-    if os.path.exists(kpoints_opt_path):
-        return kpoints_opt_path
-
-    if os.path.exists(kpoints_path):
-        return kpoints_path
-
-    return None
 
 # extract bands
 
@@ -244,41 +234,30 @@ def is_kpoints_returning(directory):
     except Exception:
         return False
 
-# def extract_reciprocal_weights(directory):
-#     """
-#     Extract reciprocal lattice weights from the CONTCAR file in the given directory.
-#     Args:
-#     directory (str): The directory containing the CONTCAR file.
-#     Returns:
-#     list: A list of weights representing the relative lengths of the reciprocal lattice vectors.
-#     """
-#     # Read CONTCAR file
-#     contcar_path = f"{directory}/CONTCAR"
-#     with open(contcar_path, "r") as file:
-#         lines = file.readlines()
-#     # Extract lattice vectors
-#     lattice_vectors = np.array([list(map(float, line.split())) for line in lines[2:5]])
-#     # Calculate reciprocal lattice vectors
-#     volume = np.dot(lattice_vectors[0], np.cross(lattice_vectors[1], lattice_vectors[2]))
-#     reciprocal_lattice_vectors = 2 * np.pi * np.array([
-#         np.cross(lattice_vectors[1], lattice_vectors[2]) / volume,
-#         np.cross(lattice_vectors[2], lattice_vectors[0]) / volume,
-#         np.cross(lattice_vectors[0], lattice_vectors[1]) / volume
-#     ])
-#     # Compute the lengths of the reciprocal lattice vectors
-#     reciprocal_lengths = [np.linalg.norm(vec) for vec in reciprocal_lattice_vectors]
-#     return reciprocal_lengths
-
 def extract_reciprocal_weights(directory):
     """
-    Backward-compatible helper.
-
-    Returns only |b1|, |b2|, |b3|.  Do not use this for exact k-path distances
-    in non-orthogonal cells.
+    Extract reciprocal lattice weights from the CONTCAR file in the given directory.
+    Args:
+    directory (str): The directory containing the CONTCAR file.
+    Returns:
+    list: A list of weights representing the relative lengths of the reciprocal lattice vectors.
     """
-    reciprocal_lattice_vectors = extract_reciprocal_lattice(directory)
-    reciprocal_lengths = np.linalg.norm(reciprocal_lattice_vectors, axis=1)
-    return reciprocal_lengths.tolist()
+    # Read CONTCAR file
+    contcar_path = f"{directory}/CONTCAR"
+    with open(contcar_path, "r") as file:
+        lines = file.readlines()
+    # Extract lattice vectors
+    lattice_vectors = np.array([list(map(float, line.split())) for line in lines[2:5]])
+    # Calculate reciprocal lattice vectors
+    volume = np.dot(lattice_vectors[0], np.cross(lattice_vectors[1], lattice_vectors[2]))
+    reciprocal_lattice_vectors = 2 * np.pi * np.array([
+        np.cross(lattice_vectors[1], lattice_vectors[2]) / volume,
+        np.cross(lattice_vectors[2], lattice_vectors[0]) / volume,
+        np.cross(lattice_vectors[0], lattice_vectors[1]) / volume
+    ])
+    # Compute the lengths of the reciprocal lattice vectors
+    reciprocal_lengths = [np.linalg.norm(vec) for vec in reciprocal_lattice_vectors]
+    return reciprocal_lengths
 
 def extract_high_sym(directory):
     """
@@ -318,50 +297,6 @@ def extract_high_sym(directory):
     else:
         unique_points = high_symmetry_points            # If only two points, return as is
     return unique_points
-
-def extract_reciprocal_lattice(directory):
-    """
-    Extract full reciprocal lattice vectors from CONTCAR, falling back to POSCAR.
-    Returns:
-        numpy.ndarray with shape (3, 3), whose rows are b1, b2, b3.
-        A fractional reciprocal coordinate q = (q1, q2, q3) is converted by:
-
-            q_cart = q @ reciprocal_lattice_vectors
-    """
-    contcar_path = os.path.join(directory, "CONTCAR")
-    poscar_path = os.path.join(directory, "POSCAR")
-    if os.path.exists(contcar_path):
-        cell_path = contcar_path
-    elif os.path.exists(poscar_path):
-        cell_path = poscar_path
-    else:
-        raise FileNotFoundError("Neither CONTCAR nor POSCAR found in the directory.")
-    with open(cell_path, "r", encoding="utf-8") as file:
-        lines = file.readlines()
-    scale = float(lines[1].split()[0])
-    lattice_vectors = np.array([
-        list(map(float, lines[2].split()[:3])),
-        list(map(float, lines[3].split()[:3])),
-        list(map(float, lines[4].split()[:3])),
-    ], dtype=float)
-    # VASP scale factor.
-    # Positive scale means ordinary multiplicative scale.
-    # Negative scale means target cell volume.
-    if scale > 0:
-        lattice_vectors *= scale
-    else:
-        current_volume = abs(np.linalg.det(lattice_vectors))
-        target_volume = abs(scale)
-        lattice_vectors *= (target_volume / current_volume) ** (1.0 / 3.0)
-    a1, a2, a3 = lattice_vectors
-    volume = np.dot(a1, np.cross(a2, a3))
-    reciprocal_lattice_vectors = 2 * np.pi * np.array([
-        np.cross(a2, a3) / volume,
-        np.cross(a3, a1) / volume,
-        np.cross(a1, a2) / volume,
-    ])
-    # return extract_reciprocal_weights
-    return reciprocal_lattice_vectors
 
 def extract_high_sym_details_xml(directory):
     """
@@ -451,33 +386,32 @@ def extract_kpath_no_weight(directory):
     return cumulative_distances
 
 def _parse_line_mode_kpoints_segments(directory):
+    """Parse VASP KPOINTS in line-mode and return (n_per_segment, segments).
+    segments: [((label_start, [kx,ky,kz]), (label_end, [kx,ky,kz])), ...]
+    Returns (None, None) if KPOINTS is missing or not line-mode.
     """
-    Parse VASP KPOINTS/KPOINTS_OPT in line-mode and return
-    (n_per_segment, segments).
-    segments:
-        [((label_start, [kx, ky, kz]), (label_end, [kx, ky, kz])), ...]
-    Returns (None, None) if no line-mode k-point path is found.
-    """
-    kpoints_file = _select_kpoints_file(directory)
-    if kpoints_file is None:
+    kpoints_path = os.path.join(directory, "KPOINTS")
+    if not os.path.exists(kpoints_path):
         return None, None
-    with open(kpoints_file, "r", encoding="utf-8") as f:
+    with open(kpoints_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
-    if len(lines) < 4:
-        return None, None
-    try:
-        n_per = int(lines[1].strip().split()[0])
+    if len(lines) < 4: return None, None
+    # Second line: points per segment in typical VASP line-mode KPOINTS
+    try: n_per = int(lines[1].strip().split()[0])
     except Exception:
         return None, None
     mode = lines[2].strip().lower()
-    if not mode.startswith("l"):
+    if not mode.startswith("l"):    # "line" or "line-mode"
         return None, None
     endpoints = []
     for line in lines[4:]:
-        coords, label = _split_kpoints_coord_label(line)
-        if coords is None or not label:
+        toks = line.strip().split()
+        if len(toks) < 4:
             continue
-        endpoints.append((label, list(coords)))
+        label = toks[-1]
+        try: coords = [float(toks[0]), float(toks[1]), float(toks[2])]
+        except ValueError: continue
+        endpoints.append((label, coords))
     if len(endpoints) < 2:
         return None, None
     segments = []
@@ -505,24 +439,23 @@ def _segment_break_indices_from_kpoints(directory, nk_from_vasprun, tol=1e-10):
             breaks.append((si + 1) * n_per)
     return breaks
 
-def _jump_break_indices_from_klist(kpoints, reciprocal_lattice=None, jump_factor=5.0, tol=1e-12):
+def _jump_break_indices_from_klist(kpoints, reciprocal_weights=None, jump_factor=5.0, tol=1e-12):
     """Heuristic fallback: detect discontinuities by unusually large steps."""
     k = np.asarray(kpoints, dtype=float)
     if len(k) < 2:
         return []
     dk = np.diff(k, axis=0)
-    if reciprocal_lattice is not None:
-        B = np.asarray(reciprocal_lattice, dtype=float)
-        dk_cart = dk @ B
-    else:
-        dk_cart = dk
-    steps = np.linalg.norm(dk_cart, axis=1)
+    if reciprocal_weights is not None:
+        w = np.asarray(reciprocal_weights, dtype=float)
+        dk = dk * w
+    steps = np.linalg.norm(dk, axis=1)
     nz = steps[steps > tol]
     if nz.size == 0:
         return []
     typical = float(np.median(nz))
     if typical < tol:
         return []
+    # break if a step is much larger than typical step
     return (np.where(steps > jump_factor * typical)[0] + 1).tolist()
 
 def _apply_breaks_insert_nan(path, breaks, *band_groups):
@@ -555,33 +488,31 @@ def _apply_breaks_insert_nan(path, breaks, *band_groups):
 
 def extract_kpath(directory, return_breaks=False, jump_factor=5.0):
     """
-    Calculate cumulative reciprocal-space distances along a k-point path.
-    This version uses the full reciprocal lattice metric, so it works correctly
-    for non-orthogonal cells and is compatible with KPOINTS_OPT-based HSE06
-    calculations.
+    Calculates the cumulative distances along a path through k-points in reciprocal space.
+    For standard line-mode KPOINTS with branched paths (segment restarts), this function:
+      - makes the x-axis continuous across segment restarts (does not add the 'jump' distance)
+      - can return break indices so the plotter can insert NaNs to break the lines.
+    Args:
+      directory (str): The directory path that contains the VASP vasprun.xml file.
+      return_breaks (bool): If True, return (kpath, breaks).
+      jump_factor (float): Heuristic fallback sensitivity if KPOINTS parsing doesn't match vasprun.
+    Returns:
+      list or (list, list[int])
     """
     kpoints = extract_high_sym_details_xml(directory)
-
-    reciprocal_lattice_vectors = extract_reciprocal_lattice(directory)
+    reciprocal_weights = extract_reciprocal_weights(directory)
     nk = len(kpoints)
     breaks = _segment_break_indices_from_kpoints(directory, nk_from_vasprun=nk)
     if not breaks:
-        breaks = _jump_break_indices_from_klist(
-            kpoints,
-            reciprocal_lattice=reciprocal_lattice_vectors,
-            jump_factor=jump_factor,
-        )
+        breaks = _jump_break_indices_from_klist(kpoints, reciprocal_weights=reciprocal_weights, jump_factor=jump_factor)
     break_set = set(breaks)
     cumulative_distances = [0.0]
     for i in range(1, nk):
-        delta_frac = np.array(kpoints[i], dtype=float) - np.array(kpoints[i - 1], dtype=float)
-        # fractional reciprocal coordinate -> Cartesian reciprocal vector
-        delta_cart = delta_frac @ reciprocal_lattice_vectors
-        distance = np.linalg.norm(delta_cart)
+        delta_k = np.array(kpoints[i]) - np.array(kpoints[i - 1])
+        weighted_distance = np.sqrt(sum((delta_k[j] * reciprocal_weights[j]) ** 2 for j in range(3)))
         if i in break_set:
-            distance = 0.0
-
-        cumulative_distances.append(cumulative_distances[-1] + float(distance))
+            weighted_distance = 0.0
+        cumulative_distances.append(cumulative_distances[-1] + float(weighted_distance))
     if return_breaks:
         return cumulative_distances, breaks
     return cumulative_distances
