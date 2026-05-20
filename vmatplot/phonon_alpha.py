@@ -149,50 +149,6 @@ def extract_phonon_high_sym_details(directory):
                 prev_coords = coords
     return {"q_coords": q_coords, "path": path}
 
-def extract_reciprocal_lattice_vectors(directory):
-    """
-    Read CONTCAR or POSCAR and return reciprocal lattice vectors.
-    Return:
-        reciprocal_lattice_vectors: numpy.ndarray, shape (3, 3)
-        reciprocal_lattice_vectors[0] = b1
-        reciprocal_lattice_vectors[1] = b2
-        reciprocal_lattice_vectors[2] = b3
-    A fractional reciprocal coordinate q = (q1, q2, q3) is converted by:
-        cartesian_q_vector = q @ reciprocal_lattice_vectors
-    """
-    contcar_path = os.path.join(directory, "CONTCAR")
-    poscar_path = os.path.join(directory, "POSCAR")
-    if os.path.exists(contcar_path):
-        cell_path = contcar_path
-    elif os.path.exists(poscar_path):
-        cell_path = poscar_path
-    else:
-        raise FileNotFoundError("Neither CONTCAR nor POSCAR found.")
-    with open(cell_path, "r", encoding="utf-8") as file:
-        lines = file.readlines()
-    scale_factor = float(lines[1].split()[0])
-    real_space_lattice_vectors = np.array([
-        list(map(float, lines[2].split()[:3])),
-        list(map(float, lines[3].split()[:3])),
-        list(map(float, lines[4].split()[:3])),
-    ], dtype=float)
-    if scale_factor > 0:
-        real_space_lattice_vectors *= scale_factor
-    else:
-        current_volume = abs(np.linalg.det(real_space_lattice_vectors))
-        target_volume = abs(scale_factor)
-        real_space_lattice_vectors *= (target_volume / current_volume) ** (1.0 / 3.0)
-    real_space_a1 = real_space_lattice_vectors[0]
-    real_space_a2 = real_space_lattice_vectors[1]
-    real_space_a3 = real_space_lattice_vectors[2]
-    cell_volume = np.dot(real_space_a1, np.cross(real_space_a2, real_space_a3))
-    reciprocal_lattice_vectors = 2 * np.pi * np.array([
-        np.cross(real_space_a2, real_space_a3) / cell_volume,
-        np.cross(real_space_a3, real_space_a1) / cell_volume,
-        np.cross(real_space_a1, real_space_a2) / cell_volume,
-    ])
-    return reciprocal_lattice_vectors
-
 def extract_phonon_reciprocal_weights(directory):
     # Read CONTCAR file
     contcar_path = f"{directory}/CONTCAR"
@@ -212,12 +168,18 @@ def extract_phonon_reciprocal_weights(directory):
     return reciprocal_lengths
 
 def extract_qpath(directory):
-    """
-    Return the cumulative q-path distance for direct VASP phonon dispersion.
-    This uses the full reciprocal lattice vectors and the QPOINTS/QPOINTS_OPT path.
-    """
-    qpath_distances, _, _ = build_phonon_qpath_from_qpoints(directory)
-    return qpath_distances
+    # Extract q-points and reciprocal weights
+    qpoints = extract_phonon_high_sym_details(directory)["q_coords"]
+    reciprocal_weights = extract_phonon_reciprocal_weights(directory)
+    # Initialize cumulative distances
+    cumulative_distances = [0]
+    for i in range(1, len(qpoints)):
+        # Compute the vector difference between two q-points
+        delta_k = np.array(qpoints[i]) - np.array(qpoints[i-1])
+        # Apply the reciprocal lattice weight
+        weighted_distance = np.sqrt(sum((delta_k[j] * reciprocal_weights[j]) ** 2 for j in range(3)))
+        cumulative_distances.append(cumulative_distances[-1] + weighted_distance)
+    return cumulative_distances
 
 def extract_eigenvalues_qpoints(directory):
     """
@@ -225,127 +187,6 @@ def extract_eigenvalues_qpoints(directory):
     In this case, we simply call extract_phonon_bands since the phonon frequencies are extracted from OUTCAR.
     """
     return extract_phonon_bands(directory)
-
-def _parse_qpoint_number(token):
-    """Parse a q-point coordinate token, supporting decimals and fractions such as 1/3."""
-    token = str(token).strip()
-    if "/" in token:
-        from fractions import Fraction
-        return float(Fraction(token))
-    return float(token)
-
-def _select_qpoints_file(directory, filename=None):
-    """Select QPOINTS/QPOINTS_OPT file. If filename is given, use it; otherwise prefer QPOINTS_OPT."""
-    if filename is not None:
-        qpoints_path = os.path.join(directory, filename)
-        if os.path.exists(qpoints_path):
-            return qpoints_path
-        raise FileNotFoundError(f"{filename} not found in {directory}")
-    qpoints_opt_path = os.path.join(directory, "QPOINTS_OPT")
-    qpoints_path = os.path.join(directory, "QPOINTS")
-    if os.path.exists(qpoints_opt_path):
-        return qpoints_opt_path
-    if os.path.exists(qpoints_path):
-        return qpoints_path
-    raise FileNotFoundError(f"Neither QPOINTS_OPT nor QPOINTS found in {directory}")
-
-def parse_line_mode_qpoints(directory, filename=None):
-    """
-    Parse VASP line-mode QPOINTS/QPOINTS_OPT.
-    Supports both:
-        64 / line / reciprocal / ...
-    and:
-        comment / 64 / line / reciprocal / ...
-    Return:
-        points_per_segment, coordinate_type, segments
-    """
-    qpoints_path = _select_qpoints_file(directory, filename=filename)
-    with open(qpoints_path, "r", encoding="utf-8") as file:
-        raw_lines = file.readlines()
-    lines = [line.strip() for line in raw_lines if line.strip()]
-    if len(lines) < 3:
-        raise ValueError(f"{os.path.basename(qpoints_path)} is too short.")
-    first_line_tokens = lines[0].split()
-    second_line_tokens = lines[1].split()
-    if first_line_tokens and first_line_tokens[0].isdigit():
-        points_line_index = 0
-    elif second_line_tokens and second_line_tokens[0].isdigit():
-        points_line_index = 1
-    else:
-        raise ValueError(f"Cannot find points-per-segment line in {os.path.basename(qpoints_path)}.")
-    points_per_segment = int(lines[points_line_index].split()[0])
-    line_mode = lines[points_line_index + 1].lower()
-    coordinate_type = lines[points_line_index + 2].lower()
-    data_start_index = points_line_index + 3
-    if not line_mode.startswith("l"):
-        raise ValueError(f"{os.path.basename(qpoints_path)} is not in line mode. Got: {line_mode}")
-    endpoints = []
-    for line in lines[data_start_index:]:
-        tokens = line.split()
-        if len(tokens) < 3:
-            continue
-        qpoint_coordinate = np.array([
-            _parse_qpoint_number(tokens[0]),
-            _parse_qpoint_number(tokens[1]),
-            _parse_qpoint_number(tokens[2]),
-        ], dtype=float)
-        qpoint_label = tokens[3] if len(tokens) >= 4 else ""
-        endpoints.append((qpoint_label, qpoint_coordinate))
-    if len(endpoints) < 2:
-        raise ValueError(f"No valid q-point endpoints found in {os.path.basename(qpoints_path)}.")
-    segments = []
-    for index in range(0, len(endpoints) - 1, 2):
-        segments.append((endpoints[index], endpoints[index + 1]))
-    return points_per_segment, coordinate_type, segments
-
-def build_phonon_qpath_from_qpoints(directory, filename=None):
-    """
-    Build the cumulative q-path distance for VASP phonon dispersion.
-    Return:
-        qpath_distances, high_symmetry_positions, high_symmetry_labels
-    """
-    reciprocal_lattice_vectors = extract_reciprocal_lattice_vectors(directory)
-    points_per_segment, coordinate_type, segments = parse_line_mode_qpoints(directory, filename=filename)
-    qpath_distances = []
-    high_symmetry_positions = []
-    high_symmetry_labels = []
-    current_distance = 0.0
-    previous_qpoint_coordinate = None
-    for segment_index, ((start_label, start_qpoint), (end_label, end_qpoint)) in enumerate(segments):
-        if segment_index == 0:
-            high_symmetry_positions.append(current_distance)
-            high_symmetry_labels.append(start_label)
-        for point_index in range(points_per_segment):
-            interpolation_parameter = point_index / (points_per_segment - 1)
-            current_qpoint_coordinate = (1.0 - interpolation_parameter) * start_qpoint + interpolation_parameter * end_qpoint
-            if previous_qpoint_coordinate is None:
-                qpath_distances.append(current_distance)
-                previous_qpoint_coordinate = current_qpoint_coordinate
-                continue
-            fractional_step = current_qpoint_coordinate - previous_qpoint_coordinate
-            if point_index == 0 and np.linalg.norm(fractional_step) > 1e-10:
-                qpath_distances.append(current_distance)
-                previous_qpoint_coordinate = current_qpoint_coordinate
-                continue
-            if coordinate_type.startswith(("r", "rec")):
-                cartesian_step_vector = fractional_step @ reciprocal_lattice_vectors
-            elif coordinate_type.startswith(("c", "cart")):
-                cartesian_step_vector = fractional_step
-            else:
-                raise ValueError("Unknown QPOINTS coordinate type. Expected reciprocal or cartesian.")
-            current_distance += np.linalg.norm(cartesian_step_vector)
-            qpath_distances.append(current_distance)
-            previous_qpoint_coordinate = current_qpoint_coordinate
-        high_symmetry_positions.append(current_distance)
-        high_symmetry_labels.append(end_label)
-    return qpath_distances, high_symmetry_positions, high_symmetry_labels
-
-def print_phonon_qpath_debug(directory):
-    qpath_distances, high_symmetry_positions, high_symmetry_labels = build_phonon_qpath_from_qpoints(directory)
-    total_distance = qpath_distances[-1]
-    for label, position in zip(high_symmetry_labels, high_symmetry_positions):
-        normalized_position = position / total_distance if total_distance else 0.0
-        print(f"{label:>8s}  {position:.8f}  normalized = {normalized_position:.8f}")
 
 def extract_phonon_bands(directory):
     """
@@ -409,6 +250,7 @@ def extract_phonon_bands(directory):
         else: index += 1
     return {"path": path, "bands": bands}
 
+
 def _clean_phonopy_label(label: str) -> str:
     """Best-effort cleanup of phonopy label strings (often LaTeX) into plain text."""
     if label is None:
@@ -440,6 +282,7 @@ def _clean_phonopy_label(label: str) -> str:
     }
     return greek.get(s, s)
 
+
 def extract_phonopy_high_sym_from_band_yaml(directory: str):
     """Return (ticks, labels) for phonopy plots from band.yaml when possible.
 
@@ -453,7 +296,7 @@ def extract_phonopy_high_sym_from_band_yaml(directory: str):
     """
     directory = str(directory)
 
-    # locate band.yaml
+    # --- locate band.yaml ---
     band_yaml = None
     for cand in ("band.yaml", "phonopy_band.yaml"):
         p = os.path.join(directory, cand)
@@ -463,7 +306,7 @@ def extract_phonopy_high_sym_from_band_yaml(directory: str):
     if band_yaml is None:
         return None, None
 
-    # read YAML
+    # --- read YAML ---
     try:
         import yaml  # type: ignore
         with open(band_yaml, "r", encoding="utf-8") as f:
@@ -478,7 +321,7 @@ def extract_phonopy_high_sym_from_band_yaml(directory: str):
     dist = [float(p.get("distance", 0.0)) for p in phonon]
     n = len(dist)
 
-    # ticks from segment_nqpoint if consistent; otherwise from distance repeats
+    # --- ticks from segment_nqpoint if consistent; otherwise from distance repeats ---
     ticks = [dist[0]]
     seg = (data or {}).get("segment_nqpoint", None)
     if isinstance(seg, list) and seg and all(isinstance(x, (int, float, str)) for x in seg):
@@ -499,7 +342,7 @@ def extract_phonopy_high_sym_from_band_yaml(directory: str):
         if abs(ticks[-1] - dist[-1]) > 1e-12:
             ticks.append(dist[-1])
 
-    # labels
+    # --- labels ---
     # Prefer BAND_LABELS from band.conf (user-specified). If not available, fall back to band.yaml.
     labels = []
     try:
@@ -555,6 +398,7 @@ def detect_phonon_backend(directory):
 
     return "unknown"
 
+
 def create_matters_phonons(matters_list):
     """Create internal matter objects for phonon plotting.
 
@@ -597,7 +441,9 @@ def create_matters_phonons(matters_list):
                 "Expected either (OUTCAR + QPOINTS/QPOINTS_OPT) for direct VASP, "
                 "or band.yaml / phonopy_disp.yaml for phonopy."
             )
+
         matters.append([label, 0, qpath, bands, color, lstyle, weight, alpha, tolerance, backend])
+
     return matters
 
 def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False):
@@ -733,16 +579,57 @@ def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False):
                 plt.axvline(x=pos, color=annotate_color[1], linestyle="--", alpha=0.8, zorder=1)
 
     else:
-        # Direct VASP phonon: use the same full-reciprocal-lattice q-path for curves and ticks.
-        _qpath_distances, ticks, tick_labels = build_phonon_qpath_from_qpoints(orig_directory)
-        if ticks:
+        # Direct VASP: Extract high symmetry boundaries from QPOINTS (keep repeats for multi-segment / branched paths)
+        # and set xticks using the weighted q-path.
+        boundaries = extract_phonon_high_sym(orig_directory, return_coords=True)
+        details = extract_phonon_high_sym_details(orig_directory)
+        details_q = details["q_coords"]
+        weighted_qpath_full = extract_qpath(orig_directory)
+
+        high_sym_positions = []
+        last_search_start = 0  # enforce monotonic matching along the OUTCAR q-point sequence
+
+        for label, hs_coords in boundaries:
+            if not details_q:
+                break
+
+            min_dist = float("inf")
+            best_idx = None
+            # Match forward only; otherwise repeated points (e.g., Γ ... Γ) collapse onto the first occurrence.
+            for i, q in enumerate(details_q[last_search_start:], start=last_search_start):
+                dist = np.linalg.norm(np.array(q) - np.array(hs_coords))
+                if dist < min_dist:
+                    min_dist = dist
+                    best_idx = i
+                    if min_dist < 1e-12:
+                        break
+
+            if best_idx is None or best_idx >= len(weighted_qpath_full):
+                continue
+
+            pos = weighted_qpath_full[best_idx]
+
+            # If two labeled endpoints map to the same x-position (segment boundary duplication),
+            # merge the labels as "A|B" at a single tick.
+            if high_sym_positions and abs(pos - high_sym_positions[-1][1]) < 1e-10:
+                prev_label, prev_pos = high_sym_positions[-1]
+                if prev_label != label:
+                    high_sym_positions[-1] = (f"{prev_label}|{label}", prev_pos)
+            else:
+                high_sym_positions.append((label, pos))
+
+            last_search_start = best_idx + 1
+
+        if high_sym_positions:
+            ticks = [pos for label, pos in high_sym_positions]
+            tick_labels = [label for label, pos in high_sym_positions]
             plt.xticks(ticks, tick_labels)
             for pos in ticks[1:-1]:
                 plt.axvline(x=pos, color=annotate_color[1], linestyle="--", alpha=0.8, zorder=1)
 
     if legend_loc is None or legend_loc is False: pass
     else: plt.legend(loc=legend_loc)
-
+    
     # Collect minimum-frequency point for each matter (for stability diagnostics).
     minima = {}
     for _m, _m_orig in zip(matters, matters_list):
@@ -773,6 +660,8 @@ def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False):
     plt.tight_layout()
     return minima
 
+
+
 #### Phonopy phonon dispersion (phonopy band.yaml)
 
 # NOTE:
@@ -784,6 +673,7 @@ def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False):
 #   3) This module only plots. If band.yaml does not exist, generate it first in that parent directory:
 #        phonopy --vasp -f pd-*/vasprun.xml
 #        phonopy -p band.conf
+
 
 def extract_phonopy_bands(directory, band_yaml="band.yaml"):
     """
@@ -924,6 +814,9 @@ def extract_phonopy_bands(directory, band_yaml="band.yaml"):
 
     return {"path": qpath, "bands": bands, "segment_nqpoint": seg_nq}
 
+
+
+
 def _phonopy_parse_number(token):
     # support fraction like 1/2
     try:
@@ -933,6 +826,7 @@ def _phonopy_parse_number(token):
         return float(token)
     except Exception:
         return None
+
 
 def extract_phonopy_band_conf(directory, conf_name=None):
     """
@@ -1126,6 +1020,8 @@ def _phonopy_get_boundary_labels(directory, nseg):
             return labels
     return None
 
+
+
 def _phonopy_high_sym_positions(directory, qpath, segment_nqpoint=None):
     """
     Build high-symmetry tick positions for phonopy bands.
@@ -1171,6 +1067,7 @@ def _phonopy_high_sym_positions(directory, qpath, segment_nqpoint=None):
 
     return boundary_positions, boundary_labels
 
+
 def create_matters_phonopy(matters_list):
     # If matters_list is a single list (not nested), convert it to a nested list.
     if isinstance(matters_list, list) and matters_list and not any(isinstance(i, list) for i in matters_list):
@@ -1191,6 +1088,7 @@ def create_matters_phonopy(matters_list):
         bands = bands_data["bands"]
         matters.append([label, 0, qpath, bands, color, lstyle, weight, alpha, tolerance])
     return matters
+
 
 def plot_phonopy(title, matters_list=None, eigen_range=None, legend_loc=False):
     """Backward-compatible alias.
