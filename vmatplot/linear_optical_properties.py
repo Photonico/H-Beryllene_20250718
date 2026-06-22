@@ -834,8 +834,8 @@ def plot_merged_linear_optical_property(suptitle, systems=None, properties=None,
             ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
             grad = np.linspace(0, 1, 1000).reshape(1, -1)
             grad = np.vstack([grad] * 10)
-            alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-            alpha_vals = np.clip(alpha_vals, 0, 0.325)
+            alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+            alpha_vals = np.clip(alpha_vals, 0, 1)
             alpha_grad = alpha_vals.reshape(1, -1)
             alpha_grad = np.vstack([alpha_grad] * 10)
             ymin, ymax = plt.ylim()
