@@ -609,8 +609,8 @@ def plot_dielectric_monocomp(suptitle, systems=None, component=None,
                 ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
                 grad = np.linspace(0, 1, 1000).reshape(1, -1)
                 grad = np.vstack([grad] * 10)
-                alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-                alpha_vals = np.clip(alpha_vals, 0, 0.325)
+                alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+                alpha_vals = np.clip(alpha_vals, 0, 1)
                 alpha_grad = alpha_vals.reshape(1, -1)
                 alpha_grad = np.vstack([alpha_grad] * 10)
                 ymin, ymax = plt.ylim()
@@ -726,8 +726,8 @@ def plot_dielectric_monocomp(suptitle, systems=None, component=None,
                     ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
                     grad = np.linspace(0, 1, 1000).reshape(1, -1)
                     grad = np.vstack([grad] * 10)
-                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-                    alpha_vals = np.clip(alpha_vals, 0, 0.325)
+                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+                    alpha_vals = np.clip(alpha_vals, 0, 1)
                     alpha_grad = np.tile(alpha_vals, (10, 1))
                     ymin, ymax = ax.get_ylim()
                     extent = [ev_min, ev_max, ymin, ymax]
@@ -848,8 +848,8 @@ def plot_dielectric_monocomp(suptitle, systems=None, component=None,
                     ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
                     grad = np.linspace(0, 1, 1000).reshape(1, -1)
                     grad = np.vstack([grad] * 10)
-                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-                    alpha_vals = np.clip(alpha_vals, 0, 0.325)
+                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+                    alpha_vals = np.clip(alpha_vals, 0, 1)
                     alpha_grad = np.tile(alpha_vals, (10, 1))
                     ymin, ymax = ax.get_ylim()
                     extent = [ev_min, ev_max, ymin, ymax]
@@ -1193,8 +1193,8 @@ def plot_dielectric_function_backup(suptitle, systems=None, components=None,
                     ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
                     grad = np.linspace(0, 1, 1000).reshape(1, -1)
                     grad = np.vstack([grad] * 10)
-                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-                    alpha_vals = np.clip(alpha_vals, 0, 0.325)
+                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+                    alpha_vals = np.clip(alpha_vals, 0, 1)
                     alpha_grad = np.tile(alpha_vals, (10, 1))
                     ymin, ymax = ax.get_ylim()
                     extent = [ev_min, ev_max, ymin, ymax]
@@ -1282,8 +1282,8 @@ def plot_dielectric_function_backup(suptitle, systems=None, components=None,
                     ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
                     grad = np.linspace(0, 1, 1000).reshape(1, -1)
                     grad = np.vstack([grad] * 10)
-                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-                    alpha_vals = np.clip(alpha_vals, 0, 0.325)
+                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+                    alpha_vals = np.clip(alpha_vals, 0, 1)
                     alpha_grad = np.tile(alpha_vals, (10, 1))
                     ymin, ymax = ax.get_ylim()
                     extent = [ev_min, ev_max, ymin, ymax]
@@ -1665,8 +1665,8 @@ def plot_dielectric_function_componentwise(suptitle, systems=None, components=No
                     ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
                     grad = np.linspace(0, 1, 1000).reshape(1, -1)
                     grad = np.vstack([grad] * 10)
-                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-                    alpha_vals = np.clip(alpha_vals, 0, 0.325)
+                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+                    alpha_vals = np.clip(alpha_vals, 0, 1)
                     alpha_grad = np.tile(alpha_vals, (10, 1))
                     ymin, ymax = ax.get_ylim()
                     extent = [ev_min, ev_max, ymin, ymax]
@@ -2043,8 +2043,8 @@ def plot_dielectric_function(suptitle, systems=None, components=None,
                     ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
                     grad = np.linspace(0, 1, 1000).reshape(1, -1)
                     grad = np.vstack([grad] * 10)
-                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-                    alpha_vals = np.clip(alpha_vals, 0, 0.325)
+                    alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+                    alpha_vals = np.clip(alpha_vals, 0, 1)
                     alpha_grad = np.tile(alpha_vals, (10, 1))
                     ymin, ymax = ax.get_ylim()
                     extent = [ev_min, ev_max, ymin, ymax]
@@ -2327,8 +2327,8 @@ def plot_dielectric_function_rescaled(suptitle, systems=None, components=None,
                 ev_min, ev_max = np.min(ev_vis), np.max(ev_vis)
                 grad = np.linspace(0, 1, 1000).reshape(1, -1)
                 grad = np.vstack([grad] * 10)
-                alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 2.0
-                alpha_vals = np.clip(alpha_vals, 0, 0.325)
+                alpha_vals = np.sin(np.linspace(0, np.pi, 1000)) * 0.4
+                alpha_vals = np.clip(alpha_vals, 0, 1)
                 alpha_grad = np.tile(alpha_vals, (10, 1))
                 ymin, ymax = ax.get_ylim()
                 extent = [ev_min, ev_max, ymin, ymax]
