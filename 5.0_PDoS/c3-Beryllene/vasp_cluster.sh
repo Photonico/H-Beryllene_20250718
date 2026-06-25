@@ -1,5 +1,5 @@
 #!/bin/csh
-#PBS -N DoS_c3-Beryllene
+#PBS -N DoS_c3-beryllene
 #PBS -q cmt
 #PBS -j oe
 #PBS -l select=1:ncpus=42:mpiprocs=42:mem=200GB
