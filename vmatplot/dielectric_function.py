@@ -1382,7 +1382,6 @@ def _normalise_dielectric_component_boundary(boundary):
         "tuple/list, or a two-item (start, end) tuple/list."
     )
 
-
 def _expand_dielectric_component_boundaries(boundary, component_count):
     """
     Return one x-axis boundary tuple for each dielectric component.
