@@ -1,5 +1,5 @@
 #!/bin/csh
-#PBS -N phonon_a-Beryllene
+#PBS -N phonon_a-beryllene
 #PBS -q cmt
 #PBS -j oe
 #PBS -l select=1:ncpus=12:mpiprocs=12:mem=200GB
