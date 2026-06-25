@@ -2360,7 +2360,7 @@ def plot_pdos(title, *args, x_range=None, y_top=None):
     else:
         raise NotImplementedError("Multi-system PDoS plotting is not yet supported.")
 
-def plot_single_pdos(title, matters_list=None, x_range=None, y_top=None):
+def plot_single_pdos(title, matters_list=None, x_range=None, y_top=None, fermi_level=None):
     """
     Plot PDoS for a single system with individual settings for each orbital.
 
@@ -2412,10 +2412,11 @@ def plot_single_pdos(title, matters_list=None, x_range=None, y_top=None):
 
     # Add Fermi energy line
     plt.axvline(x=0, linestyle="--", color=fermi_color[0], alpha=0.8, label="Fermi energy")
-    if matters_list:  # Use the first valid pdos_data for Fermi energy annotation
-        fermi_energy_text = f"Fermi energy\n({pdos_data['efermi']:.3f} eV)"
-        plt.text(-x_range * 0.02, y_top * 0.98, fermi_energy_text,
-                 fontsize=12, color=fermi_color[0], rotation=0, va="top", ha="right")
+    if fermi_level not in  [None, False]:
+        if matters_list:  # Use the first valid pdos_data for Fermi energy annotation
+            fermi_energy_text = f"Fermi energy\n({pdos_data['efermi']:.3f} eV)"
+            plt.text(-x_range * 0.02, y_top * 0.98, fermi_energy_text,
+                    fontsize=12, color=fermi_color[0], rotation=0, va="top", ha="right")
 
     # Plot settings
     plt.title(title)
