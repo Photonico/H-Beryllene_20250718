@@ -1,4 +1,4 @@
-#### Bandstructure
+#### Band structure
 # This module provides VASP bandstructure plotting utilities.
 # High-symmetry labels are read directly from KPOINTS/KPOINTS_OPT and preserve Unicode labels such as Γ, K′, and M′.
 # pylint: disable = C0103, C0114, C0116, C0301, C0302, C0321, R0913, R0914, R0915, W0612, W0105
@@ -27,7 +27,7 @@ mpl.rcParams["lines.dash_joinstyle"]  = "round"
 
 global_tolerance = 1e-4
 
-# Bandstructure plotting type aliases.
+# Band structure plotting type aliases.
 # These helpers make the plotting routines handle spin/non-spin aliases consistently.
 _MONOCOLOR_TYPES = {
     "monocolor",
@@ -1515,7 +1515,7 @@ def create_matters_bs(matters_list):
         weight = get_or_default(optional[2] if len(optional) > 2 else None, 1.5)
         alpha = get_or_default(optional[3] if len(optional) > 3 else None, 1.0)
         current_tolerance = get_or_default(optional[4] if len(optional) > 4 else None, 0)
-        # Bandstructure plotting style: monocolor
+        # Band structure plotting style: monocolor
         if bstype.lower() in ["monocolor", "monocolor nonpolarized"]:
             fermi_energy = extract_fermi(directory)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
@@ -1534,7 +1534,7 @@ def create_matters_bs(matters_list):
             bands = extract_eigenvalues_bands_spinDown(directory)
             kpath, bands = _apply_breaks_insert_nan(kpath, breaks, bands)
             matters.append([bstype, label, fermi_energy, kpath, bands, color, lstyle, weight, alpha, current_tolerance])
-        # Bandstructure plotting style: bands
+        # Band structure plotting style: bands
         elif bstype.lower() in ["bands", "bands nonpolarized"]:
             fermi_energy = extract_fermi(directory)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
@@ -1719,9 +1719,9 @@ def plot_bsDoS(suptitle, matters_list=None, eigen_range=None, dos_range=None, le
     # Title
     fig.suptitle(f"{suptitle}", fontsize=fig_setting[3][0], y=1.00)
 
-    # ax1 Bandstructure
+    # ax1 Band structure
     ax1.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
-    ax1.set_title("Bandstructure", fontsize=fig_setting[3][1])
+    ax1.set_title("Band structure", fontsize=fig_setting[3][1])
 
     for matter in matters:
         # print(matter[7], matter[8], matter[9], matter[10])
@@ -1878,7 +1878,7 @@ def plot_bsPDoS(title, bs_list, pdos_list, eigen_range, dos_range, legend_loc=Fa
 
     # Plot bandstructure
     ax1.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
-    ax1.set_title("Bandstructure", fontsize=fig_setting[3][1])
+    ax1.set_title("Band structure", fontsize=fig_setting[3][1])
 
     for matter in bs_matters:
         bs_current_label = matter[1]
@@ -2239,7 +2239,7 @@ def create_matters_bs_spin(matters_list):
         else:
             spin_label = "nonpolarized"
 
-        # Bandstructure plotting style: monocolor
+        # Band structure plotting style: monocolor
         if bstype.lower() in ["monocolor", "monocolor nonpolarized"]:
             fermi_energy = extract_fermi(directory)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
@@ -2254,7 +2254,7 @@ def create_matters_bs_spin(matters_list):
             kpath, bands = _apply_breaks_insert_nan(kpath, breaks, bands)
             matters.append([bstype, label, fermi_energy, kpath, bands, color, lstyle, weight, alpha, current_tolerance, directory])
 
-        # Bandstructure plotting style: bands
+        # Band structure plotting style: bands
         elif bstype.lower() in ["bands", "bands nonpolarized"]:
             fermi_energy = extract_fermi(directory)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
