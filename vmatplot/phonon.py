@@ -298,47 +298,118 @@ def parse_line_mode_qpoints(directory, filename=None):
         segments.append((endpoints[index], endpoints[index + 1]))
     return points_per_segment, coordinate_type, segments
 
-def build_phonon_qpath_from_qpoints(directory, filename=None):
+def _phonon_qstep_length(fractional_step, reciprocal_lattice_vectors, coordinate_type):
+    if coordinate_type.startswith(("r", "rec")):
+        cartesian_step_vector = fractional_step @ reciprocal_lattice_vectors
+    elif coordinate_type.startswith(("c", "cart")):
+        cartesian_step_vector = fractional_step
+    else:
+        raise ValueError("Unknown QPOINTS coordinate type. Expected reciprocal or cartesian.")
+    return np.linalg.norm(cartesian_step_vector)
+
+
+def build_phonon_qpath_from_qpoints(
+    directory,
+    filename=None,
+    return_breaks=False,
+    separate_disconnected=True,
+    disconnected_gap_scale=1.0,
+):
     """
-    Build the cumulative q-path distance for VASP phonon dispersion.
-    Return:
-        qpath_distances, high_symmetry_positions, high_symmetry_labels
+    Build cumulative q-path distance for direct VASP phonon dispersion.
+
+    For pairwise line-mode QPOINTS, a later segment may restart from a point
+    different from the previous segment end, for example P-H followed by P-N.
+    In that case, this function can separate the two x positions and record
+    the break position so that bands can be split by NaN.
     """
     reciprocal_lattice_vectors = extract_reciprocal_lattice_vectors(directory)
     points_per_segment, coordinate_type, segments = parse_line_mode_qpoints(directory, filename=filename)
+
     qpath_distances = []
     high_symmetry_positions = []
     high_symmetry_labels = []
+    breaks_before_indices = []
+
     current_distance = 0.0
-    previous_qpoint_coordinate = None
+    previous_segment_end_qpoint = None
+    raw_qpoint_index = 0
+
     for segment_index, ((start_label, start_qpoint), (end_label, end_qpoint)) in enumerate(segments):
+
         if segment_index == 0:
             high_symmetry_positions.append(current_distance)
             high_symmetry_labels.append(start_label)
+        else:
+            jump_from_previous_segment = start_qpoint - previous_segment_end_qpoint
+
+            if np.linalg.norm(jump_from_previous_segment) > 1e-10:
+                breaks_before_indices.append(raw_qpoint_index)
+
+                if separate_disconnected:
+                    gap_length = _phonon_qstep_length(
+                        jump_from_previous_segment,
+                        reciprocal_lattice_vectors,
+                        coordinate_type,
+                    )
+                    current_distance += disconnected_gap_scale * gap_length
+
+                high_symmetry_positions.append(current_distance)
+                high_symmetry_labels.append(start_label)
+
+        previous_qpoint_inside_segment = None
+
         for point_index in range(points_per_segment):
             interpolation_parameter = point_index / (points_per_segment - 1)
-            current_qpoint_coordinate = (1.0 - interpolation_parameter) * start_qpoint + interpolation_parameter * end_qpoint
-            if previous_qpoint_coordinate is None:
+            current_qpoint = (1.0 - interpolation_parameter) * start_qpoint + interpolation_parameter * end_qpoint
+
+            if point_index == 0:
                 qpath_distances.append(current_distance)
-                previous_qpoint_coordinate = current_qpoint_coordinate
-                continue
-            fractional_step = current_qpoint_coordinate - previous_qpoint_coordinate
-            if point_index == 0 and np.linalg.norm(fractional_step) > 1e-10:
-                qpath_distances.append(current_distance)
-                previous_qpoint_coordinate = current_qpoint_coordinate
-                continue
-            if coordinate_type.startswith(("r", "rec")):
-                cartesian_step_vector = fractional_step @ reciprocal_lattice_vectors
-            elif coordinate_type.startswith(("c", "cart")):
-                cartesian_step_vector = fractional_step
             else:
-                raise ValueError("Unknown QPOINTS coordinate type. Expected reciprocal or cartesian.")
-            current_distance += np.linalg.norm(cartesian_step_vector)
-            qpath_distances.append(current_distance)
-            previous_qpoint_coordinate = current_qpoint_coordinate
+                fractional_step = current_qpoint - previous_qpoint_inside_segment
+                current_distance += _phonon_qstep_length(
+                    fractional_step,
+                    reciprocal_lattice_vectors,
+                    coordinate_type,
+                )
+                qpath_distances.append(current_distance)
+
+            previous_qpoint_inside_segment = current_qpoint
+            raw_qpoint_index += 1
+
         high_symmetry_positions.append(current_distance)
         high_symmetry_labels.append(end_label)
+        previous_segment_end_qpoint = end_qpoint
+
+    if return_breaks:
+        return qpath_distances, high_symmetry_positions, high_symmetry_labels, breaks_before_indices
+
     return qpath_distances, high_symmetry_positions, high_symmetry_labels
+
+def insert_phonon_path_breaks(qpath, bands, breaks_before_indices):
+    """
+    Insert NaN separators before disconnected q-path segments.
+
+    This prevents matplotlib from drawing fake connections such as H -> P
+    when the real path is P-H followed by P-N.
+    """
+    if not breaks_before_indices:
+        return qpath, bands
+
+    qpath_out = list(qpath)
+    bands_out = [list(band) for band in bands]
+
+    offset = 0
+    for break_index in sorted(breaks_before_indices):
+        insert_at = break_index + offset
+
+        qpath_out.insert(insert_at, np.nan)
+        for band in bands_out:
+            band.insert(insert_at, np.nan)
+
+        offset += 1
+
+    return qpath_out, bands_out
 
 def print_phonon_qpath_debug(directory):
     qpath_distances, high_symmetry_positions, high_symmetry_labels = build_phonon_qpath_from_qpoints(directory)
@@ -588,9 +659,15 @@ def create_matters_phonons(matters_list):
             qpath = bands_data["path"]
             bands = bands_data["bands"]
         elif backend == "vasp":
-            qpath = extract_qpath(directory)
+            qpath, _, _, breaks = build_phonon_qpath_from_qpoints(
+                directory,
+                return_breaks=True,
+                separate_disconnected=True,
+                disconnected_gap_scale=1.0,
+            )
             bands_data = extract_phonon_bands(directory)
             bands = bands_data["bands"]
+            qpath, bands = insert_phonon_path_breaks(qpath, bands, breaks)
         else:
             raise FileNotFoundError(
                 f"Cannot detect a phonon backend under '{directory}'. "
