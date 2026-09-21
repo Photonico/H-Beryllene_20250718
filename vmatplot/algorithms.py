@@ -6,7 +6,7 @@ import numpy as np
 from scipy.optimize import leastsq
 
 # Mathematical constants
-pi = 3.141592654
+pi = np.pi
 
 # Physical constants
 h_ev = 4.135667662e-15      # Planck constant in eV·s
@@ -147,15 +147,20 @@ def wavelength_to_energy(wavelength_array):
     return energy
 
 def energy_to_frequency(energy_array):
-    # The unit of energy is eV
-    # The unit of wavelength is nm
-    energy_array = np.array(energy_array)
-    frequency = energy_array/h_ev
-    return frequency
+    """Convert photon energy in eV to ordinary frequency in Hz (E / h)."""
+    return np.asarray(energy_array) / h_ev
+
 
 def frequency_to_energy(frequency_array):
-    # The unit of energy is eV
-    # The unit of wavelength is nm
-    frequency_array = np.array(frequency_array)
-    energy = frequency_array/h_ev
-    return energy
+    """Convert ordinary frequency in Hz to photon energy in eV (h * f)."""
+    return np.asarray(frequency_array) * h_ev
+
+
+def energy_to_angular_frequency(energy_array):
+    """Convert photon energy in eV to angular frequency in rad/s (E / hbar)."""
+    return np.asarray(energy_array) / hbar_ev
+
+
+def angular_frequency_to_energy(angular_frequency_array):
+    """Convert angular frequency in rad/s to photon energy in eV."""
+    return np.asarray(angular_frequency_array) * hbar_ev

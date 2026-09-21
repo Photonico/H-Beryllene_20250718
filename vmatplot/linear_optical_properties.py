@@ -25,14 +25,26 @@ mpl.rcParams["lines.dash_joinstyle"]  = "round"
 ## Constants
 c_ms = 2.99792458e8     # Speed of light in vacuum in meters per second
 c_nm = c_ms * 1e9       # Speed of light in vacuum nanometers per second
-hbar = 4.135667662e-15
 
 ## Theoretical formulas
 
 # 1 absorption coefficient
 def comp_absorption_coefficient(frequency,density_energy_real,density_energy_imag):
-    coe = (np.sqrt(2)*frequency/c_nm)*(np.sqrt(np.sqrt(np.square(density_energy_real)+np.square(density_energy_imag))-density_energy_real))
-    return coe
+    """Return absorption in nm^-1 from ordinary frequency in Hz and epsilon.
+
+    The conversion omega = 2*pi*f occurs here, exactly once. Call
+    comp_absorption_coefficient_from_angular_frequency for inputs in rad/s.
+    """
+    return comp_absorption_coefficient_from_angular_frequency(
+        2 * np.pi * np.asarray(frequency), density_energy_real, density_energy_imag
+    )
+
+
+def comp_absorption_coefficient_from_angular_frequency(
+        angular_frequency, density_energy_real, density_energy_imag):
+    """Return absorption in nm^-1 from angular frequency in rad/s: 2*omega*k/c."""
+    extinction = comp_extinction_coefficient(density_energy_real, density_energy_imag)
+    return 2 * np.asarray(angular_frequency) * extinction / c_nm
 
 # 2 refractive index
 def comp_refractive_index(density_energy_real,density_energy_imag):
@@ -66,7 +78,7 @@ def identify_linear_optical_functions(incoming = None):
                 "\t absorption coefficient, refractive index, extinction coefficient, reflectivity, energy-loss\n"
     linear_title, linear_flag, compfunc_name, plotfunc_name = None, None, None, None
     if incoming.lower() in ["absorption coefficient","absorption"]:
-        linear_title = "Absorption coefficient"
+        linear_title = r"Absorption coefficient (nm$^{-1}$)"
         linear_flag = "absorption"
         compfunc_name = "comp_absorption_coefficient"
     elif incoming.lower() in ["refractive index","refractive"]:
@@ -92,6 +104,7 @@ def identify_linear_optical_functions(incoming = None):
 
 # current linear optical propertie
 def current_lop(lop_flag, *args):
+    """Evaluate an optical property; absorption takes (frequency_Hz, eps1, eps2)."""
     formula_flag = identify_linear_optical_functions(lop_flag)["flag"]
     if formula_flag == "absorption":
         return comp_absorption_coefficient(*args)
@@ -117,6 +130,46 @@ def determine_formula_flag(plotting_function_name):
         formula_flag = "energy-loss"
     return formula_flag
 
+
+def _optical_property_curve(data, component, formula_flag, unit, photon_boundary):
+    """Normalize raw epsilon once and return the requested spectrum and abscissa."""
+    energy = np.asarray(data[1]["density_energy_real"])
+    imag_energy = np.asarray(data[1]["density_energy_imag"])
+    if not np.array_equal(energy, imag_energy):
+        raise ValueError("Real and imaginary dielectric functions must share an energy grid.")
+    supercell_thickness, system_thickness = data[6]
+    if not (np.isfinite(supercell_thickness) and np.isfinite(system_thickness)
+            and supercell_thickness > 0 and system_thickness > 0):
+        raise ValueError("Supercell and material thicknesses must be finite and positive.")
+    ratio = supercell_thickness / system_thickness
+    eps1 = 1 + ratio * (np.asarray(data[1][f"density_{component}_real"]) - 1)
+    eps2 = ratio * np.asarray(data[1][f"density_{component}_imag"])
+    if formula_flag == "absorption":
+        values = current_lop(formula_flag, energy_to_frequency(energy), eps1, eps2)
+    else:
+        values = current_lop(formula_flag, eps1, eps2)
+    x_values = energy_to_wavelength(energy) if unit and unit.lower() == "nm" else energy
+    # E = 0 has infinite wavelength and cannot appear on a wavelength axis.
+    finite = np.isfinite(x_values)
+    lower, upper = process_boundary_alt(photon_boundary)
+    return extract_part(x_values[finite], values[finite], lower, upper)
+
+
+def _apply_value_boundary(ax, value_boundary, component=None):
+    """Apply explicit limits (or autoscaling), with optional per-component limits."""
+    if isinstance(value_boundary, dict):
+        if component is not None:
+            value_boundary = value_boundary.get(component, (None, None))
+        else:
+            # Merged components share an axis, so use the union of their bounds.
+            bounds = [process_boundary_alt(bound) for bound in value_boundary.values()]
+            lows = [low for low, _ in bounds if low is not None]
+            highs = [high for _, high in bounds if high is not None]
+            value_boundary = (min(lows) if lows else None, max(highs) if highs else None)
+    lower, upper = process_boundary_alt(value_boundary)
+    auto_lower, auto_upper = ax.get_ylim()
+    ax.set_ylim(auto_lower if lower is None else lower, auto_upper if upper is None else upper)
+
 def lop_plotting_help():
     help_info = "Usage: plot_linear_optical_property \n" +\
                 "Demonstrate linear optical properties by each component \n" +\
@@ -127,7 +180,7 @@ def lop_plotting_help():
                 "\t layout: subfigures layout (horizontal<default>, vertical); \n" +\
                 "\t unit: x-axis unit (eV<default>, nm); \n" +\
                 "\t photon_boundary: x-axis range <optional>; \n" +\
-                "\t value_boundary: a-axis range <optional>; \n" +\
+                "\t value_boundary: y-axis range tuple or component-to-range dictionary <optional>; \n" +\
                 "\t figure_size: figure size <optional>. \n"
     return help_info
 
@@ -184,8 +237,8 @@ def plot_linear_optical_property_backup(suptitle, systems=None, properties=None,
             comp_aliases.append(list(components.values())[0])
         elif len(components) > 1:
             multi_comp_flag = True
-            comp_labels.append(list(components.keys()))
-            comp_aliases.append(list(components.values()))
+            comp_labels.extend(components.keys())
+            comp_aliases.extend(components.values())
     elif isinstance(components, list):
         if len(components) == 1:
             multi_comp_flag = False
@@ -201,9 +254,6 @@ def plot_linear_optical_property_backup(suptitle, systems=None, properties=None,
     if multi_comp_flag is False:
         comp_label = comp_labels[0]
         comp_aliase = comp_aliases[0]
-
-    ## boundaries processing
-    photon_start, photon_end = process_boundary_alt(photon_boundary)
 
     ## identify x-axis unit
     var_label = "wavelength" if unit and unit.lower() == "nm" else "energy"
@@ -285,37 +335,16 @@ def plot_linear_optical_property_backup(suptitle, systems=None, properties=None,
 
             # current component key and label
             current_component = comp_labels[component_index].lower()
-            data_key_real = f"density_{current_component}_real"
-            data_key_imag = f"density_{current_component}_imag"
 
             # curve plotting
             for _, data in enumerate(dataset):
-                supercell_thickness, system_thickness = data[6]
-                # print(data[6])
-                d_ratio = supercell_thickness/system_thickness
-                energy_real, density_energy_real_source = extract_part(data[1]["density_energy_real"], data[1][data_key_real], photon_start, photon_end)
-                energy_imag, density_energy_imag_source = extract_part(data[1]["density_energy_imag"], data[1][data_key_imag], photon_start, photon_end)
-                density_energy_real = density_energy_real_source * d_ratio - d_ratio + 1
-                density_energy_imag= density_energy_imag_source * d_ratio
-                frequency_real = energy_to_frequency(energy_real)
-                wavelength_real = energy_to_wavelength(energy_real)
-                if formula_flag == "absorption":
-                    variables = current_lop(formula_flag,frequency_real,density_energy_real,density_energy_imag)
-                else:
-                    variables = current_lop(formula_flag,density_energy_real,density_energy_imag)
-                if var_label == "energy":
-                    ax.plot(energy_real, variables, color=color_sampling(data[2])[1], ls=data[3], alpha=data[5], lw=data[4], label=data[0])
-                elif var_label == "wavelength":
-                    wavelength_real, wavelength_variables = extract_part(energy_to_wavelength(data[1]["density_energy_real"]), data[1][data_key_real], photon_start, photon_end)
-                    ax.plot(wavelength_real, wavelength_variables, color=color_sampling(data[2])[1], ls=data[3], alpha=data[5], lw=data[4], label=data[0])
+                x_values, variables = _optical_property_curve(
+                    data, current_component, formula_flag, unit, photon_boundary
+                )
+                ax.plot(x_values, variables, color=color_sampling(data[2])[1], ls=data[3], alpha=data[5], lw=data[4], label=data[0])
 
             # y boundary
-            y_min_source, y_max_source = ax.get_ylim()
-            # print(y_min_source, y_max_source)
-            y_low, y_hig = process_boundary_alt(value_boundary)
-            y_sup = y_max_source if y_hig is None else min(y_hig, y_max_source)
-            y_inf = y_min_source if y_low is None else y_low
-            ax.set_ylim(y_inf, y_sup)
+            _apply_value_boundary(ax, value_boundary, current_component)
 
             # Spectrum
             xmin, xmax = ax.get_xlim()
@@ -443,8 +472,8 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
             comp_aliases.append(list(components.values())[0])
         elif len(components) > 1:
             multi_comp_flag = True
-            comp_labels.append(list(components.keys()))
-            comp_aliases.append(list(components.values()))
+            comp_labels.extend(components.keys())
+            comp_aliases.extend(components.values())
     elif isinstance(components, list):
         if len(components) == 1:
             multi_comp_flag = False
@@ -460,9 +489,6 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
     if multi_comp_flag is False:
         comp_label = comp_labels[0]
         comp_aliase = comp_aliases[0]
-
-    ## boundaries processing
-    photon_start, photon_end = process_boundary_alt(photon_boundary)
 
     ## identify x-axis unit
     var_label = "wavelength" if unit and unit.lower() == "nm" else "energy"
@@ -552,37 +578,16 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
 
             # current component key and label
             current_component = comp_labels[component_index].lower()
-            data_key_real = f"density_{current_component}_real"
-            data_key_imag = f"density_{current_component}_imag"
 
             # curve plotting
             for _, data in enumerate(dataset):
-                supercell_thickness, system_thickness = data[6]
-                # print(data[6])
-                d_ratio = supercell_thickness/system_thickness
-                energy_real, density_energy_real_source = extract_part(data[1]["density_energy_real"], data[1][data_key_real], photon_start, photon_end)
-                energy_imag, density_energy_imag_source = extract_part(data[1]["density_energy_imag"], data[1][data_key_imag], photon_start, photon_end)
-                density_energy_real = density_energy_real_source * d_ratio - d_ratio + 1
-                density_energy_imag= density_energy_imag_source * d_ratio
-                frequency_real = energy_to_frequency(energy_real)
-                wavelength_real = energy_to_wavelength(energy_real)
-                if formula_flag == "absorption":
-                    variables = current_lop(formula_flag,frequency_real,density_energy_real,density_energy_imag)
-                else:
-                    variables = current_lop(formula_flag,density_energy_real,density_energy_imag)
-                if var_label == "energy":
-                    ax.plot(energy_real, variables, color=color_sampling(data[2])[1], ls=data[3], alpha=data[5], lw=data[4], label=data[0])
-                elif var_label == "wavelength":
-                    wavelength_real, wavelength_variables = extract_part(energy_to_wavelength(data[1]["density_energy_real"]), data[1][data_key_real], photon_start, photon_end)
-                    ax.plot(wavelength_real, wavelength_variables, color=color_sampling(data[2])[1], ls=data[3], alpha=data[5], lw=data[4], label=data[0])
+                x_values, variables = _optical_property_curve(
+                    data, current_component, formula_flag, unit, photon_boundary
+                )
+                ax.plot(x_values, variables, color=color_sampling(data[2])[1], ls=data[3], alpha=data[5], lw=data[4], label=data[0])
 
             # y boundary
-            y_min_source, y_max_source = ax.get_ylim()
-            # print(y_min_source, y_max_source)
-            y_low, y_hig = process_boundary_alt(value_boundary)
-            y_sup = y_max_source if y_hig is None else min(y_hig, y_max_source)
-            y_inf = y_min_source if y_low is None else y_low
-            ax.set_ylim(y_inf, y_sup)
+            _apply_value_boundary(ax, value_boundary, current_component)
 
             # Spectrum
             xmin, xmax = ax.get_xlim()
@@ -669,11 +674,11 @@ def plot_merged_linear_optical_property(suptitle, systems=None, properties=None,
         (component first, then system).
       3 If single component: keep dataset's original linestyle, color_sampling(...)[1].
         If multiple components: ignore original linestyle, use style_cycle + color index.
-        style_cycle = ["solid", "dashed", "dashdot", "dotted", "dashdotdotted",
-                       "dashed", "dashdot", "dotted", "dashdotdotted"]
+        The fifth and ninth components use an explicit dash-dot-dot pattern.
     """
     # Predefined style cycle for up to 9 components
-    style_cycle = ["solid","dashed","dashdot","dotted","dashdotdotted","dashed","dashdot","dotted","dashdotdotted"]
+    style_cycle = ["solid", "dashed", "dashdot", "dotted", (0, (3, 1, 1, 1, 1, 1)),
+                   "dashed", "dashdot", "dotted", (0, (3, 1, 1, 1, 1, 1))]
     # Help info
     if suptitle.lower() in ["help","support"]:
         help_info = lop_plotting_help()
@@ -747,7 +752,6 @@ def plot_merged_linear_optical_property(suptitle, systems=None, properties=None,
     plt.figure(figsize=fig_setting[0], dpi=fig_setting[1])
     params = fig_setting[2]
     plt.rcParams.update(params)
-    photon_start, photon_end = process_boundary_alt(photon_boundary)
     var_label = "wavelength" if unit and unit.lower()=="nm" else "energy"
     xaxis_str = "Photon wavelength (nm)" if var_label=="wavelength" else "Photon energy (eV)"
     plt.title(f"{suptitle}", fontsize=fig_setting[3][0])
@@ -756,43 +760,25 @@ def plot_merged_linear_optical_property(suptitle, systems=None, properties=None,
     if not multi_comp_flag:
         # Single component => use original linestyle + color_sampling(...)[1]
         current_component = comp_label.lower()
-        dkey_real = f"density_{current_component}_real"
-        dkey_imag = f"density_{current_component}_imag"
         for _, data_item in enumerate(dataset):
-            supercell_thickness, system_thickness = data_item[6]
-            d_ratio = supercell_thickness/system_thickness
-            e_real, den_e_real_source = extract_part(data_item[1]["density_energy_real"], data_item[1][dkey_real], photon_start, photon_end)
-            e_imag, den_e_imag_source = extract_part(data_item[1]["density_energy_imag"], data_item[1][dkey_imag], photon_start, photon_end)
-            den_e_real = den_e_real_source * d_ratio - d_ratio + 1
-            den_e_imag = den_e_imag_source * d_ratio
-            freq_real = energy_to_frequency(e_real)
-            variables = current_lop(formula_flag, freq_real, den_e_real, den_e_imag) if formula_flag=="absorption" else current_lop(formula_flag, den_e_real, den_e_imag)
+            x_values, variables = _optical_property_curve(
+                data_item, current_component, formula_flag, unit, photon_boundary
+            )
             clist = color_sampling(data_item[2])
             if len(clist)>1: line_color = clist[1]
             elif len(clist)>0: line_color = clist[0]
             else: line_color = "blue"
             line_style = data_item[3]
-            if var_label=="energy":
-                plt.plot(e_real, variables, color=line_color, ls=line_style, alpha=data_item[5], lw=data_item[4], label=f"{data_item[0]}")
-            else:
-                wl_real, wl_variables = extract_part(energy_to_wavelength(data_item[1]["density_energy_real"]), data_item[1][dkey_real], photon_start, photon_end)
-                plt.plot(wl_real, wl_variables, color=line_color, ls=line_style, alpha=data_item[5], lw=data_item[4], label=f"{data_item[0]}")
+            plt.plot(x_values, variables, color=line_color, ls=line_style, alpha=data_item[5], lw=data_item[4], label=f"{data_item[0]}")
     else:
         # Multiple components => ignore original linestyle, use style_cycle + color index logic
         for comp_idx, c_label in enumerate(comp_labels):
             c_alias = comp_aliases[comp_idx]
             ckey_lower = c_label.lower()
-            dkey_real = f"density_{ckey_lower}_real"
-            dkey_imag = f"density_{ckey_lower}_imag"
             for _, data_item in enumerate(dataset):
-                supercell_thickness, system_thickness = data_item[6]
-                d_ratio = supercell_thickness/system_thickness
-                e_real, den_e_real_source = extract_part(data_item[1]["density_energy_real"], data_item[1][dkey_real], photon_start, photon_end)
-                e_imag, den_e_imag_source = extract_part(data_item[1]["density_energy_imag"], data_item[1][dkey_imag], photon_start, photon_end)
-                den_e_real = den_e_real_source * d_ratio - d_ratio + 1
-                den_e_imag = den_e_imag_source * d_ratio
-                freq_real = energy_to_frequency(e_real)
-                variables = current_lop(formula_flag, freq_real, den_e_real, den_e_imag) if formula_flag=="absorption" else current_lop(formula_flag, den_e_real, den_e_imag)
+                x_values, variables = _optical_property_curve(
+                    data_item, ckey_lower, formula_flag, unit, photon_boundary
+                )
                 if comp_idx<9:
                     line_style = style_cycle[comp_idx]  # up to 9
                     color_idx = 1 if comp_idx<5 else 2  # first 5 => index1, next4 => index2
@@ -803,20 +789,10 @@ def plot_merged_linear_optical_property(suptitle, systems=None, properties=None,
                 line_color = clist[color_idx] if color_idx<len(clist) else "blue"
                 if data_item[0] not in ["", None]: line_label = f"{data_item[0]} ({c_alias})"
                 else: line_label = f"{data_item[0]} {c_alias}"
-                if var_label=="energy":
-                    plt.plot(e_real, variables, color=line_color, ls=line_style, alpha=data_item[5], lw=data_item[4], label=line_label)
-                else:
-                    wl_real, wl_variables = extract_part(energy_to_wavelength(data_item[1]["density_energy_real"]), data_item[1][dkey_real], photon_start, photon_end)
-                    plt.plot(wl_real, wl_variables, color=line_color, ls=line_style, alpha=data_item[5], lw=data_item[4], label=line_label)
+                plt.plot(x_values, variables, color=line_color, ls=line_style, alpha=data_item[5], lw=data_item[4], label=line_label)
 
     # y boundary
-    y_min_source, y_max_source = plt.ylim()
-    # print(y_min_source, y_max_source)
-    y_low, y_hig = process_boundary_alt(value_boundary)
-    y_low, y_hig = process_boundary_alt(value_boundary)
-    y_sup = y_max_source if y_hig is None else min(y_hig, y_max_source)
-    y_inf = y_min_source if y_low is None else y_low
-    plt.ylim(y_inf, y_sup)
+    _apply_value_boundary(plt.gca(), value_boundary, comp_label.lower() if not multi_comp_flag else None)
 
     # Spectrum
     xmin, xmax = plt.xlim()
