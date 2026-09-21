@@ -1,0 +1,1454 @@
+     Emergent Topological and Optical Properties in Pristine and
+     Hydrogen-Functionalized Two-Dimensional Beryllium Phases
+
+                 L. Niu,1 O. J. Conquest,1 H. Ma,1 C. Verdi,1, 2 and C. Stampfl1, ∗
+         1
+             School of Physics, The University of Sydney, Sydney, NSW 2006, Australia
+                               2
+                                   School of Mathematics and Physics,
+                  The University of Queensland, Brisbane, QLD 4072, Australia
+                                       (Dated: September 21, 2026)
+
+                                               Abstract
+    Two-dimensional elemental materials provide a unique platform for exploring electronic, optical,
+and topological phenomena arising from reduced dimensionality and modified bonding environ-
+ments. Here, using density functional theory calculations, we investigate the structural stability,
+electronic structure, optical response, and topological characteristics of pristine and hydrogen-
+functionalized beryllene systems, including monolayer α-beryllene, bilayer β-beryllene, and a newly
+identified cubic trilayer phase, together with bulk reference phases. In addition to confirming the
+stability of previously proposed α- and β-beryllene phases, we predict a dynamically stable cubic
+trilayer beryllene phase with distinct electronic and optical characteristics. Hydrogen functional-
+ization substantially modifies the structural and electronic properties, yielding stable hydrogen-
+terminated configurations and driving α-beryllene into a wide-gap semiconducting state, while
+preserving metallic behaviour in hydrogen-functionalized β-based structures. The calculated dielec-
+tric response reveals strong anisotropy and pronounced low-dimensional optical effects, including
+enhanced visible-to-ultraviolet absorption, modified plasmonic behaviour, and direction-dependent
+dielectric responses associated with collective electronic excitations. Furthermore, parity analysis of
+the spin-orbit-coupled electronic states demonstrates that, beyond previously reported α-beryllene,
+the cubic trilayer phase also exhibits a non-trivial Z2 topological invariant, indicating the emer-
+gence of topologically protected electronic states in a light-element system. These results highlight
+beryllene as an unusual elemental two-dimensional platform combining metallicity, tunable opti-
+cal properties, and non-trivial topology, with potential relevance for future nanoscale electronic,
+photonic, and quantum technologies.
+
+
+∗
+    catherine.stampfl@sydney.edu.au
+
+
+                                                  1
+I.    INTRODUCTION
+
+
+     Two-dimensional materials have reshaped modern materials science by enabling access
+to electronic, thermal, and mechanical properties that differ substantially from those of
+their bulk counterparts. Since the isolation of graphene, reduced dimensionality has been
+shown to give rise to Dirac fermions, enhanced carrier mobility, strong many-body inter-
+actions, tuneable band structures, and anomalous phonon transport [1, 2]. These effects
+support rapid progress in nanoelectronics, optoelectronics, sensing, thermal management,
+and quantum technologies.
+     Beyond graphene, the discovery and prediction of atomically thin materials has expanded
+to include transition-metal dichalcogenides, hexagonal boron nitride, black phosphorus, and
+elemental two-dimensional materials, commonly referred to as Xenes [3, 4]. Elemental two-
+dimensional materials are particularly attractive because their chemically simple nature
+allows intrinsic structure-property relationships to be studied without the complexity intro-
+duced by multicomponent bonding. However, most experimentally realized Xenes are com-
+posed of relatively heavy elements, where strong spin-orbit coupling, substrate effects, or
+structural buckling dominate the physics and may obscure low-energy electronic behaviour.
+     In contrast, beryllium represents an extreme and largely unexplored limit within the
+family of elemental two-dimensional materials. As the lightest alkaline-earth metal, bulk
+beryllium exhibits a unique combination of low density, high elastic modulus, high ther-
+mal conductivity, and transparency to X-rays and neutrons. These properties have led to
+its use in aerospace, nuclear, and optical applications [5]. Extending elemental beryllium
+into the two-dimensional limit raises the prospect of ultralight metallic layers with uncon-
+ventional electronic and thermal properties governed by reduced dimensionality and strong
+confinement.
+     First-principles studies predicted that atomically thin beryllium could exist in metastable
+hexagonal or stable two-layer hexagonal lattice configurations [6, 7]. However, for many
+years, two-dimensional beryllium remained a theoretical construct due to experimental chal-
+lenges associated with synthesis and handling. This situation changed recently with the
+experimental realization of two-dimensional beryllium, termed beryllene. Chahal et al. re-
+ported the first experimental synthesis and characterization of beryllene using a sonochem-
+ical exfoliation approach starting from elemental beryllium powder [8]. High-resolution
+
+                                               2
+transmission electron microscopy revealed atomically thin sheets with multiple structural
+motifs, including hexagonal and square-like lattice geometries. Raman spectroscopy and
+electron diffraction confirmed crystallinity, while electrical measurements demonstrated in-
+trinsic metallic conductivity.
+   Subsequent theoretical investigations have uncovered striking thermal transport be-
+haviour in hexagonal monolayer beryllene. Using first-principles phonon calculations com-
+bined with the Boltzmann transport equation, Chowdhury and Mogurampelly predicted an
+exceptionally high in-plane lattice thermal conductivity of approximately 270 W m−1 K−1
+at room temperature, which exceeds that of bulk beryllium [9]. This enhancement was
+attributed to suppressed phonon-phonon scattering and the dominant contribution of long-
+wavelength flexural phonons, a feature rarely observed in atomically thin metallic systems.
+These results suggest that two-dimensional beryllium could serve as an efficient heat-
+spreading material in nanoscale electronic architectures.
+   Beyond thermal properties, the electronic structure of beryllene has been predicted to
+host non-trivial quantum features. Several density functional theory studies have identified
+Dirac-like band crossings near the Fermi level in hexagonal monolayer and bilayer beryl-
+lene, usually denoted as α- and β-beryllene, arising from symmetry-protected s-p orbital
+hybridization [10]. Electron-phonon coupling calculations further suggest that these phases
+may support phonon-mediated superconductivity with critical temperatures on the order of
+10 K. The coexistence of Dirac fermions and superconductivity in an ultralight elemental
+monolayer distinguishes beryllene from both graphene and heavier Xenes, and highlights its
+potential as a platform for low-dimensional quantum phenomena.
+   The possibility of topological behaviour in two-dimensional beryllium has also been ex-
+plored from a more fundamental perspective. Derriche et al. demonstrated that light-
+element lattices dominated by charge-based interactions can host topologically protected
+electronic states even in the absence of strong spin-orbit coupling [11]. These findings sug-
+gest that beryllene may realize topological phases driven mainly by lattice symmetry and
+orbital physics, offering an alternative route to low-dissipation electronic states without re-
+lying on heavy elements. While experimental studies of beryllene remain limited, earlier
+work on ultrathin beryllium films and nanostructures has revealed unconventional quantum
+transport behaviour, including strong disorder effects and superconducting correlations at
+low temperatures [12].
+
+                                             3
+   Two-dimensional topological materials are considered promising for quantum and elec-
+tronic technologies because their non-trivial band topology gives rise to robust, symmetry-
+protected edge states that resist disorder and backscattering [13]. Recent density functional
+theory studies have shown that simple elemental two-dimensional systems can host switch-
+able or adsorbate-induced topological behaviour. For example, interlayer sliding in bilayer
+elemental bismuth was predicted to switch the system between topologically trivial and non-
+trivial phases [14]. Similarly, hydrogenation and strain can tune monolayer arsenene into a
+quantum spin Hall state with a sizable band gap [15]. These studies indicate that structural
+control and adsorbate functionalization can provide practical routes to topological phases
+in elemental two-dimensional materials.
+
+   Although two-dimensional elemental beryllium has recently been realized experimentally
+and shown to exhibit unusual electronic and thermal properties, its interaction with hydrogen
+has received much less attention. First-principles investigations of hydrogen adsorption
+on low-index hexagonal close-packed beryllium surfaces, particularly Be(0001), show that
+hydrogen binds preferentially to high-symmetry adsorption sites with moderate binding
+energies and induces appreciable local lattice relaxation [16]. These results indicate that
+beryllium-hydrogen interactions occupy an intermediate regime between weak physisorption
+and strong ionic hydride formation. In the two-dimensional limit, reduced coordination
+and enhanced lattice flexibility are expected to modify this balance, potentially stabilizing
+adsorption geometries or electronic reconstructions that are inaccessible on bulk surfaces.
+Using global structure search and density functional theory calculations, two stable beryllium
+hydride monolayers were predicted with multicentre beryllium-hydrogen bonding motifs and
+wide band gaps [17]. Although such systems correspond to compound formation rather
+than surface termination, they demonstrate that hydrogen can strongly reshape bonding
+and electronic behaviour in low-dimensional beryllium-based systems.
+
+   In this work, we use density functional theory calculations to investigate the atomic, elec-
+tronic, optical, and topological properties of pristine and hydrogen-functionalized beryllene
+systems. The results identify stable hydrogen-functionalized structures and a cubic tri-
+layer geometry with non-trivial Z2 topology. The optical properties demonstrate direction-
+dependent and dimensionality-dependent response, together with plasmon-related features
+and visible-to-ultraviolet absorption.
+
+                                             4
+II.     COMPUTATIONAL METHODS
+
+
+      The density functional theory calculations are performed using the Vienna Ab initio
+Simulation Package, VASP [18–21]. The projector augmented wave method is used to de-
+scribe the electron-ion interactions [22]. The generalized gradient approximation of Perdew–
+Burke–Ernzerhof is employed for the exchange-correlation functional [23], along with the D3
+dispersion correction with Becke–Johnson damping to account for long-range van der Waals
+interactions [24–26].
+      For bulk hexagonal close-packed beryllium and bulk body-centred cubic beryllium, a Γ-
+centered k-point mesh of 27 × 27 × 27 is used for the total energy and structural relaxation
+calculations. A 105 × 105 × 105 mesh is used for the calculation of the complex dielectric
+function. A plane-wave energy cutoff of 600 eV is used for all calculations except the topolog-
+ical calculations described below. The electronic convergence criterion is set to 1 × 10−6 eV,
+                                                                                      −1
+and the structures are relaxed until all forces on each atom are below 0.01 eV Å . For the
+two-dimensional systems, a vacuum region of 40 Å is included. A k-point mesh of 27 × 27 × 1
+is used for the hexagonal structures, whereas a 25 × 25 × 1 mesh is used for the cubic struc-
+tures. For all two-dimensional systems, a 105 × 105 × 1 mesh is used for the calculation of
+the complex dielectric function. Convergence tests for the cohesive and total energies, as
+well as for the dielectric function with respect to the k-point set and the number of bands
+included through NBANDS, are provided in figures S1–S12 of the Supplementary Information.
+      The dynamical stability of the structures is examined using finite-difference phonon calcu-
+lations with 5 × 5 supercells. The finite-temperature stability of the hydrogen-functionalized
+structures is further examined using ab initio molecular dynamics simulations.
+      The adsorption energy per hydrogen atom, Ead , is calculated as:
+
+
+                                            EH/Be − EBe − EH
+                                    Ead =                                                    (1)
+                                                   nH
+
+      here, EH/Be is the total energy of the hydrogen-functionalized system, EBe is the total
+energy of the corresponding pristine two-dimensional beryllium structure, EH is the energy
+per hydrogen atom in an isolated H2 molecule, and nH is the number of hydrogen atoms in
+the unit cell.
+      The cohesive energy per atom, Ec , of the beryllium systems is calculated as:
+
+                                                5
+                                       EBe-struc − nBe EBe-atom
+                                   Ec =                                                    (2)
+                                                  nBe
+   here, EBe-struc is the total energy of the beryllium structure of interest, EBe-atom is the
+total energy of a free beryllium atom calculated in a large supercell, and nBe is the number
+of beryllium atoms in the unit cell.
+   For the topological calculations, we use an energy cutoff of 520 eV, a 24 × 24 × 1 k-
+point mesh, and a vacuum region of 15 Å. The self-consistent convergence criterion is set
+to 1 × 10−7 eV, and Gaussian smearing of 0.02 eV is used. Spin-orbit coupling is included
+in the band-structure and parity calculations. The parity eigenvalues of the spinor wave
+functions are calculated using irvsp [27]. For a time-reversal invariant momentum Λi , the
+parity product is given by:
+
+                                                 Nocc /2
+                                                  Y
+                                          δi =             ξ2m (Λi )                       (3)
+                                                  m=1
+
+   here, ξ2m (Λi ) = ±1 is the parity eigenvalue of one state in the mth Kramers pair at Λi .
+The Z2 index is then obtained from the Fu–Kane product [28, 29]:
+
+                                                           Y
+                                           (−1)ν =               δi                        (4)
+                                                             i
+   here, ν = 1 denotes non-trivial topology, whereas ν = 0 denotes trivial topology.
+   For the optical calculations, we calculate the frequency-dependent dielectric tensor ϵαβ (ω)
+within VASP. The complex dielectric tensor is written as:
+
+
+                                ϵαβ (ω) = ϵ1,αβ (ω) + iϵ2,αβ (ω)                           (5)
+
+   here, ϵ1,αβ (ω) and ϵ2,αβ (ω) are the real and imaginary parts, respectively, and ω denotes
+the photon energy. Within the long-wavelength independent-particle approximation, the
+imaginary part is calculated as [30, 31]:
+
+
+
+                      ϵ2,αβ (ω) = Im ϵαβ (ω)
+                                   4π 2 e2     1 X
+                               =           lim 2   2ωk δ(Eck − Evk − ω)
+                                     Ω q→0 q c,v,k
+
+                                   × ⟨uc,k+eα q |uvk ⟩ uvk uc,k+eβ q                       (6)
+
+
+                                                    6
+   here, k is the electron wavevector, ωk is the k-point weight, q is the Bloch vector of the
+incident wave, and Ω is the unit cell volume. The indices v and c denote the valence and
+conduction bands, respectively; uvk and uck are the cell-periodic parts of the corresponding
+orbitals; eα and eβ are unit vectors along the Cartesian directions; and Evk and Eck are the
+valence band and conduction band energies.
+   The real part is obtained by applying the Kramers–Kronig transformation:
+
+                                                         Z ∞
+                                                 2                     ω ′ ϵ2,αβ (ω ′ )
+                   ϵ1,αβ (ω) = Re ϵαβ (ω) = δαβ + P            dω ′                          (7)
+                                                 π         0          ω ′2 − ω 2 + iη
+   here, δαβ is the Kronecker delta, P denotes the Cauchy principal value, and η is the
+complex shift, with η = 0.1 in the present calculations.
+   Along a principal direction λ, the tensor indices are suppressed and the complex refrac-
+tive index is written as Nλ (ω) = nλ (ω) + ikλ (ω), with Nλ2 (ω) = ϵλλ (ω). The absorption
+coefficient, refractive index, extinction coefficient, reflectivity, and energy-loss spectrum are
+then obtained from the dielectric function as follows [30]:
+
+                               √ hq                                 i1/2
+                                2ω  2           2
+                      αλ (ω) =     ϵ1,λλ (ω) + ϵ2,λλ (ω) − ϵ1,λλ (ω)                         (8)
+                                c
+
+                                 q                                         1/2
+                                      ϵ21,λλ (ω) + ϵ22,λλ (ω) + ϵ1,λλ (ω)
+                        nλ (ω) =                                                           (9)
+                                                     2
+
+                                 q                                    1/2
+                                   ϵ21,λλ (ω) + ϵ22,λλ (ω) − ϵ1,λλ (ω)
+                        kλ (ω) =                                                          (10)
+                                                    2
+
+                                         [nλ (ω) − 1]2 + kλ2 (ω)
+                                Rλ (ω) =                                                    (11)
+                                         [nλ (ω) + 1]2 + kλ2 (ω)
+                                             
+                                         1              ϵ2,λλ (ω)
+                        Lλ (ω) = Im −           = 2                                         (12)
+                                      ϵλλ (ω)    ϵ1,λλ (ω) + ϵ22,λλ (ω)
+   here, c is the speed of light in vacuum.
+   For a two-dimensional structure represented by a periodically repeated supercell, the
+calculated dielectric tensor contains the combined response of the material and the vac-
+uum region. We therefore restore the intrinsic dielectric function of each two-dimensional
+structure using the dielectric-function renormalization method of Yang and Gao [32]:
+
+                                                7
+                                                          dSC
+                                         (ϵ2 )2D =            (ϵ2 )SC                                              (13)
+                                                          d2D
+
+                                                       dSC
+                                  (ϵ1 )2D = 1 +            [(ϵ1 )SC − 1]                                           (14)
+                                                       d2D
+    here, (ϵi )2D and (ϵi )SC , with i = 1, 2, are the intrinsic dielectric function of the two-
+dimensional structure and the dielectric function of the full supercell, respectively; dSC is
+the length of the supercell normal to the two-dimensional structure; and d2D is the thickness
+assigned to the structure. The values of d2D and the values of NBANDS used in the dielectric
+function calculations are provided in the Supplementary Information.
+
+
+III.     RESULTS AND DISCUSSION
+
+
+    A.      Atomic structure
+
+
+    We first examine the atomic structures of the bulk reference phases, pristine two-
+dimensional beryllium phases, and hydrogen-functionalized beryllene structures considered
+in this work. The bulk reference structures are shown in figure 1, whereas the pristine
+two-dimensional structures are shown in figure 2. The hydrogen-functionalized structures
+are shown in figure 3.
+
+ Top view of bulk hcp beryllium   Side view of bulk hcp beryllium          Equivalent view of bulk bcc beryllium
+
+
+
+
+FIG. 1. Atomic structures of the bulk beryllium phases. Left and middle: top and side views of
+bulk hcp beryllium; Right: equivalent view of bulk bcc beryllium.
+
+
+    Bulk beryllium is known experimentally to adopt the hexagonal close-packed structure
+under ambient conditions, whereas the body-centred cubic phase has been predicted at high
+pressure but has not been conclusively observed experimentally. We include this phase as a
+bulk reference structure. The optimized cohesive energy of bulk hcp beryllium is −3.73 eV
+
+                                                      8
+per atom, which is 0.10 eV per atom lower than that of bulk bcc beryllium. These two
+bulk phases provide useful reference points for comparing the bonding geometry, electronic
+structure, and optical response of the low-dimensional beryllium systems discussed below.
+
+ Top view of -beryllene           Top view of -beryllene           Top view of cubic beryllene trilayer
+
+
+
+
+ Side view of -beryllene          Side view of -beryllene          Side view of cubic beryllene trilayer
+
+
+
+
+FIG. 2. Atomic structures of the pristine two-dimensional beryllium phases. Left: top and side
+views of α-beryllene; Middle: top and side views of β-beryllene; Right: top and side views of cubic
+trilayer beryllene.
+
+
+    Among the pristine two-dimensional phases, α-beryllene and β-beryllene correspond to
+the previously proposed hexagonal monolayer and bilayer forms of beryllene. α-beryllene
+forms a planar hexagonal network, where each beryllium atom bonds to six neighbouring
+beryllium atoms. β-beryllene can be regarded as a bilayer form of α-beryllene, where beryl-
+lium atoms in the upper layer sit above hollow sites of the lower layer. In addition to these
+known phases, we also identify a cubic trilayer beryllene structure. This structure adopts an
+AB stacking arrangement, where the beryllium atoms in the central layer are located at the
+hollow sites of the upper and lower layers. It therefore provides a distinct structural motif
+within the same elemental system.
+    The cohesive energies of α-beryllene, β-beryllene, and cubic trilayer beryllene are 0.79 eV,
+0.44 eV, and 0.43 eV per atom less favourable than that of bulk hcp beryllium, respectively.
+Compared with bulk hcp beryllium, the in-plane lattice constants of α-beryllene and β-
+beryllene are reduced by 6.0 % and 6.4 %, respectively. The interlayer beryllium–beryllium
+distance in β-beryllene is 6.5 % larger than that in bulk hcp beryllium. For cubic trilayer
+beryllene, the in-plane lattice constant is 0.8 % larger than that of bulk bcc beryllium,
+
+                                                      9
+whereas the interlayer distance is reduced by 17 %.
+    We also tested two-layer and four-layer cubic beryllene structures, as well as graphene-
+like beryllium layers from one to four layers. These structures were found to be dynamically
+unstable from the phonon dispersion calculations, and are therefore not discussed further.
+
+ Top view of 2H -beryllene                 Top view of 1H -beryllene                 Top view of 2H -beryllene
+
+
+
+
+ Side view of 2H -beryllene along x-axis   Side view of 1H -beryllene along x-axis   Side view of 2H -beryllene along x-axis
+
+
+
+
+ Side view of 2H -beryllene along y-axis   Side view of 1H -beryllene along y-axis   Side view of 2H -beryllene along y-axis
+
+
+
+
+FIG. 3. Atomic structures of the hydrogen-functionalized beryllene phases. Left: double-sided
+hydrogen-terminated α-beryllene; Middle: single-sided hydrogen-terminated β-beryllene; Right:
+double-sided hydrogen-terminated β-beryllene. Upper row: top views; Middle and lower rows:
+side views along the x and y axes, respectively.
+
+
+    We then consider hydrogen functionalization of the two-dimensional phases. For α-
+beryllene, we consider the double-sided hydrogen-terminated configuration. For β-beryllene,
+both single-sided and double-sided hydrogen-terminated configurations are considered.
+These hydrogen-functionalized structures preserve the underlying beryllium framework but
+modify the local bonding environment around the surface beryllium atoms. As a result,
+hydrogen adsorption is expected to affect the energetic stability, electronic structure, and
+optical response of the corresponding beryllene phases.
+    The optimized structural parameters, cohesive energies, and adsorption energies provide
+
+                                                              10
+the structural basis for the dynamical, electronic, topological, and optical analyses below.
+
+
+
+   B.   Dynamical stability and phonon dispersion
+
+
+   We then evaluate the dynamical stability of the beryllium structures using phonon disper-
+sion calculations. The phonon dispersion curves are calculated using finite differences with
+5 × 5 supercells. The bulk hcp and bulk bcc structures are dynamically stable, as are the
+pristine α-beryllene and β-beryllene structures, as shown in figure S13 of the Supplementary
+Information. This result is consistent with previous reports on α- and β-beryllene.
+   Hydrogen functionalization can modify the structural and electronic properties of a two-
+dimensional material by changing the local bonding environment. We therefore examine
+hydrogen adsorption on the beryllene structures. Among the hydrogen adsorption configu-
+rations considered, the structures that satisfy both energetic and dynamical stability crite-
+ria are double-sided hydrogen-terminated α-beryllene, single-sided hydrogen-terminated β-
+beryllene, and double-sided hydrogen-terminated β-beryllene. For brevity, we denote these
+structures as 2H-α-beryllene, 1H-β-beryllene, and 2H-β-beryllene, respectively.
+   The phonon dispersion curves of cubic trilayer beryllene and the hydrogen-functionalized
+structures are shown in figure 4. No significant imaginary frequencies appear in these spectra,
+which indicates that cubic trilayer beryllene, 2H-α-beryllene, 1H-β-beryllene, and 2H-β-
+beryllene are dynamically stable. The Brillouin zones used for these phonon paths are
+shown in figure S14 of the Supplementary Information.
+   We further examine the finite-temperature stability of the hydrogen-functionalized struc-
+tures using ab initio molecular dynamics simulations. The AIMD trajectories and the cor-
+responding atomic structures are shown in figure 5. For all three hydrogen-functionalized
+structures, the total energy fluctuates around a stable average value, and the temperature
+remains close to the target range during the simulation. The corresponding atomic snap-
+shots preserve the beryllene frameworks without structural collapse. These results support
+the finite-temperature stability of the hydrogen-functionalized phases.
+   The optimized structural parameters of the hydrogen-functionalized structures are listed
+in table I. For 2H-α-beryllene, the in-plane lattice constant increases from 2.129 Å in pristine
+α-beryllene to 2.322 Å after hydrogen adsorption. For 1H-β-beryllene, hydrogen adsorption
+breaks the hexagonal symmetry: the two in-plane lattice constants become 2.322 Å and
+
+                                              11
+                           30
+                                        Phonon dispersion for cubic beryllene trilayer                              60
+                                                                                                                                  double-sided H-terminated -beryllene
+
+                           25                                                                                       50
+
+                                                                                                                    40
+                           20
+
+
+
+         Frequency (THz)                                                                          Frequency (THz)
+                                                                                                                    30
+                           15
+                                                                                                                    20
+                           10
+                                                                                                                    10
+
+                            5                                                                                        0
+
+                            0                           M                  X                                        10                        K             M
+
+                            60
+                                                  H-terminated -beryllene                                           60
+                                                                                                                               Double-sided H-terminated -beryllene
+
+                            50                                                                                      50
+
+                            40                                                                                      40
+
+
+
+
+         Frequency (THz)                                                                          Frequency (THz)
+                            30                                                                                      30
+
+                            20                                                                                      20
+
+                            10                                                                                      10
+
+                                0                                                                                    0
+
+                            10S     X                        S   X1                      Y   X1                     10S    X                      S   X1                 Y   X1
+
+
+FIG. 4. Phonon dispersion curves of cubic trilayer beryllene and the hydrogen-functionalized
+beryllene structures. Upper left: cubic trilayer beryllene; Upper right: 2H-α-beryllene; Lower left:
+1H-β-beryllene; Lower right: 2H-β-beryllene.
+
+
+2.099 Å, with an angle of 117◦ between the lattice vectors. For 2H-β-beryllene, the two lattice
+vectors have the same magnitude of 2.590 Å, with an angle of 133◦ . This geometry forms a
+rhombic lattice. The hydrogen adsorption energies are −3.70 eV, −3.46 eV, and −3.55 eV for
+2H-α-beryllene, 1H-β-beryllene, and 2H-β-beryllene, respectively. These negative adsorption
+energies indicate that all three hydrogen-functionalized structures are stable with respect to
+molecular hydrogen.
+
+
+       system                                 a          b       interlayer Be-Be (Å) H-Be (Å) Ead (eV) angle electronic nature
+
+  2H-α-beryllene 2.322 2.322                                                      –                                       1.599          −3.70             120◦    semiconductor
+   1H-β-beryllene 2.322 2.099                                                  1.849                                      1.450          −3.46             117◦          metallic
+   2H-β-beryllene 2.590 2.590                                                  1.786                                      1.455          −3.55             133◦          metallic
+
+TABLE I. Lattice vectors a and b, interlayer Be-Be distance, H-Be bond length, hydrogen ad-
+sorption energy Ead , angle between the two in-plane lattice vectors, and electronic nature of the
+hydrogen-functionalized beryllene structures. The lattice vectors, interlayer Be-Be distance, and
+H-Be bond length are given in Å, while the adsorption energy is given in eV.
+
+
+
+
+                                                                                             12
+                      255                                                                      247                                                                  339
+                      256                                                                      248
+                                                                                                                                                                    340
+
+
+Energy (eV)                                                              Energy (eV)                                                          Energy (eV)
+                                                                                               249
+                      257                                                                                                                                           341
+                                                                                               250
+                      258                                                                                                                                           342
+                                                                                               251
+                                                                                                                                                                    343
+                      259                                                                      252
+                                                                                                                                                                    344
+                                                                                               253
+                      600                                                                      600                                                                  600
+
+                      500                                                                      500                                                                  500
+
+
+
+    Temperature (K)                                                          Temperature (K)                                                      Temperature (K)
+                      400                                                                      400                                                                  400
+
+                      300                                                                      300                                                                  300
+
+                      200                                                                      200                                                                  200
+
+                      1000       1000   2000        3000   4000   5000                         1000   1000   2000        3000   4000   5000                         1000   1000   2000        3000   4000   5000
+                                               Time (fs)                                                            Time (fs)                                                            Time (fs)
+
+               Top view                                                                 Top view                                                             Top view
+
+
+
+
+              Side view                                                                Side view                                                            Side view
+
+
+
+
+     FIG. 5. Ab initio molecular dynamics simulations and corresponding atomic structures of the
+     hydrogen-functionalized beryllene phases. Left: 2H-α-beryllene; Middle: 1H-β-beryllene; Right:
+     2H-β-beryllene. The upper row shows the total energy and temperature as functions of simulation
+     time, and the lower row shows the corresponding top and side views of the atomic structures.
+
+
+
+                            C.     Electronic properties
+
+
+                            We now examine the electronic properties of pristine and hydrogen-functionalized beryl-
+     lene structures. The band structures of pristine α-beryllene and β-beryllene are shown in
+     figure S15 of the Supplementary Information, and agree well with previous calculations [10].
+     The band structures of cubic trilayer beryllene and the hydrogen-functionalized structures
+     are shown in figure 6.
+
+                            The cubic trilayer beryllene structure shows metallic behaviour, with multiple bands
+     crossing the Fermi level. The bands near the Fermi level show moderate dispersion, which
+     suggests delocalized electronic states and good in-plane conductivity. Around the Γ, M,
+     and X points, noticeable band splitting appears, consistent with interlayer coupling in the
+     trilayer structure. The coexistence of relatively flat bands and dispersive unoccupied bands
+     at higher energies further indicates a mixture of localized and itinerant electronic states.
+
+                                                                                                              13
+   Hydrogen functionalization changes the electronic structure differently for the α and β
+phases. For 2H-α-beryllene, the band structure shows a wide indirect band gap exceeding
+4.0 eV at the PBE level. Since PBE generally underestimates band gaps, the actual gap is
+expected to be larger. In contrast, both 1H-β-beryllene and 2H-β-beryllene remain metallic,
+with bands crossing the Fermi level. These results show that hydrogen functionalization
+opens a large gap in α-beryllene, whereas the hydrogen-functionalized β-based structures
+preserve their metallic character.
+
+                       8
+                            cubic beryllene trilayer                          8
+                                                                                   double-sided H-terminated -beryllene
+                       6                                                      6
+
+                       4                                                      4
+
+                       2                                                      2
+
+
+         Energy (eV)                                            Energy (eV)
+                       0                                                      0
+
+                       2                                                      2
+
+                       4                                                      4
+
+                       6                                                      6
+
+                       8         M                     X                      8                  K          M
+
+                       8
+                            H-terminated -beryllene                           8
+                                                                                   Double-sided H-terminated -beryllene
+                       6                                                      6
+
+                       4                                                      4
+
+                       2                                                      2
+
+
+         Energy (eV)                                            Energy (eV)
+                       0                                                      0
+
+                       2                                                      2
+
+                       4                                                      4
+
+                       6                                                      6
+
+                       8K       M      K     K     M       K                  8K             M         K     K   M        K
+
+
+FIG. 6. Band structures of cubic trilayer beryllene and the hydrogen-functionalized beryllene
+structures. Upper left: cubic trilayer beryllene; Upper right: 2H-α-beryllene; Lower left: 1H-β-
+beryllene; Lower right: 2H-β-beryllene.
+
+
+   The density of states further supports the band-structure interpretation. Figure 7 com-
+pares the total density of states of bulk bcc beryllium and cubic trilayer beryllene. The
+cubic trilayer structure has a finite density of states at the Fermi level, consistent with its
+metallic band structure.
+   The total and projected densities of states of pristine and hydrogen-functionalized beryl-
+lene structures are shown in figure 8. For 2H-α-beryllene, the density of states vanishes
+around the Fermi level, consistent with the wide-gap semiconducting band structure. For
+1H-β-beryllene and 2H-β-beryllene, the finite density of states at the Fermi level confirms
+their metallic behaviour. The projected densities of states show strong hybridization among
+beryllium s and p states, together with the hydrogen 1s state in the hydrogen-functionalized
+
+                                                           14
+                                                                      4.0
+                                                                                                              DoS for cubic family
+                                                                                  bulk bcc beryllium
+                                                                                  cubic beryllene trilayer
+                                                                      3.5         Fermi energy
+                                                                      3.0
+
+
+
+
+                                                  Density of States
+                                                                      2.5
+                                                                      2.0
+                                                                      1.5
+                                                                      1.0
+                                                                      0.5
+                                                                      0.0 8               6           4            2                 0                       2              4            6            8
+                                                                                                                       Energy (eV)
+
+
+        FIG. 7. Total density of states of bulk bcc beryllium and cubic trilayer beryllene.
+
+
+
+structures. This hybridization reflects the modification of the local bonding environment
+after hydrogen functionalization.
+
+
+
+                             3.5
+                                                                                  Total DoS                                                     3.0
+                                                                                                                                                            PDoS for double-sided H-terminated -beryllene
+                                      -beryllene                                                                                                                                                              Total DOS
+                                     2H-terminated -beryllene                                                                                                                                                 Total PDoS
+                             3.0      -beryllene                                                                                                2.5                                                           p for Be
+                                     H-terminated -beryllene                                                                                                                                                  s for Be
+                                     2H-terminated -beryllene                                                                                                                                                 p for H
+                             2.5     Fermi energy                                                                                                                                                             s for H
+                                                                                                                                                2.0
+
+
+
+         Density of States                                                                                                  Density of States
+                                                                                                                                                                                                              Fermi energy
+                             2.0
+                                                                                                                                                1.5
+                             1.5
+                                                                                                                                                1.0
+                             1.0
+
+                             0.5                                                                                                                0.5
+
+                             0.0 8         6                  4               2       0         2         4    6        8                       0.0 4        3          2       1       0         1       2    3             4
+                                                                                  Energy (eV)                                                                                       Energy (eV)
+                                                        PDoS for H-terminated -beryllene                                                        2.00
+                                                                                                                                                             PDoS for double-sided H-terminated -beryllene
+                             1.4     Total DOS                                                                                                           Total DOS
+                                     Total PDoS                                                                                                          Total PDoS
+                                     p for upper Be                                                                                             1.75     p for Be
+                             1.2     s for upper Be                                                                                                      s for Be
+                                     p for lower Be                                                                                             1.50     p for H
+                                     s for lower Be                                                                                                      s for H
+                             1.0
+
+
+
+         Density of States                                                                                                  Density of States
+                                     p for H                                                                                                    1.25     Fermi energy
+                                     s for H
+                             0.8     Fermi energy
+                                                                                                                                                1.00
+                             0.6                                                                                                                0.75
+                             0.4                                                                                                                0.50
+                             0.2                                                                                                                0.25
+                             0.0 4         3                  2               1       0         1         2    3        4                       0.00 4        3         2       1        0        1       2    3             4
+                                                                                  Energy (eV)                                                                                       Energy (eV)
+
+
+FIG. 8. Total and projected densities of states for pristine and hydrogen-functionalized beryllene
+structures. Upper left: total density of states; Upper right: projected density of states of 2H-α-
+beryllene; Lower left: projected density of states of 1H-β-beryllene; Lower right: projected density
+of states of 2H-β-beryllene.
+
+
+
+
+                                                                                                                       15
+   D.   Topological properties
+
+
+   Previous studies reported non-trivial topology in α-beryllene, whereas β-beryllene was
+classified as topologically trivial [10]. Since these beryllene structures have inversion sym-
+metry, we verify their topological character using the Z2 invariant calculated from the parity
+eigenvalues of the occupied spin-orbit-coupled states at the time-reversal invariant momenta.
+We also apply the same analysis to cubic trilayer beryllene.
+   For these calculations, we use an energy cutoff of 520 eV, a 24 × 24 × 1 k-point mesh, and
+a vacuum region of 15 Å. The self-consistent convergence criterion is set to 1 × 10−7 eV, and
+Gaussian smearing of 0.02 eV is used. Spin-orbit coupling is included in the band-structure
+and parity calculations. The parity eigenvalues of the spinor wave functions are calculated
+using irvsp [27].
+   For a time-reversal invariant momentum Λi , the parity product is given by:
+
+                                            Nocc /2
+                                             Y
+                                     δi =             ξ2m (Λi )                            (15)
+                                             m=1
+
+   here, ξ2m (Λi ) = ±1 is the parity eigenvalue of one state in the mth Kramers pair at Λi .
+The Z2 index is then obtained from the Fu–Kane product [28, 29]:
+
+                                                      Y
+                                       (−1)ν =              δi                             (16)
+                                                        i
+
+   here, ν = 1 denotes a non-trivial topology, whereas ν = 0 denotes a trivial topology.
+   The calculated parity eigenvalues, parity products, Z2 indices, and topological classi-
+fications are listed in table II. For α-beryllene and β-beryllene, the three M points are
+equivalent by symmetry, so the Fu–Kane product reduces to (−1)ν = δΓ (δM )3 = δΓ δM . For
+cubic trilayer beryllene, the two X points contribute as (δX )2 , and the product reduces to
+(−1)ν = δΓ δM (δX )2 = δΓ δM .
+   For α-beryllene, the parity products at the Γ and M points have opposite signs. The
+Fu–Kane product is therefore (−1)ν = −1, which gives ν = 1 and confirms the non-
+trivial topology previously reported for this phase. For β-beryllene, the parity products
+give (−1)ν = +1, which gives ν = 0 and confirms that this phase is topologically trivial. For
+cubic trilayer beryllene, the parity products again change sign between the Γ and M points,
+giving (−1)ν = −1 and ν = 1. Therefore, cubic trilayer beryllene is also a non-trivial Z2
+
+                                              16
+                structure                 Γ                M          product ν classification
+
+               α-beryllene              +, +              +, −          −1    1 non-trivial
+               β-beryllene            +, −, +, −        −, +, +, −      +1    0     trivial
+         cubic trilayer beryllene −, +, +, +, −, + −, +, −, +, −, +     −1    1 non-trivial
+
+TABLE II. Parity eigenvalues at the time-reversal invariant momenta, parity products, Z2 indices,
+and topological classifications for α-beryllene, β-beryllene, and cubic trilayer beryllene.
+
+
+topological phase.
+
+
+
+   E.   Optical properties
+
+
+   We now examine the optical properties of the pristine and hydrogen-functionalized beryl-
+lene structures, together with the bulk hcp and bulk bcc beryllium reference phases. The
+dielectric function, absorption coefficient, refractive index, extinction coefficient, reflectivity,
+and energy-loss spectrum are defined in section II. Here, we use these quantities to compare
+the direction-dependent optical response of the beryllene structures.
+
+
+
+   1.   Pristine α- and β-beryllene
+
+
+   We first discuss the optical response of pristine α-beryllene and β-beryllene, which then
+provides a reference for the bulk, cubic trilayer, and hydrogen-functionalized structures.
+The real and imaginary parts of the dielectric function for the in-plane and out-of-plane
+directions are shown in figure 9.
+   For β-beryllene, the in-plane real part indicates two plasmon excitations at approximately
+2.5 eV and 5.3 eV, as well as plasmon-like features above approximately 7 eV. These fea-
+tures occur together with relatively small values of the imaginary part. In the out-of-plane
+direction, the low-energy plasmon feature is absent. For α-beryllene, the response differs,
+and only a higher-energy plasmon-like feature appears around 7 eV to 9 eV. Interband tran-
+sitions may coexist with these plasmonic features and form a broad background. When
+interband transitions and plasmons occupy the same energy range, they may couple and
+produce finite plasmon lifetimes together with interband-transition character.
+
+                                                   17
+   The real part also shows that β-beryllene behaves as an indefinite medium over part
+of the low-energy range. In the region of approximately 1.2 eV to 2.2 eV, the in-plane
+and out-of-plane components of the real part have opposite signs. This behaviour signals
+direction-dependent plasmonic modes.
+
+                                                                            Dielectric function
+                                               Real part for in-plane                                     Real part for out-of-plane
+                                                                                -beryllene   30                                             -beryllene
+                                30                                              -beryllene                                                  -beryllene
+                                25                                                           20
+
+
+
+
+         Dielectric function
+                                20
+                                15                                                           10
+
+                                10
+                                                                                              0
+                                 5
+                                 0                                                           10
+
+                                5
+                                                                                             20
+                                     0   2        4       6      8         10         12          0   2       4       6       8        10         12
+                                             Imaginary part for in-plane                              Imaginary part for out-of-plane
+                                                                                -beryllene   35                                             -beryllene
+                                35                                              -beryllene                                                  -beryllene
+                                                                                             30
+                                30
+                                                                                             25
+
+
+
+
+          Dielectric function
+                                25
+                                20                                                           20
+
+                                15                                                           15
+
+                                10                                                           10
+
+                                 5                                                            5
+
+                                 0                                                            0
+                                     0   2        4       6      8         10         12          0   2       4       6       8        10         12
+                                                 Photon energy (eV)                                           Photon energy (eV)
+
+
+FIG. 9. Real and imaginary parts of the dielectric function for α-beryllene and β-beryllene. The
+spectra are shown for the in-plane and out-of-plane directions as functions of photon energy.
+
+
+   The absorption coefficient and refractive index are shown in figure 10. The absorption
+spectra show differences between the two optical directions and between the two structures.
+In the in-plane channel, β-beryllene has a stronger absorption response than α-beryllene
+over a broad photon-energy range, including a noticeable peak in the visible-light region. In
+contrast, α-beryllene develops its main absorption only beyond the low-energy range and
+then forms a broader spectral feature. In the out-of-plane channel, both structures develop
+stronger peak structures only beyond the visible range, while β-beryllene still shows the
+stronger overall absorption. These trends show that the optical attenuation depends on
+both the optical direction and the crystal structure.
+   The refractive index spectra follow the same structural and directional contrast. In the in-
+plane channel, β-beryllene develops two pronounced enhancements in the infrared and near-
+
+                                                                                     18
+ultraviolet regions, with a minimum in the visible range. By contrast, α-beryllene varies more
+smoothly over the same energy interval. In the out-of-plane channel, β-beryllene remains
+stronger than α-beryllene over the infrared to near-ultraviolet range. For both structures,
+the refractive index drops below one above approximately 8 eV, which occurs close to the
+negative region of the real part of the dielectric function. This behaviour is consistent with
+the strong interaction between light and plasmonic oscillations near the plasmon resonance.
+
+                                                                                  Absorption coefficient
+                                                               in-plane                                                          out-of-plane
+                                                                                        -beryllene                                                           -beryllene
+                                  0.030                                                 -beryllene                                                           -beryllene
+                                                                                                     0.04
+                                  0.025
+
+
+
+
+         Absorption coefficient
+                                  0.020                                                              0.03
+                                  0.015
+                                                                                                     0.02
+                                  0.010
+
+                                  0.005                                                              0.01
+
+                                  0.000                                                              0.00
+                                          0       2       4          6        8    10          12            0       2       4           6          8   10         12
+                                                          Photon energy (eV)                                                 Photon energy (eV)
+                                                                                       Refractive index
+                                                              in-plane                                                       out-of-plane
+                                  6                                                     -beryllene                                                           -beryllene
+                                                                                        -beryllene                                                           -beryllene
+                                                                                                     5
+                                  5
+                                                                                                     4
+
+
+
+         Refractive index
+                                  4
+
+                                  3                                                                  3
+
+                                  2                                                                  2
+
+                                  1                                                                  1
+
+                                  0                                                                  0
+                                      0       2       4          6        8       10          12         0       2       4           6          8       10         12
+                                                      Photon energy (eV)                                                 Photon energy (eV)
+
+FIG. 10. Absorption coefficient and refractive index of α-beryllene and β-beryllene. Upper: absorp-
+tion coefficient; Lower: refractive index. The spectra are shown for the in-plane and out-of-plane
+directions as functions of photon energy.
+
+
+   The extinction coefficient is shown in figure 11. In the in-plane channel, β-beryllene
+develops strong peaks in the infrared and near-ultraviolet regions, separated by a pronounced
+trough. By contrast, α-beryllene again varies more smoothly. In the out-of-plane channel,
+β-beryllene remains stronger over the low-energy range and then decreases rapidly toward
+the near-ultraviolet region. This behaviour shows that amplitude attenuation also depends
+on both optical direction and crystal structure.
+   The corresponding reflectivity and energy-loss spectra show the same structural and
+directional contrast. For reflectivity, β-beryllene shows strong reflection in the low-energy
+
+                                                                                             19
+                                                                      Extinction coefficient
+                                   4.0
+                                                     in-plane                                           out-of-plane
+                                                                           -beryllene   5                                       -beryllene
+                                   3.5                                     -beryllene                                           -beryllene
+
+                                   3.0                                                  4
+
+
+
+
+          Extinction coefficient
+                                   2.5
+                                                                                        3
+                                   2.0
+                                   1.5                                                  2
+                                   1.0
+                                                                                        1
+                                   0.5
+                                   0.0                                                  0
+                                         0   2   4       6        8   10         12         0   2   4        6         8   10         12
+                                                 Photon energy (eV)                                 Photon energy (eV)
+
+
+
+FIG. 11. Extinction coefficient of α-beryllene and β-beryllene for the in-plane and out-of-plane
+directions as a function of photon energy.
+
+
+and near-ultraviolet regions for in-plane polarization, separated by a pronounced minimum.
+In contrast, α-beryllene changes more smoothly and shows a broad intermediate-energy
+feature. For out-of-plane polarization, β-beryllene remains stronger over the low-energy
+range, whereas α-beryllene shows pronounced peaks in the ultraviolet region.
+   The energy-loss spectrum of β-beryllene shows pronounced peaks in the visible and deep-
+ultraviolet regions in the in-plane channel, with the visible-range peak being stronger. By
+contrast, α-beryllene remains weak at low photon energy and then rises gradually on entering
+the deep-ultraviolet region. In the out-of-plane channel, both structures remain nearly zero
+in the visible range and then increase toward the near-ultraviolet region. These spectra
+identify the dominant dissipation channels associated with the inverse dielectric response.
+
+
+   2.   Bulk hcp, bulk bcc, and cubic trilayer beryllene
+
+
+   We next compare the optical response of bulk hcp beryllium, bulk bcc beryllium, and
+cubic trilayer beryllene. The real and imaginary parts of the dielectric function are shown in
+figure 12. The bulk hcp and bulk bcc structures show similar behaviour and weak directional
+dependence. For both bulk structures, the real part becomes negative above approximately
+4.5 eV, reaches a minimum around 5.5 eV to 6.0 eV, and then rises smoothly toward zero
+around 12 eV. The imaginary part displays a broad low-energy feature up to approximately
+5.5 eV, indicating a wide range of allowed interband transitions. It then decreases sharply
+around 6 eV, coinciding with the minimum in the real part and indicating a plasmonic optical
+response.
+
+                                                                               20
+          For cubic trilayer beryllene, the most prominent feature is its enhanced visible-region
+optical response compared with bulk bcc beryllium. A pronounced feature appears around
+2.0 eV to 2.5 eV, together with a redistribution of spectral weight toward lower excitation
+energies. This indicates increased electronic polarizability in the trilayer. In the out-of-plane
+direction, this low-energy peak becomes even more pronounced. The rapid decrease of the
+real part to negative values above approximately 3.8 eV indicates the onset of metallic-like
+screening and plasmonic behaviour, with a negative region extending over a broader energy
+range than in bulk beryllium. The deeper minimum around 5.5 eV to 6.0 eV and the stronger
+imaginary dielectric peak further suggest an increased density of optically active electronic
+states arising from quantum confinement and surface-derived bands. The large peak of the
+imaginary part near 3.7 eV to 4.0 eV indicates strong interband transitions in the trilayer,
+whereas in the out-of-plane direction the corresponding large peak appears at a lower energy
+near 2.5 eV.
+
+                                                                                                             Dielectric function
+                              50
+                                           Real part for xx-component                          50
+                                                                                                            Real part for yy-component                                       Real part for zz-component
+                                                                    bulk hcp beryllium                                               bulk hcp beryllium                                               bulk hcp beryllium
+                                                                     -beryllene                                                       -beryllene                50                                     -beryllene
+                              40                                     -beryllene                40                                     -beryllene                                                       -beryllene
+                                                                    bulk bcc beryllium                                               bulk bcc beryllium         40                                    bulk bcc beryllium
+                                                                    cubic beryllene trilayer                                         cubic beryllene trilayer                                         cubic beryllene trilayer
+
+
+
+
+  Dielectric function
+                              30                                                               30                                                               30
+
+                              20                                                               20                                                               20
+
+                                                                                                                                                                10
+                              10                                                               10
+                                                                                                                                                                 0
+                               0                                                                0
+                                                                                                                                                                10
+                              10                                                               10                                                               20
+                                   0   2        4      6       8           10           12          0   2        4        6     8           10           12          0   2        4      6       8           10           12
+                                       Imaginary part for xx-component                                  Imaginary part for yy-component                                  Imaginary part for zz-component
+                                                                    bulk hcp beryllium         35                                    bulk hcp beryllium                                               bulk hcp beryllium
+                              35                                     -beryllene                                                       -beryllene                                                       -beryllene
+                                                                     -beryllene                30                                     -beryllene
+                                                                                                                                                                40
+                                                                                                                                                                                                       -beryllene
+                              30                                    bulk bcc beryllium                                               bulk bcc beryllium                                               bulk bcc beryllium
+                                                                    cubic beryllene trilayer                                         cubic beryllene trilayer                                         cubic beryllene trilayer
+
+
+
+
+        Dielectric function
+                                                                                               25
+                              25
+                                                                                                                                                                30
+                              20                                                               20
+
+                              15                                                               15                                                               20
+
+                              10                                                               10
+                                                                                                                                                                10
+                               5                                                                5
+
+                               0                                                                0                                                                0
+                                   0   2        4      6       8           10           12          0   2        4        6     8           10           12          0   2        4      6       8           10           12
+                                               Photon energy (eV)                                               Photon energy (eV)                                               Photon energy (eV)
+
+
+
+FIG. 12. Real and imaginary parts of the dielectric function for bulk hcp beryllium, bulk bcc
+beryllium, α-beryllene, β-beryllene, and cubic trilayer beryllene. The spectra are shown for the
+xx, yy, and zz components as functions of photon energy.
+
+
+
+          The absorption coefficient and energy-loss spectra are shown in figure 13. The absorption
+spectra show that reducing cubic beryllium to cubic trilayer beryllene enhances the optical
+response. Compared with the bulk phase, the trilayer exhibits an earlier absorption onset
+
+                                                                                                                     21
+  and larger absorption coefficients throughout the visible and near-ultraviolet regions, with
+  a broad maximum near 5.5 eV to 6.0 eV. The enhanced intensity and slight redshift of the
+  main absorption features indicate stronger optical transitions caused by the modified elec-
+  tronic structure of the low-dimensional system. The trilayer also displays several pronounced
+  absorption maxima between 5 eV to 9 eV, reflecting a richer distribution of interband tran-
+  sitions than in the bulk material. These results suggest that quantum confinement and
+  surface-induced electronic states increase the optical activity of cubic trilayer beryllene over
+  a broad spectral range.
+
+                           The energy-loss spectra show that, unlike β-beryllene with its pronounced low-energy
+  plasmonic peak near 2 eV, the other structures remain almost featureless below approxi-
+  mately 6 eV. At higher energies, broad loss features begin to develop, especially around
+  and above 6 eV. These features are consistent with the onset of interband transitions and
+  collective electronic response.
+
+
+
+                                                                                                                                         Absorption coefficient
+                                                                xx-component                                                                   yy-component                                                                                 zz-component
+                                                                                                                                                                                                                  bulk hcp beryllium
+                         0.030                                                                                 0.030                                                                                               -beryllene
+                                                                                                                                                                                                      0.04         -beryllene
+
+
+
+
+Absorption coefficient
+                         0.025                                                                                 0.025                                                                                              bulk bcc beryllium
+                                                                                                                                                                                                                  cubic beryllene trilayer
+                         0.020                                                                                 0.020                                                                                  0.03
+
+                         0.015                                                                                 0.015
+                                                                                                                                                                                                      0.02
+                         0.010                                                                                 0.010
+                                                                                    bulk hcp beryllium                                                                    bulk hcp beryllium
+                         0.005                                                       -beryllene                0.005                                                       -beryllene                 0.01
+                                                                                     -beryllene                                                                            -beryllene
+                                                                                    bulk bcc beryllium                                                                    bulk bcc beryllium
+                         0.000                                                      cubic beryllene trilayer   0.000                                                      cubic beryllene trilayer    0.00
+                                 0             2            4          6        8          10           12             0             2            4          6        8          10           12             0             2            4          6        8   10   12
+                                                               Photon energy (eV)                                                                    Photon energy (eV)                                                                    Photon energy (eV)
+                                                                                                                                         Energy-loss spectrum
+                                                                xx-component                                                                   yy-component                                                                                 zz-component
+                         2.00        bulk hcp beryllium                                                        2.00        bulk hcp beryllium                                                        2.00        bulk hcp beryllium
+                                      -beryllene                                                                            -beryllene                                                                            -beryllene
+                         1.75         -beryllene                                                               1.75         -beryllene                                                               1.75         -beryllene
+
+
+
+
+Energy-loss spectrum
+                                     bulk bcc beryllium                                                                    bulk bcc beryllium                                                                    bulk bcc beryllium
+                         1.50        cubic beryllene trilayer                                                  1.50        cubic beryllene trilayer                                                  1.50        cubic beryllene trilayer
+
+                         1.25                                                                                  1.25                                                                                  1.25
+                         1.00                                                                                  1.00                                                                                  1.00
+                         0.75                                                                                  0.75                                                                                  0.75
+                         0.50                                                                                  0.50                                                                                  0.50
+                         0.25                                                                                  0.25                                                                                  0.25
+                         0.00                                                                                  0.00                                                                                  0.00
+                                 0            2            4          6         8          10           12             0            2            4          6         8          10           12             0            2            4          6         8   10   12
+                                                            Photon energy (eV)                                                                    Photon energy (eV)                                                                    Photon energy (eV)
+
+
+  FIG. 13. Absorption coefficient and energy-loss spectrum for bulk hcp beryllium, bulk bcc beryl-
+  lium, α-beryllene, β-beryllene, and cubic trilayer beryllene. Upper: absorption coefficient; Lower:
+  energy-loss spectrum. The spectra are shown for the xx, yy, and zz components as functions of
+  photon energy.
+
+
+
+
+                                                                                                                                                      22
+   3.   Hydrogen-functionalized beryllene structures
+
+
+   We now examine the effect of hydrogen adsorption on the optical properties of α-beryllene
+and β-beryllene. The real and imaginary parts of the dielectric function for the pristine and
+hydrogen-functionalized structures are shown in figure 14.
+   For α-beryllene, the pristine structure exhibits a relatively low and slowly varying real
+part in the low-energy region below approximately 4 eV, followed by a modest peak near
+5 eV to 6 eV. In contrast, 2H-α-beryllene shows a strongly enhanced dielectric response, with
+values reaching approximately 60–70 near 5 eV. This increase indicates a strong enhance-
+ment of electronic polarizability after hydrogen adsorption. The hydrogen-functionalized
+structure also shows a sharp transition from large positive values to negative values around
+5.5 eV to 6.0 eV, indicating plasma-like behaviour and a shifted zero crossing relative to pris-
+tine α-beryllene. This shift suggests that hydrogen functionalization modifies the electronic
+structure by introducing new hybridized states and changing the band dispersion, thereby
+strengthening collective electronic oscillations.
+   For the imaginary part, the difference is also pronounced. Pristine α-beryllene shows
+relatively weak absorption with a modest peak centred around 6 eV. By contrast, 2H-α-
+beryllene displays an intense and broadened absorption peak near 5.0 eV to 5.5 eV, together
+with additional features at higher photon energies. This enhancement and slight redshift
+of the dominant peak indicate that hydrogen adsorption introduces or strengthens optically
+allowed transitions, likely through hybridization between hydrogen states and the host elec-
+tronic states. The broadening also suggests an increased density of accessible electronic
+transitions over a wider energy range. Consequently, 2H-α-beryllene is expected to exhibit
+substantially stronger optical absorption in the visible to near-ultraviolet region than pristine
+α-beryllene.
+   For β-beryllene, the pristine phase shows a moderate low-energy dielectric response, fol-
+lowed by a rapid decrease into negative values around 1 eV to 2 eV, and then a recovery with
+a broad positive feature near 4 eV to 5 eV. Upon single-sided hydrogen adsorption, the mag-
+nitude of the real part is slightly enhanced in the low-energy range, and the spectral features
+become shifted and smoothed. The zero crossing shifts to higher energies, around 3 eV to
+4 eV, and the oscillatory behaviour becomes less abrupt. This behaviour indicates a redis-
+tribution of electronic states and a reduction of sharp interband features. For double-sided
+
+                                               23
+  hydrogen adsorption, these effects become stronger. The real part increases over a wider
+  energy range and shows a more gradual dispersion, with a delayed and deeper transition into
+  negative values near 6 eV to 6.5 eV. This progression suggests that increasing hydrogen cov-
+  erage enhances electronic screening and modifies the effective plasma frequency, consistent
+  with stronger perturbation of the band structure and increased carrier polarization.
+                             For the imaginary part of β-beryllene, the pristine phase shows a sharp and intense low-
+  energy absorption peak near 1 eV to 1.5 eV, followed by a weaker and broader feature near
+  5 eV. For 1H-β-beryllene, the low-energy peak is reduced in intensity and broadened, while
+  a more prominent absorption feature emerges around 3.5 eV to 4.0 eV. This indicates a
+  shift of the dominant interband transitions toward higher energies. For 2H-β-beryllene, the
+  spectral weight is redistributed even more strongly: the low-energy peak nearly vanishes, and
+  a strong broad absorption peak appears around 6 eV to 6.5 eV. This substantial blue shift
+  and enhancement suggest that hydrogen adsorption suppresses low-energy transitions and
+  promotes higher-energy electronic excitations, likely through band-structure modification
+  and the formation of new hybridized states involving hydrogen.
+
+                                                                                                          Dielectric function
+                                         Real part for xx-component                                      Real part for yy-component                                             Real part for zz-component
+                                                                  -beryllene                                                      -beryllene
+                            60                                   2H-terminated -beryllene   60                                   2H-terminated -beryllene   30
+                                                                  -beryllene                                                      -beryllene
+                                                                 H-terminated -beryllene                                         H-terminated -beryllene
+                                                                 2H-terminated -beryllene                                        2H-terminated -beryllene   20
+
+
+
+
+Dielectric function
+                            40                                                              40
+                                                                                                                                                            10
+
+                            20                                                              20                                                               0
+
+                                                                                                                                                            10
+                             0                                                               0                                                                        -beryllene
+                                                                                                                                                            20       2H-terminated -beryllene
+                                                                                                                                                                      -beryllene
+                                                                                                                                                                     H-terminated -beryllene
+                            20                                                              20                                                              30       2H-terminated -beryllene
+                                 0   2        4      6       8            10         12          0   2        4        6     8            10         12          0          2           4       6      8     10   12
+                                     Imaginary part for xx-component                                 Imaginary part for yy-component                        80              Imaginary part for zz-component
+                            70                                    -beryllene                70                                    -beryllene                          -beryllene
+                                                                 2H-terminated -beryllene                                        2H-terminated -beryllene   70       2H-terminated -beryllene
+                            60                                    -beryllene                60                                    -beryllene                          -beryllene
+                                                                 H-terminated -beryllene                                         H-terminated -beryllene             H-terminated -beryllene
+                                                                 2H-terminated -beryllene                                        2H-terminated -beryllene   60       2H-terminated -beryllene
+
+
+
+
+      Dielectric function
+                            50                                                              50
+                                                                                                                                                            50
+                            40                                                              40
+                                                                                                                                                            40
+                            30                                                              30
+                                                                                                                                                            30
+                            20                                                              20                                                              20
+                            10                                                              10                                                              10
+                             0                                                               0                                                               0
+                                 0   2        4      6       8            10         12          0   2        4        6     8            10         12          0          2           4       6      8     10   12
+                                             Photon energy (eV)                                              Photon energy (eV)                                                        Photon energy (eV)
+
+
+
+  FIG. 14.                                 Real and imaginary parts of the dielectric function for pristine and hydrogen-
+  functionalized α- and β-beryllene structures. The spectra are shown for the xx, yy, and zz com-
+  ponents as functions of photon energy.
+
+
+                             The corresponding absorption coefficient and energy-loss spectra are shown in figure 15.
+
+                                                                                                                  24
+  For α-beryllene, hydrogen adsorption strongly enhances the absorption response in the vis-
+  ible to near-ultraviolet range. For β-beryllene, hydrogen adsorption shifts spectral weight
+  from the low-energy region toward higher photon energies. The progression from pristine
+  β-beryllene to 1H-β-beryllene and then to 2H-β-beryllene therefore shows a systematic redis-
+  tribution of optical spectral weight with increasing hydrogen coverage. The corresponding
+  energy-loss spectra follow the same trend, indicating that hydrogen functionalization modi-
+  fies both interband transitions and collective electronic excitations.
+
+
+
+                                                                                                              Absorption coefficient
+                                                           xx-component                                             yy-component                                                        zz-component
+                                     -beryllene
+                                                                                        0.06        -beryllene                                                    -beryllene
+                                    2H-terminated -beryllene                                       2H-terminated -beryllene                           0.10       2H-terminated -beryllene
+                         0.05        -beryllene                                         0.05        -beryllene                                                    -beryllene
+
+
+
+
+Absorption coefficient
+                                    H-terminated -beryllene                                        H-terminated -beryllene                                       H-terminated -beryllene
+                         0.04       2H-terminated -beryllene                                       2H-terminated -beryllene                           0.08       2H-terminated -beryllene
+                                                                                        0.04
+
+                         0.03                                                           0.03                                                          0.06
+
+                         0.02                                                           0.02                                                          0.04
+
+                         0.01                                                           0.01                                                          0.02
+                         0.00                                                           0.00
+                                                                                                                                                      0.00
+                                0          2           4        6         8   10   12          0          2           4        6        8   10   12          0          2           4        6         8   10   12
+                                                        Photon energy (eV)                                             Photon energy (eV)                                            Photon energy (eV)
+                                                                                                              Energy-loss spectrum
+                                                           xx-component                                             yy-component                                                        zz-component
+                         2.00        -beryllene                                         2.00        -beryllene                                        2.00        -beryllene
+                                    2H-terminated -beryllene                                       2H-terminated -beryllene                                      2H-terminated -beryllene
+                         1.75        -beryllene                                         1.75        -beryllene                                        1.75        -beryllene
+
+
+
+
+Energy-loss spectrum
+                                    H-terminated -beryllene                                        H-terminated -beryllene                                       H-terminated -beryllene
+                         1.50       2H-terminated -beryllene                            1.50       2H-terminated -beryllene                           1.50       2H-terminated -beryllene
+
+                         1.25                                                           1.25                                                          1.25
+                         1.00                                                           1.00                                                          1.00
+                         0.75                                                           0.75                                                          0.75
+                         0.50                                                           0.50                                                          0.50
+                         0.25                                                           0.25                                                          0.25
+                         0.00                                                           0.00                                                          0.00
+                                0          2           4        6         8   10   12          0          2           4        6        8   10   12          0          2           4        6         8   10   12
+                                                        Photon energy (eV)                                             Photon energy (eV)                                            Photon energy (eV)
+
+
+  FIG. 15. Absorption coefficient and energy-loss spectrum for pristine and hydrogen-functionalized
+  α- and β-beryllene structures. Upper: absorption coefficient; Lower: energy-loss spectrum. The
+  spectra are shown for the xx, yy, and zz components as functions of photon energy.
+
+
+
+
+                           These results show that both dimensionality and hydrogen functionalization strongly
+  modify the optical response of beryllene. The pristine α and β structures already display
+  pronounced anisotropy and plasmon-related features. The cubic trilayer shifts optical spec-
+  tral weight toward lower energies and enhances visible-to-near-ultraviolet absorption. Hy-
+  drogen adsorption further redistributes the dielectric response and changes the characteristic
+  excitation energies through modified electronic hybridization and screening.
+
+                                                                                                                          25
+IV.     CONCLUSION
+
+
+     In this work, we investigated the structural stability, electronic structure, optical re-
+sponse, and topological properties of pristine and hydrogen-functionalized two-dimensional
+beryllium phases using first-principles density functional theory calculations. Alongside the
+previously reported α- and β-beryllene structures, we identified a dynamically stable cubic
+trilayer beryllene phase. The phonon dispersion calculations also confirm the dynamical sta-
+bility of 2H-α-beryllene, 1H-β-beryllene, and 2H-β-beryllene, while the molecular dynamics
+simulations further support the finite-temperature stability of these hydrogen-functionalized
+structures.
+     Hydrogen functionalization substantially modifies the structural and electronic properties
+of beryllene. The calculated adsorption energies indicate that the hydrogen-functionalized
+structures are stable with respect to molecular hydrogen. In particular, 2H-α-beryllene
+transforms from a metallic system into a wide-gap semiconductor, whereas the hydrogen-
+functionalized β-based structures retain metallic behaviour.
+     The calculated optical properties demonstrate that dimensional reduction and hydrogen
+functionalization strongly modify the dielectric response of beryllium. Compared with the
+bulk reference phases, cubic trilayer beryllene exhibits increased spectral weight at lower
+excitation energies and enhanced absorption in the visible-to-near-ultraviolet region. Pris-
+tine α- and β-beryllene show pronounced optical anisotropy and plasmon-related features.
+Hydrogen functionalization further redistributes the optical spectral weight and shifts the
+characteristic excitation energies through changes in electronic hybridization and screening.
+     Parity analysis of the spin-orbit-coupled electronic states confirms the previously reported
+non-trivial topology of α-beryllene and the trivial topology of β-beryllene. The cubic tri-
+layer phase also has a non-trivial Z2 invariant. These results show that structural design
+and hydrogen functionalization provide direct routes for tuning the electronic, optical, and
+topological properties of two-dimensional beryllium.
+
+
+
+V.     DATA AVAILABILITY STATEMENT
+
+
+     The original data presented in this study are openly available in the GitHub repository
+https://github.com/Photonico/H-Beryllene_20250718.
+
+                                               26
+VI.   ACKNOWLEDGEMENTS
+
+
+  This research was undertaken with the assistance of resources from the National Com-
+putational Infrastructure (NCI Australia), an NCRIS-enabled capability supported by the
+Australian Government.
+  C.V. acknowledges financial support from the Australian Research Council under grant
+DE220101147. C.S., H.M., and O.J.C. acknowledge financial support from the Australian
+Research Council under grant FL230100176.
+
+
+
+
+                                         27
+ [1] K. S. Novoselov, A. K. Geim, S. V. Morozov, D.-e. Jiang, Y. Zhang, S. V. Dubonos, I. V.
+    Grigorieva, and A. A. Firsov, Electric field effect in atomically thin carbon films, Science 306,
+    666 (2004).
+ [2] A. K. Geim and K. S. Novoselov, The rise of graphene, Nature Materials 6, 183 (2007).
+ [3] S. Z. Butler, S. M. Hollen, L. Cao, Y. Cui, J. A. Gupta, H. R. Gutiérrez, T. F. Heinz,
+    S. S. Hong, J. Huang, A. F. Ismach, et al., Progress, challenges, and opportunities in two-
+    dimensional materials beyond graphene, ACS Nano 7, 2898 (2013).
+ [4] A. Molle, C. Grazianetti, L. Tao, D. Taneja, M. H. Alam, and D. Akinwande, Silicene, silicene
+    derivatives, and their device applications, Chemical Society Reviews 47, 6370 (2018).
+ [5] L. F. Zheng, X. G. Wang, L. N. Yue, Y. J. Xie, B. P. Wu, and J. M. Zhong, Progress in the
+    application of rare light metal beryllium, Materials Science Forum 977, 261 (2020).
+ [6] S. Ono, Dynamical stability of two-dimensional metals in the periodic table, Physical Review
+    B 102, 165424 (2020).
+ [7] P. Hess, Periodicity of two-dimensional bonding of main group elements, ChemPhysChem 23,
+    e202100880 (2022).
+ [8] S. Chahal, A. Bandyopadhyay, C.-S. Yang, and P. Kumar, Beryllene, the lightest xene, npj
+    2D Materials and Applications 7, 55 (2023).
+ [9] S. S. P. Chowdhury and S. Mogurampelly, Unusual phonon thermal transport mechanisms in
+    monolayer beryllene (2024), arXiv:2409.05766 [cond-mat.mtrl-sci].
+[10] J. Li, M. Guo, J. Si, L. Shi, X. Shi, J.-J. Ma, Q. Zhang, D. J. Singh, P.-F. Liu, and B.-
+    T. Wang, Coexistence of superconductivity and topological aspects in beryllenes, Materials
+    Today Physics 38, 101257 (2023).
+[11] N. Derriche, M. Franz, and G. Sawatzky, Light-element and purely charge-based topological
+    materials, Journal of Physics: Condensed Matter 36, 465601 (2024).
+[12] Y. M. Xiong, A. B. Karki, D. P. Young, and P. W. Adams, Spin-orbit scattering and quantum
+    metallicity in ultrathin Be films, Physical Review B 79, 020510 (2009).
+[13] B. Weber, M. S. Fuhrer, X.-L. Sheng, S. A. Yang, R. Thomale, S. Shamim, L. W. Molenkamp,
+    D. Cobden, D. Pesin, H. J. W. Zandvliet, et al., 2024 roadmap on 2d topological insulators,
+    Journal of Physics: Materials 7, 022501 (2024).
+
+                                               28
+[14] Z. Qian, Z. Gong, J. Li, H. Wang, and S. Liu, Switchable band topology and geometric current
+     in sliding bilayer elemental ferroelectric, Chinese Physics Letters 42, 070715 (2025).
+[15] R.-W. Zhang, C.-W. Zhang, W.-X. Ji, P. Li, P.-J. Wang, S.-S. Li, and S.-S. Yan, Controllable
+     band structure and topological phase transition in two-dimensional hydrogenated arsenene,
+     Scientific Reports 6, 20342 (2016).
+[16] D. V. Bachurin and P. V. Vladimirov, Ab initio study of hydrogen on beryllium surfaces,
+     Surface Science 641, 198 (2015).
+[17] F. Li, U. Aeberhard, H. Wu, M. Qiao, and Y. Li, Global minimum beryllium hydride sheet with
+     novel negative poisson’s ratio: first-principles calculations, RSC Advances 8, 19432 (2018).
+[18] G. Kresse and J. Hafner, Ab initio molecular dynamics for liquid metals, Physical Review B
+     47, 558 (1993).
+[19] G. Kresse and J. Hafner, Ab initio molecular-dynamics simulation of the liquid-metal–
+     amorphous-semiconductor transition in germanium, Physical Review B 49, 14251 (1994).
+[20] G. Kresse and J. Furthmüller, Efficiency of ab-initio total energy calculations for metals and
+     semiconductors using a plane-wave basis set, Computational Materials Science 6, 15 (1996).
+[21] G. Kresse and J. Furthmüller, Efficient iterative schemes for ab initio total-energy calculations
+     using a plane-wave basis set, Physical Review B 54, 11169 (1996).
+[22] G. Kresse and D. Joubert, From ultrasoft pseudopotentials to the projector augmented-wave
+     method, Physical Review B 59, 1758 (1999).
+[23] J. P. Perdew, K. Burke, and M. Ernzerhof, Generalized gradient approximation made simple,
+     Physical Review Letters 77, 3865 (1996).
+[24] A. D. Becke and E. R. Johnson, A density-functional model of the dispersion interaction, The
+     Journal of Chemical Physics 123, 154101 (2005).
+[25] S. Grimme, J. Antony, S. Ehrlich, and H. Krieg, A consistent and accurate ab initio
+     parametrization of density functional dispersion correction (dft-d) for the 94 elements h-pu,
+     The Journal of Chemical Physics 132, 154104 (2010).
+[26] S. Grimme, S. Ehrlich, and L. Goerigk, Effect of the damping function in dispersion corrected
+     density functional theory, Journal of Computational Chemistry 32, 1456 (2011).
+[27] J. Gao, Q. Wu, C. Persson, and Z. Wang, Irvsp: To obtain irreducible representations of
+     electronic states in the VASP, Computer Physics Communications 261, 107760 (2021).
+[28] L. Fu and C. L. Kane, Topological insulators with inversion symmetry, Physical Review B 76,
+
+
+                                                29
+    045302 (2007).
+[29] L. Fu, C. L. Kane, and E. J. Mele, Topological insulators in three dimensions, Physical Review
+    Letters 98, 106803 (2007).
+[30] F. Wooten, Optical properties of solids (Academic Press, 2013).
+[31] M. Gajdoš, K. Hummer, G. Kresse, J. Furthmüller, and F. Bechstedt, Linear optical properties
+    in the projector-augmented wave methodology, Physical Review B 73, 045112 (2006).
+[32] G. Yang and S.-P. Gao, A method to restore the intrinsic dielectric functions of 2d materials
+    in periodic calculations, Nanoscale 13, 17057 (2021).
+
+
+
+
+                                               30
+
