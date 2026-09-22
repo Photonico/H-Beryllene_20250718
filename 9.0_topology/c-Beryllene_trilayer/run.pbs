@@ -20,9 +20,9 @@ for stage in scf trim bands; do
   mpirun -np 42 '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' > vasp.log 2>&1
   extra=()
   if [ "$stage" = trim ]; then extra+=(--require-wavecar); fi
-  '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/check_topology_outputs.py' . --manifest '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/c-Beryllene_trilayer/manifest.json' --structure-id 'st' "${extra[@]}"
+  '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/packages/soc_topology/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/check_topology_outputs.py' . --manifest '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/c-Beryllene_trilayer/manifest.json' --structure-id 'st' "${extra[@]}"
 done
 cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/c-Beryllene_trilayer'
-'/cmt2/lniu6305/Packages/soc_topology_20260922_1435/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/refine_gap.py' '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/c-Beryllene_trilayer' --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' --ranks 42
+'/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/packages/soc_topology/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/refine_gap.py' '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/c-Beryllene_trilayer' --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' --ranks 42
 printf 'Completed st\n' > PIPELINE_COMPLETE
 

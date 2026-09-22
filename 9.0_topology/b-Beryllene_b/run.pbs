@@ -20,9 +20,9 @@ for stage in scf trim bands; do
   mpirun -np 42 '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' > vasp.log 2>&1
   extra=()
   if [ "$stage" = trim ]; then extra+=(--require-wavecar); fi
-  '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/check_topology_outputs.py' . --manifest '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_b/manifest.json' --structure-id 'beta_1h' "${extra[@]}"
+  '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/packages/soc_topology/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/check_topology_outputs.py' . --manifest '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_b/manifest.json' --structure-id 'beta_1h' "${extra[@]}"
 done
 cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_b'
-'/cmt2/lniu6305/Packages/soc_topology_20260922_1435/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/refine_gap.py' '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_b' --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' --ranks 42
+'/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/packages/soc_topology/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/refine_gap.py' '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_b' --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' --ranks 42
 printf 'Completed beta_1h\n' > PIPELINE_COMPLETE
 

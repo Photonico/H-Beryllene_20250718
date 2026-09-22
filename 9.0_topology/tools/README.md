@@ -29,7 +29,7 @@ Sampled gaps are not a rigorous all-k proof. Tiny gaps require targeted converge
 
 ## Git and data policy
 
-Only new campaign scripts, documentation, manifests and small input files are staged. Runtime outputs, licensed POTCARs, binaries and tool environments are ignored. Repository paths larger than 99,000,000 bytes are added to ignore rules; already tracked historical content is preserved. Preexisting unrelated modifications are excluded from this commit.
+Only new campaign scripts, documentation, manifests and small input files are staged. Existing runtime-output and licensed-POTCAR ignore rules are retained. For the relocated soc_topology directory, only individual files exceeding the size threshold are newly ignored. Repository paths larger than 99,000,000 bytes are added to ignore rules; already tracked historical content is preserved. Preexisting unrelated modifications are excluded from this commit.
 
 ## Reference documentation
 
@@ -40,3 +40,9 @@ Only new campaign scripts, documentation, manifests and small input files are st
 - https://github.com/irreducible-representations/irrep
 - https://z2pack.greschd.ch/en/latest/reference/fp.html
 - https://z2pack.greschd.ch/en/latest/reference/surface.html
+
+## Toolchain location (2026-09-22)
+
+The complete toolchain now lives in `9.0_topology/packages/soc_topology/`. Current scripts and manifests use this location. The old `/cmt2/lniu6305/Packages/soc_topology_20260922_1435` is a compatibility symlink for already-submitted PBS copies; retain it until those jobs finish. Historical submission records and build logs retain their original paths.
+
+This directory is not ignored as a whole. The scan found one file larger than 99,000,000 bytes: wannier90-3.1.0.tar.gz, which is individually listed in .gitignore. Repeat the scan when adding files; Git cannot automatically ignore files by size. Copy ignored files separately or download them again. Linux binaries require site Intel/MPI/HDF5 libraries. On another machine, recreate the Python environment and rebuild with the tools scripts and locally available licensed VASP sources. The material jobs still use the site VASP executable; WCC uses the private build.
