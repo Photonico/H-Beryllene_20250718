@@ -132,13 +132,8 @@ Fu–Kane analysis uses IrRep 2.1.3 with SOC spinors and four distinct TRIM, ret
 
 Existing Python environment: IrRep 2.1.3, Z2Pack 2.2.1, spglib 2.5.0, NumPy 1.26.4 and SciPy 1.13.1. The tools job builds downloaded Wannier90 3.1.0 and a private VASP 6.5.0 SOC executable linked to it in `{PREFIX}`. WCC waits for both that build and the 1H-beta pipeline. No edge-state jobs are included at this stage.
 
-After the jobs finish, run the following read-only notebook cells to collect completion, gap, parity and WCC reports. Inspect failed prerequisites, magnetism, local-gap convergence and matching band indices before making final topology claims.
+After the jobs finish, use the read-only Python snippets below and the root results notebook to collect completion, gap, parity and WCC reports. Inspect failed prerequisites, magnetism, local-gap convergence and matching band indices before making final topology claims.
 '''
-
-def cell(kind, source):
-    value={'cell_type':kind,'metadata':{},'source':source.splitlines(True)}
-    if kind=='code': value.update(execution_count=None,outputs=[])
-    return value
 
 status_code='''from pathlib import Path
 import json, subprocess
@@ -167,15 +162,14 @@ analysis_code='''for entry in json.loads((topology / "manifest.json").read_text(
             print(report.relative_to(repo))
             print(json.dumps(json.loads(report.read_text()), indent=2))
 '''
-nb_path=REPO/'9.0_topology.ipynb'
-nb=json.loads(nb_path.read_text())
-old_cells=nb.get('cells',[])
-nb.update(nbformat=4,nbformat_minor=5)
-nb['cells']=[cell('markdown',summary),cell('code',status_code),cell('code',analysis_code)]
-if any(''.join(c.get('source',[])).strip() for c in old_cells):
-    nb['cells'] += [cell('markdown','## Previous notebook notes (preserved)\n')] + old_cells
-for index,c in enumerate(nb['cells']): c.setdefault('id',f'topology-{index}-{STAMP.lower()}')
-nb.setdefault('metadata',{}).setdefault('kernelspec',dict(display_name='Python 3',language='python',name='python3'))
-nb_path.write_text(json.dumps(nb,indent=1,ensure_ascii=False)+'\n')
-print('NOTEBOOK_UPDATED',nb_path)
+# Keep operational details out of the root results notebook.
+workflow_path = ROOT / "workflow.md"
+section = "## Submission update " + STAMP + chr(10)*2 + summary
+for title, source in (("Queue and pipeline checks", status_code),
+                      ("Reading the generated reports", analysis_code)):
+    section += chr(10)*2 + "## " + title + chr(10)*2
+    section += chr(96)*3 + "python" + chr(10) + source.rstrip() + chr(10) + chr(96)*3
+with workflow_path.open("a", encoding="utf-8") as handle:
+    handle.write(chr(10)*2 + section + chr(10))
+print("WORKFLOW_UPDATED", workflow_path)
 print(subprocess.check_output(['qstat','-x',*[j['id'] for j in jobs]],text=True))
