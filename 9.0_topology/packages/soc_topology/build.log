@@ -1,0 +1,804 @@
+wannier90-3.1.0.tar.gz: OK
+/usr/physics/oneapi/2024.2.1/compiler/2024.2/bin/ifx
+/usr/physics/oneapi/2024.2.1/mpi/2021.13/bin/mpiifort
+(cd ./src/obj && make -f ../Makefile.2 serialobjs)
+make[1]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/src/obj'
+ifx  -O2 -c ../constants.F90
+ifx  -O2 -c ../io.F90
+ifx  -O2 -c ../utility.F90
+ifx  -O2 -c ../comms.F90
+ifx  -O2 -c ../parameters.F90
+ifx  -O2 -c ../ws_distance.F90
+ifx  -O2 -c ../hamiltonian.F90
+ifx  -O2 -c ../sitesym.F90
+ifx  -O2 -c ../overlap.F90
+ifx  -O2 -c ../kmesh.F90
+ifx  -O2 -c ../disentangle.F90
+ifx  -O2 -c ../wannierise.F90
+ifx  -O2 -c ../plot.F90
+ifx  -O2 -c ../transport.F90
+make[1]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/src/obj'
+(cd ./src/obj && make -f ../Makefile.2 libs)
+make[1]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/src/obj'
+ifx -O2 -c ../wannier_lib.F90
+ar rv ../../libwannier.a wannier_lib.o constants.o io.o utility.o parameters.o hamiltonian.o overlap.o kmesh.o disentangle.o ws_distance.o wannierise.o plot.o transport.o sitesym.o comms.o
+ar: creating ../../libwannier.a
+a - wannier_lib.o
+a - constants.o
+a - io.o
+a - utility.o
+a - parameters.o
+a - hamiltonian.o
+a - overlap.o
+a - kmesh.o
+a - disentangle.o
+a - ws_distance.o
+a - wannierise.o
+a - plot.o
+a - transport.o
+a - sitesym.o
+a - comms.o
+make[1]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/src/obj'
+(cd ./src/obj && make -f ../Makefile.2 serialobjs)
+make[1]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/src/obj'
+make[1]: Nothing to be done for 'serialobjs'.
+make[1]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/src/obj'
+(cd ./src/obj && make -f ../Makefile.2 wannier)
+make[1]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/src/obj'
+ifx ../wannier_prog.F90  -O2 constants.o io.o utility.o parameters.o hamiltonian.o overlap.o kmesh.o disentangle.o ws_distance.o wannierise.o plot.o transport.o sitesym.o comms.o -qmkl=sequential -o ../../wannier90.x
+make[1]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/src/obj'
+if [ ! -d build/ncl ] ; then mkdir -p build/ncl  ; fi
+cp src/makefile src/.objects src/makedeps.awk makefile.include build/ncl 
+make -C build/ncl VERSION=ncl check
+make[1]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+exit 0
+make[1]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+make -C build/ncl VERSION=ncl dependencies -j1
+make[1]: warning: -j1 forced in submake: resetting jobserver mode.
+make[1]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+rsync -u ../../src/*.F ../../src/*.inc .
+make build_info
+make[2]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+printf "    character(len=*), parameter :: cpp_options = '&\n&-DHOST=\"LinuxIFC\" &\n&-DMPI &\n&-DMPI_BLOCK=8000 &\n&-Duse_collective &\n&-DscaLAPACK &\n&-DCACHE_SIZE=4000 &\n&-Davoidalloc &\n&-Dvasp6 &\n&-Dtbdyn &\n&-Dfock_dblbuf &\n&-DVASP_HDF5 &\n&-DVASP2WANNIER90'\n" >  build_info.inc
+printf "    character(len=*), parameter :: link_line   = '&\n&mpiifort &\n&-fc=ifx &\n&-mkl=sequential &\n&-Llib &\n&-ldmy &\n&-Lparser &\n&-lparser &\n&-lstdc++ &\n&-L/usr/physics/oneapi/2024.2.1/mkl/2024.2/lib/intel64 &\n&-lmkl_scalapack_lp64 &\n&-lmkl_blacs_intelmpi_lp64 &\n&-L/usr/physics/hdf/5/1.14.1-2_intel2021/lib &\n&-lhdf5_fortran &\n&/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/libwannier.a'\n"   >> build_info.inc
+printf "    character(len=*), parameter :: fc     = '&\n&mpiifort &\n&-fc=ifx'\n"     >>  build_info.inc
+printf "    character(len=*), parameter :: fcl    = '&\n&mpiifort &\n&-fc=ifx &\n&-mkl=sequential'\n"    >> build_info.inc
+printf "    character(len=*), parameter :: fflags = '&\n&-assume &\n&byterecl &\n&-w &\n&-axCORE-AVX512'\n" >> build_info.inc
+printf "    character(len=*), parameter :: llibs  = '&\n&-lstdc++ &\n&-L/usr/physics/oneapi/2024.2.1/mkl/2024.2/lib/intel64 &\n&-lmkl_scalapack_lp64 &\n&-lmkl_blacs_intelmpi_lp64 &\n&-L/usr/physics/hdf/5/1.14.1-2_intel2021/lib &\n&-lhdf5_fortran &\n&/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/libwannier.a'\n"  >>  build_info.inc
+printf "    character(len=*), parameter :: incs   = '&\n&-I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw &\n&-I/usr/physics/hdf/5/1.14.1-2_intel2021/include'\n"   >> build_info.inc
+make[2]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+make depend
+make[2]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+fpp -f_com=no -free -w0 c2f_interface.F c2f_interface.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 simd.F simd.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 base.F base.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 string.F string.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 tutor.F tutor.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 version.F version.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 build_info.F build_info.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 command_line.F command_line.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 vhdf5_base.F vhdf5_base.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 incar_reader.F incar_reader.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 reader_base.F reader_base.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 openmp_struct.F openmp_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 openacc_struct.F openacc_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 offload_struct.F offload_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mpi.F mpi.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mpi_shmem.F mpi_shmem.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 main_mpi.F main_mpi.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mathtools.F mathtools.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 profiling.F profiling.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 bse_struct.F bse_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mgrid_struct.F mgrid_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pot_struct.F pot_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 hamil_struct.F hamil_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 radial_struct.F radial_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pseudo_struct.F pseudo_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wave_struct.F wave_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 nl_struct.F nl_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mkpoints_struct.F mkpoints_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 bandgap_struct.F bandgap_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 poscar_struct.F poscar_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 esf_struct.F esf_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 afqmc_struct.F afqmc_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 minimax_struct.F minimax_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 setex_struct.F setex_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 locproj_struct.F locproj_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fock_glb.F fock_glb.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 chi_glb.F chi_glb.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 smart_allocate.F smart_allocate.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 xml.F xml.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 constant.F constant.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 plugins.F plugins.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_c2f_interface.F ml_ff_c2f_interface.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_prec.F ml_ff_prec.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_string.F ml_ff_string.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_tutor.F ml_ff_tutor.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_constant.F ml_ff_constant.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_mpi_help.F ml_ff_mpi_help.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_neighbor.F ml_ff_neighbor.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_taglist.F ml_ff_taglist.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_struct.F ml_ff_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_mpi_shmem.F ml_ff_mpi_shmem.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 vdwforcefield_glb.F vdwforcefield_glb.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 jacobi.F jacobi.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 scala_struct.F scala_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ini.F ini.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 scala.F scala.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 nvcuda.F nvcuda.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 crayhip.F crayhip.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 intelmkl.F intelmkl.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 openmp.F openmp.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 openacc.F openacc.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 offload.F offload.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 scalapack_wrappers.F scalapack_wrappers.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 blas_wrappers.F blas_wrappers.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 lapack_wrappers.F lapack_wrappers.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 asa.F asa.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 lattice.F lattice.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 poscar.F poscar.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fft_comm.F fft_comm.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fftw.F fftw.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fft_wrappers.F fft_wrappers.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fft_base.F fft_base.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mgrid.F mgrid.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 libmbd.F libmbd.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_asa2.F ml_asa2.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_mpi.F ml_ff_mpi.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_helper.F ml_ff_helper.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_logfile.F ml_ff_logfile.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_math.F ml_ff_math.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_iohandle.F ml_ff_iohandle.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_memory.F ml_ff_memory.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_abinitio.F ml_ff_abinitio.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_ff2.F ml_ff_ff2.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_ff3.F ml_ff_ff3.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_ff.F ml_ff_ff.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_ff_mlff.F ml_ff_mlff.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 vaspml.F vaspml.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ldalib.F ldalib.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wpbe.F wpbe.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ggalib.F ggalib.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mbj.F mbj.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mggalib.F mggalib.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 vdw_nl.F vdw_nl.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 xc_driver.F xc_driver.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 setex.F setex.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pseudo.F pseudo.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 radial.F radial.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 gridq.F gridq.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 coulomb_cutoff.F coulomb_cutoff.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ebs.F ebs.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 symlib.F symlib.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 gauss_quad.F gauss_quad.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 m_unirnk.F m_unirnk.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mkpoints.F mkpoints.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 random.F random.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wave.F wave.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wave_mpi.F wave_mpi.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wave_high.F wave_high.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 bext.F bext.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 spinsym.F spinsym.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 symmetry.F symmetry.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 lattlib.F lattlib.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 nonl.F nonl.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 nonlr.F nonlr.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 nonl_high.F nonl_high.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dfast.F dfast.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 choleski2.F choleski2.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mix.F mix.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 hamil.F hamil.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 constrmag.F constrmag.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 cl_shift.F cl_shift.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 relativistic.F relativistic.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 LDApU.F LDApU.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 paw_base.F paw_base.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 tau_mu.F tau_mu.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fexcg.F fexcg.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 egrad.F egrad.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pawsym.F pawsym.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pawfock.F pawfock.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pawlhf.F pawlhf.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 diis.F diis.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rhfatm.F rhfatm.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 hyperfine.F hyperfine.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fock_ace.F fock_ace.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mkpoints_full.F mkpoints_full.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 charge.F charge.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 us.F us.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 extpot.F extpot.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 paw.F paw.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 Lebedev-Laikov.F Lebedev-Laikov.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 stockholder.F stockholder.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pot_electrostat.F pot_electrostat.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dipol.F dipol.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 solvation.F solvation.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 scpc.F scpc.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fermi_energy.F fermi_energy.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 tet.F tet.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dos.F dos.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elf.F elf.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 hamil_rot.F hamil_rot.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 chain.F chain.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dyna.F dyna.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fileio.F fileio.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 vhdf5.F vhdf5.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 bandgap_tools.F bandgap_tools.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pot.F pot.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 sphpro.F sphpro.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 core_rel.F core_rel.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 aedens.F aedens.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wavpre.F wavpre.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wavpre_noio.F wavpre_noio.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 broyden.F broyden.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dynbr.F dynbr.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 reader.F reader.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 writer.F writer.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 xml_writer.F xml_writer.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 brent.F brent.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 stufak.F stufak.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 opergrid.F opergrid.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 stepver.F stepver.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fast_aug.F fast_aug.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fock_multipole.F fock_multipole.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fock.F fock.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fock_dbl.F fock_dbl.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fock_frc.F fock_frc.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 supercell.F supercell.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mkpoints_change.F mkpoints_change.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 subrot_cluster.F subrot_cluster.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 sym_grad.F sym_grad.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mymath.F mymath.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 npt_dynamics.F npt_dynamics.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 subdftd3.F subdftd3.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 subdftd4.F subdftd4.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 internals.F internals.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dynconstr.F dynconstr.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dimer_heyden.F dimer_heyden.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dvvtrajectory.F dvvtrajectory.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 vdwforcefield.F vdwforcefield.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 nmr.F nmr.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pead.F pead.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 k-proj.F k-proj.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 subrot.F subrot.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 subrot_scf.F subrot_scf.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 paircorrection.F paircorrection.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rpa_force.F rpa_force.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_reader.F ml_reader.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_interface_writer.F ml_interface_writer.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ml_interface.F ml_interface.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 coulomb_cutoff_gradients.F coulomb_cutoff_gradients.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 force.F force.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pwlhf.F pwlhf.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 gw_model.F gw_model.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 optreal.F optreal.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 steep.F steep.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rmm-diis.F rmm-diis.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 davidson.F davidson.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 david_full.F david_full.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 david_inner.F david_inner.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 root_find.F root_find.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 lcao_bare.F lcao_bare.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 locproj.F locproj.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 electron_common.F electron_common.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 electron.F electron.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rot.F rot.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 electron_all.F electron_all.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 shm.F shm.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pardens.F pardens.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 optics.F optics.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 constr_cell_relax.F constr_cell_relax.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 stm.F stm.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 finite_diff.F finite_diff.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elpol.F elpol.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 hamil_lr.F hamil_lr.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rmm-diis_lr.F rmm-diis_lr.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 subrot_lr.F subrot_lr.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 lr_helper.F lr_helper.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 hamil_lrf.F hamil_lrf.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elinear_response.F elinear_response.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ilinear_response.F ilinear_response.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 linear_optics.F linear_optics.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 setlocalpp.F setlocalpp.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wannier.F wannier.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 electron_OEP.F electron_OEP.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 electron_lhf.F electron_lhf.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 twoelectron4o.F twoelectron4o.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 minimax_ini.F minimax_ini.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 minimax_dependence.F minimax_dependence.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 minimax_functions1D.F minimax_functions1D.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 minimax_functions2D.F minimax_functions2D.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 minimax_varpro.F minimax_varpro.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 minimax.F minimax.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 umco.F umco.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 mlwf.F mlwf.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ratpol.F ratpol.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 pade_fit.F pade_fit.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 screened_2e.F screened_2e.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wave_cacher.F wave_cacher.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 crpa.F crpa.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 chi_base.F chi_base.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wpot.F wpot.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 local_field.F local_field.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ump2.F ump2.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ump2kpar.F ump2kpar.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 fcidump.F fcidump.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 ump2no.F ump2no.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 bse_te.F bse_te.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 bse_lanczos.F bse_lanczos.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 bse.F bse.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 bse_driver.F bse_driver.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 time_propagation.F time_propagation.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 esf.F esf.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 acfdt.F acfdt.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 afqmc.F afqmc.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rpax.F rpax.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 chi.F chi.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dmft.F dmft.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 GG_base.F GG_base.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 acfdt_GG.F acfdt_GG.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 greens_orbital.F greens_orbital.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 lt_mp2.F lt_mp2.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rnd_orb_mp2.F rnd_orb_mp2.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 greens_real_space.F greens_real_space.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 chi_GG.F chi_GG.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 chi_super.F chi_super.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 sydmat.F sydmat.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rmm-diis_mlr.F rmm-diis_mlr.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 linear_response_NMR.F linear_response_NMR.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wannier_interpol.F wannier_interpol.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wave_interpolate.F wave_interpolate.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wave_rotator.F wave_rotator.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wave_window.F wave_window.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wap.F wap.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_potential_struct.F elphon_potential_struct.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_base.F elphon_base.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_triplets.F elphon_triplets.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_potential.F elphon_potential.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_accumulators.F elphon_accumulators.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_kgrid.F elphon_kgrid.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 transport.F transport.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_common.F elphon_common.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_mels.F elphon_mels.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_selfen_ph.F elphon_selfen_ph.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_driver.F elphon_driver.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 linear_response.F linear_response.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 auger.F auger.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 dmatrix.F dmatrix.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 phonon.F phonon.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon_derivative.F elphon_derivative.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 wannier_mats.F wannier_mats.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 elphon.F elphon.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 core_con_mat.F core_con_mat.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 embed.F embed.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 rpa_high.F rpa_high.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+fpp -f_com=no -free -w0 main.F main.f90 -DHOST=\"LinuxIFC\" -DMPI -DMPI_BLOCK=8000 -Duse_collective -DscaLAPACK -DCACHE_SIZE=4000 -Davoidalloc -Dvasp6 -Dtbdyn -Dfock_dblbuf -DVASP_HDF5 -DVASP2WANNIER90
+awk -f makedeps.awk c2f_interface.f90 simd.f90 base.f90 string.f90 tutor.f90 version.f90 build_info.f90 command_line.f90 vhdf5_base.f90 incar_reader.f90 reader_base.f90 openmp_struct.f90 openacc_struct.f90 offload_struct.f90 mpi.f90 mpi_shmem.f90 main_mpi.f90 mathtools.f90 profiling.f90 bse_struct.f90 mgrid_struct.f90 pot_struct.f90 hamil_struct.f90 radial_struct.f90 pseudo_struct.f90 wave_struct.f90 nl_struct.f90 mkpoints_struct.f90 bandgap_struct.f90 poscar_struct.f90 esf_struct.f90 afqmc_struct.f90 minimax_struct.f90 setex_struct.f90 locproj_struct.f90 fock_glb.f90 chi_glb.f90 smart_allocate.f90 xml.f90 constant.f90 plugins.f90 ml_ff_c2f_interface.f90 ml_ff_prec.f90 ml_ff_string.f90 ml_ff_tutor.f90 ml_ff_constant.f90 ml_ff_mpi_help.f90 ml_ff_neighbor.f90 ml_ff_taglist.f90 ml_ff_struct.f90 ml_ff_mpi_shmem.f90 vdwforcefield_glb.f90 jacobi.f90 scala_struct.f90 ini.f90 scala.f90 nvcuda.f90 crayhip.f90 intelmkl.f90 openmp.f90 openacc.f90 offload.f90 scalapack_wrappers.f90 blas_wrappers.f90 lapack_wrappers.f90 asa.f90 lattice.f90 poscar.f90 fft_comm.f90 fftw.f90 fft_wrappers.f90 fft_base.f90 mgrid.f90 libmbd.f90 ml_asa2.f90 ml_ff_mpi.f90 ml_ff_helper.f90 ml_ff_logfile.f90 ml_ff_math.f90 ml_ff_iohandle.f90 ml_ff_memory.f90 ml_ff_abinitio.f90 ml_ff_ff2.f90 ml_ff_ff3.f90 ml_ff_ff.f90 ml_ff_mlff.f90 vaspml.f90 ldalib.f90 wpbe.f90 ggalib.f90 mbj.f90 mggalib.f90 vdw_nl.f90 xc_driver.f90 setex.f90 pseudo.f90 radial.f90 gridq.f90 coulomb_cutoff.f90 ebs.f90 symlib.f90 gauss_quad.f90 m_unirnk.f90 mkpoints.f90 random.f90 wave.f90 wave_mpi.f90 wave_high.f90 bext.f90 spinsym.f90 symmetry.f90 lattlib.f90 nonl.f90 nonlr.f90 nonl_high.f90 dfast.f90 choleski2.f90 mix.f90 hamil.f90 constrmag.f90 cl_shift.f90 relativistic.f90 LDApU.f90 paw_base.f90 tau_mu.f90 fexcg.f90 egrad.f90 pawsym.f90 pawfock.f90 pawlhf.f90 diis.f90 rhfatm.f90 hyperfine.f90 fock_ace.f90 mkpoints_full.f90 charge.f90 us.f90 extpot.f90 paw.f90 Lebedev-Laikov.f90 stockholder.f90 pot_electrostat.f90 dipol.f90 solvation.f90 scpc.f90 fermi_energy.f90 tet.f90 dos.f90 elf.f90 hamil_rot.f90 chain.f90 dyna.f90 fileio.f90 vhdf5.f90 bandgap_tools.f90 pot.f90 sphpro.f90 core_rel.f90 aedens.f90 wavpre.f90 wavpre_noio.f90 broyden.f90 dynbr.f90 reader.f90 writer.f90 xml_writer.f90 brent.f90 stufak.f90 opergrid.f90 stepver.f90 fast_aug.f90 fock_multipole.f90 fock.f90 fock_dbl.f90 fock_frc.f90 supercell.f90 mkpoints_change.f90 subrot_cluster.f90 sym_grad.f90 mymath.f90 npt_dynamics.f90 subdftd3.f90 subdftd4.f90 internals.f90 dynconstr.f90 dimer_heyden.f90 dvvtrajectory.f90 vdwforcefield.f90 nmr.f90 pead.f90 k-proj.f90 subrot.f90 subrot_scf.f90 paircorrection.f90 rpa_force.f90 ml_reader.f90 ml_interface_writer.f90 ml_interface.f90 coulomb_cutoff_gradients.f90 force.f90 pwlhf.f90 gw_model.f90 optreal.f90 steep.f90 rmm-diis.f90 davidson.f90 david_full.f90 david_inner.f90 root_find.f90 lcao_bare.f90 locproj.f90 electron_common.f90 electron.f90 rot.f90 electron_all.f90 shm.f90 pardens.f90 optics.f90 constr_cell_relax.f90 stm.f90 finite_diff.f90 elpol.f90 hamil_lr.f90 rmm-diis_lr.f90 subrot_lr.f90 lr_helper.f90 hamil_lrf.f90 elinear_response.f90 ilinear_response.f90 linear_optics.f90 setlocalpp.f90 wannier.f90 electron_OEP.f90 electron_lhf.f90 twoelectron4o.f90 minimax_ini.f90 minimax_dependence.f90 minimax_functions1D.f90 minimax_functions2D.f90 minimax_varpro.f90 minimax.f90 umco.f90 mlwf.f90 ratpol.f90 pade_fit.f90 screened_2e.f90 wave_cacher.f90 crpa.f90 chi_base.f90 wpot.f90 local_field.f90 ump2.f90 ump2kpar.f90 fcidump.f90 ump2no.f90 bse_te.f90 bse_lanczos.f90 bse.f90 bse_driver.f90 time_propagation.f90 esf.f90 acfdt.f90 afqmc.f90 rpax.f90 chi.f90 dmft.f90 GG_base.f90 acfdt_GG.f90 greens_orbital.f90 lt_mp2.f90 rnd_orb_mp2.f90 greens_real_space.f90 chi_GG.f90 chi_super.f90 sydmat.f90 rmm-diis_mlr.f90 linear_response_NMR.f90 wannier_interpol.f90 wave_interpolate.f90 wave_rotator.f90 wave_window.f90 wap.f90 elphon_potential_struct.f90 elphon_base.f90 elphon_triplets.f90 elphon_potential.f90 elphon_accumulators.f90 elphon_kgrid.f90 transport.f90 elphon_common.f90 elphon_mels.f90 elphon_selfen_ph.f90 elphon_driver.f90 linear_response.f90 auger.f90 dmatrix.f90 phonon.f90 elphon_derivative.f90 wannier_mats.f90 elphon.f90 core_con_mat.f90 embed.f90 rpa_high.f90 main.f90 > .depend
+make[2]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+make[1]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+make -C build/ncl VERSION=ncl all
+make[1]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+rsync -ru ../../src/lib .
+rsync -ru ../../src/parser .
+rsync -u ../../src/*.F ../../src/*.inc .
+make build_info
+make[2]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+printf "    character(len=*), parameter :: cpp_options = '&\n&-DHOST=\"LinuxIFC\" &\n&-DMPI &\n&-DMPI_BLOCK=8000 &\n&-Duse_collective &\n&-DscaLAPACK &\n&-DCACHE_SIZE=4000 &\n&-Davoidalloc &\n&-Dvasp6 &\n&-Dtbdyn &\n&-Dfock_dblbuf &\n&-DVASP_HDF5 &\n&-DVASP2WANNIER90'\n" >  build_info.inc
+printf "    character(len=*), parameter :: link_line   = '&\n&mpiifort &\n&-fc=ifx &\n&-mkl=sequential &\n&-Llib &\n&-ldmy &\n&-Lparser &\n&-lparser &\n&-lstdc++ &\n&-L/usr/physics/oneapi/2024.2.1/mkl/2024.2/lib/intel64 &\n&-lmkl_scalapack_lp64 &\n&-lmkl_blacs_intelmpi_lp64 &\n&-L/usr/physics/hdf/5/1.14.1-2_intel2021/lib &\n&-lhdf5_fortran &\n&/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/libwannier.a'\n"   >> build_info.inc
+printf "    character(len=*), parameter :: fc     = '&\n&mpiifort &\n&-fc=ifx'\n"     >>  build_info.inc
+printf "    character(len=*), parameter :: fcl    = '&\n&mpiifort &\n&-fc=ifx &\n&-mkl=sequential'\n"    >> build_info.inc
+printf "    character(len=*), parameter :: fflags = '&\n&-assume &\n&byterecl &\n&-w &\n&-axCORE-AVX512'\n" >> build_info.inc
+printf "    character(len=*), parameter :: llibs  = '&\n&-lstdc++ &\n&-L/usr/physics/oneapi/2024.2.1/mkl/2024.2/lib/intel64 &\n&-lmkl_scalapack_lp64 &\n&-lmkl_blacs_intelmpi_lp64 &\n&-L/usr/physics/hdf/5/1.14.1-2_intel2021/lib &\n&-lhdf5_fortran &\n&/cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/libwannier.a'\n"  >>  build_info.inc
+printf "    character(len=*), parameter :: incs   = '&\n&-I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw &\n&-I/usr/physics/hdf/5/1.14.1-2_intel2021/include'\n"   >> build_info.inc
+make[2]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+cp makefile.include parser
+make -C parser -j1
+make[2]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+make[2]: warning: -j1 forced in submake: resetting jobserver mode.
+make libparser.a
+make[3]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl/parser'
+icpx -D YY_parse_DEBUG=1 -c sites.cpp -o sites.o
+cp makefile.include lib
+make -C lib -j1
+make[2]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+make[2]: warning: -j1 forced in submake: resetting jobserver mode.
+make libdmy.a
+make[3]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl/lib'
+fpp -f_com=no -free -w0 preclib.F preclib.f90
+mpiifort -fc=ifx -O1 -free -names lowercase -c -o preclib.o preclib.f90
+icx -O -c -o timing_.o timing_.c
+timing_.c:20:19: warning: a function declaration without a prototype is deprecated in all versions of C and is treated as a zero-parameter prototype in C23, conflicting with a previous declaration [-Wdeprecated-non-prototype]
+   20 |    int            getrusage();
+      |                   ^
+/usr/include/sys/resource.h:89:12: note: conflicting prototype is here
+   89 | extern int getrusage (__rusage_who_t __who, struct rusage *__usage) __THROW;
+      |            ^
+timing_.c:33:28: warning: passing arguments to 'gettimeofday' without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
+   33 |    dumerr    = gettimeofday(&realtime,NULL);
+      |                            ^
+timing_.c:10:6: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
+   10 | void timing_C(mode,utime,stime,now,minpgf,majpgf,maxrsize,avsize,swaps,ios,cswitch,ierr)
+      |      ^
+3 warnings generated.
+icx -O -c -o derrf_.o derrf_.c
+derrf_.c:7:8: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
+    7 | double errf_C(x)
+      |        ^
+derrf_.c:12:8: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
+   12 | double errfc_C(x)
+      |        ^
+2 warnings generated.
+icx -O -c -o dclock_.o dclock_.c
+dclock_.c:19:16: warning: a function declaration without a prototype is deprecated in all versions of C and is treated as a zero-parameter prototype in C23, conflicting with a previous declaration [-Wdeprecated-non-prototype]
+   19 |         int    getrusage();
+      |                ^
+/usr/include/sys/resource.h:89:12: note: conflicting prototype is here
+   89 | extern int getrusage (__rusage_who_t __who, struct rusage *__usage) __THROW;
+      |            ^
+dclock_.c:32:28: warning: passing arguments to 'gettimeofday' without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
+   32 |         ierr = gettimeofday(&now,NULL);
+      |                            ^
+dclock_.c:15:6: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
+   15 | void vtime_C(vputim,cputim)
+      |      ^
+dclock_.c:47:28: warning: passing arguments to 'gettimeofday' without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
+   47 |         ierr = gettimeofday(&now,NULL);
+      |                            ^
+dclock_.c:41:6: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
+   41 | void vtime2_C(cputim)
+      |      ^
+5 warnings generated.
+fpp -f_com=no -free -w0 diolib.F diolib.f90
+mpiifort -fc=ifx -O1 -free -names lowercase -c -o diolib.o diolib.f90
+fpp -f_com=no -free -w0 dlexlib.F dlexlib.f90
+mpiifort -fc=ifx -O1 -free -names lowercase -c -o dlexlib.o dlexlib.f90
+fpp -f_com=no -free -w0 drdatab.F drdatab.f90
+mpiifort -fc=ifx -O1 -free -names lowercase -c -o drdatab.o drdatab.f90
+mpiifort -fc=ifx -O1  -c linpack_double.f
+rm -f libdmy.a
+ar vq libdmy.a preclib.o timing_.o derrf_.o dclock_.o diolib.o dlexlib.o drdatab.o linpack_double.o
+ar: creating libdmy.a
+a - preclib.o
+a - timing_.o
+a - derrf_.o
+a - dclock_.o
+a - diolib.o
+a - dlexlib.o
+a - drdatab.o
+a - linpack_double.o
+make[3]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl/lib'
+make[2]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl/lib'
+icpx -D YY_parse_DEBUG=1 -c functions.cpp -o functions.o
+icpx -D YY_parse_DEBUG=1 -c radial.cpp -o radial.o
+icpx -D YY_parse_DEBUG=1 -c basis.cpp -o basis.o
+icpx -D YY_parse_DEBUG=1 -c lex.yy.c -o lex.yy.o
+icpx: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+icpx -D YY_parse_DEBUG=1 -c locproj.tab.c -o locproj.tab.o
+icpx: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+icpx -D YY_parse_DEBUG=1 -c yywrap.c -o yywrap.o
+icpx: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+rm -f libparser.a
+ar vq libparser.a sites.o functions.o radial.o basis.o lex.yy.o locproj.tab.o yywrap.o
+ar: creating libparser.a
+a - sites.o
+a - functions.o
+a - radial.o
+a - basis.o
+a - lex.yy.o
+a - locproj.tab.o
+a - yywrap.o
+make[3]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl/parser'
+make[2]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl/parser'
+rm -f vasp ; make vasp ; cp vasp ../../bin/vasp_ncl
+make[2]: Entering directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c c2f_interface.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c simd.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c base.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c build_info.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c openmp_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c openacc_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c offload_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mpi_shmem.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c afqmc_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_c2f_interface.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_prec.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_taglist.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_mpi_shmem.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c scala_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c nvcuda.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c crayhip.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c intelmkl.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c openacc.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c offload.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c vaspml.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c symlib.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c m_unirnk.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c diis.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c stepver.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c constr_cell_relax.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c minimax_ini.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c minimax_functions1D.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c string.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c bse_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c radial_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mkpoints_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c bandgap_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c poscar_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c setex_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c locproj_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c smart_allocate.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c constant.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_string.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_constant.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c scalapack_wrappers.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c blas_wrappers.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c lapack_wrappers.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pseudo_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_mpi_help.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c tutor.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c version.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_tutor.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_neighbor.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c command_line.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c vhdf5_base.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mpi.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mathtools.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c xml.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c vdwforcefield_glb.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c asa.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c lattice.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_asa2.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_mpi.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_helper.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c gauss_quad.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c Lebedev-Laikov.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c brent.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c root_find.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c electron_common.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c minimax_functions2D.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c profiling.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mgrid_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c nl_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c minimax_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c jacobi.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O1 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fftw.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fft_wrappers.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O1 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fft_base.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mgrid.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_logfile.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c incar_reader.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pot_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wave_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O1 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c minimax_dependence.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c minimax_varpro.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_kgrid.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c hamil_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c esf_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fock_glb.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_math.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_memory.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ldalib.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c gridq.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c coulomb_cutoff.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mix.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c opergrid.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_reader.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c reader_base.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c plugins.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c openmp.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ebs.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c random.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c bext.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c main_mpi.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wpbe.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c vdw_nl.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mkpoints.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ratpol.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c chi_glb.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ini.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c poscar.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ggalib.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c setex.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c minimax.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wave_window.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c scala.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fft_comm.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c libmbd.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mbj.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pseudo.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c symmetry.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c lattlib.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c chain.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c stufak.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c subdftd4.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dimer_heyden.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dvvtrajectory.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c paircorrection.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_potential_struct.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_triplets.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mggalib.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wave.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dyna.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dynbr.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mymath.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_iohandle.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c xc_driver.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_interface_writer.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c sydmat.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c radial.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wave_mpi.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c spinsym.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c nonl.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c nonlr.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dfast.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c constrmag.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c tau_mu.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c extpot.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fermi_energy.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elf.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c reader.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c xml_writer.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c subrot_cluster.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c npt_dynamics.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c internals.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c shm.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c stm.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O1 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pade_fit.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_abinitio.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_ff2.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_ff3.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wave_high.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c nonl_high.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fexcg.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c tet.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c hamil_rot.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dynconstr.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c optreal.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c afqmc.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_ff.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c choleski2.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c hamil.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O1 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c cl_shift.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c relativistic.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c paw_base.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pawfock.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fock_ace.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mkpoints_full.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dos.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fast_aug.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rmm-diis.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c optics.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c hamil_lr.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rmm-diis_lr.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c subrot_lr.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c hamil_lrf.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c setlocalpp.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rmm-diis_mlr.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c LDApU.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c egrad.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pawsym.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pawlhf.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rhfatm.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c hyperfine.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c charge.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c us.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c stockholder.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pot_electrostat.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dipol.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c scpc.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wavpre.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wavpre_noio.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c broyden.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c writer.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fock_multipole.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rpa_force.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c coulomb_cutoff_gradients.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c solvation.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c core_rel.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c aedens.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O1 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c paw.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_ff_mlff.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fileio.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c vhdf5.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c nmr.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fock.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ml_interface.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c bandgap_tools.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pot.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c sphpro.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c lcao_bare.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pardens.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c bse_te.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wap.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dmatrix.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fock_dbl.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fock_frc.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c supercell.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mkpoints_change.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c subdftd3.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c david_inner.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elpol.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c bse_lanczos.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wave_rotator.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c sym_grad.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pead.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c screened_2e.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c lr_helper.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wannier.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c k-proj.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c subrot.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c steep.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c davidson.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c david_full.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c finite_diff.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c subrot_scf.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c pwlhf.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c gw_model.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c locproj.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c linear_response_NMR.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rot.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c vdwforcefield.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elinear_response.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c phonon.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_derivative.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wannier_mats.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c linear_optics.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c umco.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c embed.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c twoelectron4o.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c mlwf.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wave_interpolate.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c core_con_mat.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rpa_high.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_base.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wave_cacher.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_potential.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c transport.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c crpa.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c force.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_accumulators.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c electron.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c electron_all.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ilinear_response.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c electron_OEP.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c electron_lhf.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c chi_base.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_common.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_mels.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wpot.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c esf.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c lt_mp2.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rnd_orb_mp2.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_selfen_ph.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c local_field.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ump2.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ump2kpar.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c fcidump.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c ump2no.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c rpax.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c elphon_driver.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c bse.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c bse_driver.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c acfdt.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c time_propagation.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c chi.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c dmft.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c GG_base.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c wannier_interpol.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c linear_response.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c auger.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c acfdt_GG.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c greens_orbital.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c greens_real_space.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c chi_GG.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O2 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c chi_super.f90
+mpiifort -fc=ifx -free -names lowercase -assume byterecl -w -axCORE-AVX512 -O0 -I/usr/physics/oneapi/2024.2.1/mkl/2024.2/include/fftw -I/usr/physics/hdf/5/1.14.1-2_intel2021/include  -c main.f90
+mpiifort -fc=ifx -mkl=sequential -o vasp c2f_interface.o simd.o base.o string.o tutor.o version.o build_info.o command_line.o vhdf5_base.o incar_reader.o reader_base.o openmp_struct.o openacc_struct.o offload_struct.o mpi.o mpi_shmem.o main_mpi.o mathtools.o profiling.o bse_struct.o mgrid_struct.o pot_struct.o hamil_struct.o radial_struct.o pseudo_struct.o wave_struct.o nl_struct.o mkpoints_struct.o bandgap_struct.o poscar_struct.o esf_struct.o afqmc_struct.o minimax_struct.o setex_struct.o locproj_struct.o fock_glb.o chi_glb.o smart_allocate.o xml.o constant.o plugins.o ml_ff_c2f_interface.o ml_ff_prec.o ml_ff_string.o ml_ff_tutor.o ml_ff_constant.o ml_ff_mpi_help.o ml_ff_neighbor.o ml_ff_taglist.o ml_ff_struct.o ml_ff_mpi_shmem.o vdwforcefield_glb.o jacobi.o scala_struct.o ini.o scala.o nvcuda.o crayhip.o intelmkl.o openmp.o openacc.o offload.o scalapack_wrappers.o blas_wrappers.o lapack_wrappers.o asa.o lattice.o poscar.o fft_comm.o fftw.o fft_wrappers.o fft_base.o mgrid.o libmbd.o ml_asa2.o ml_ff_mpi.o ml_ff_helper.o ml_ff_logfile.o ml_ff_math.o ml_ff_iohandle.o ml_ff_memory.o ml_ff_abinitio.o ml_ff_ff2.o ml_ff_ff3.o ml_ff_ff.o ml_ff_mlff.o vaspml.o ldalib.o wpbe.o ggalib.o mbj.o mggalib.o vdw_nl.o xc_driver.o setex.o pseudo.o radial.o gridq.o coulomb_cutoff.o ebs.o symlib.o gauss_quad.o m_unirnk.o mkpoints.o random.o wave.o wave_mpi.o wave_high.o bext.o spinsym.o symmetry.o lattlib.o nonl.o nonlr.o nonl_high.o dfast.o choleski2.o mix.o hamil.o constrmag.o cl_shift.o relativistic.o LDApU.o paw_base.o tau_mu.o fexcg.o egrad.o pawsym.o pawfock.o pawlhf.o diis.o rhfatm.o hyperfine.o fock_ace.o mkpoints_full.o charge.o us.o extpot.o paw.o Lebedev-Laikov.o stockholder.o pot_electrostat.o dipol.o solvation.o scpc.o fermi_energy.o tet.o dos.o elf.o hamil_rot.o chain.o dyna.o fileio.o vhdf5.o bandgap_tools.o pot.o sphpro.o core_rel.o aedens.o wavpre.o wavpre_noio.o broyden.o dynbr.o reader.o writer.o xml_writer.o brent.o stufak.o opergrid.o stepver.o fast_aug.o fock_multipole.o fock.o fock_dbl.o fock_frc.o supercell.o mkpoints_change.o subrot_cluster.o sym_grad.o mymath.o npt_dynamics.o subdftd3.o subdftd4.o internals.o dynconstr.o dimer_heyden.o dvvtrajectory.o vdwforcefield.o nmr.o pead.o k-proj.o subrot.o subrot_scf.o paircorrection.o rpa_force.o ml_reader.o ml_interface_writer.o ml_interface.o coulomb_cutoff_gradients.o force.o pwlhf.o gw_model.o optreal.o steep.o rmm-diis.o davidson.o david_full.o david_inner.o root_find.o lcao_bare.o locproj.o electron_common.o electron.o rot.o electron_all.o shm.o pardens.o optics.o constr_cell_relax.o stm.o finite_diff.o elpol.o hamil_lr.o rmm-diis_lr.o subrot_lr.o lr_helper.o hamil_lrf.o elinear_response.o ilinear_response.o linear_optics.o setlocalpp.o wannier.o electron_OEP.o electron_lhf.o twoelectron4o.o minimax_ini.o minimax_dependence.o minimax_functions1D.o minimax_functions2D.o minimax_varpro.o minimax.o umco.o mlwf.o ratpol.o pade_fit.o screened_2e.o wave_cacher.o crpa.o chi_base.o wpot.o local_field.o ump2.o ump2kpar.o fcidump.o ump2no.o bse_te.o bse_lanczos.o bse.o bse_driver.o time_propagation.o esf.o acfdt.o afqmc.o rpax.o chi.o dmft.o GG_base.o acfdt_GG.o greens_orbital.o lt_mp2.o rnd_orb_mp2.o greens_real_space.o chi_GG.o chi_super.o sydmat.o rmm-diis_mlr.o linear_response_NMR.o wannier_interpol.o wave_interpolate.o wave_rotator.o wave_window.o wap.o elphon_potential_struct.o elphon_base.o elphon_triplets.o elphon_potential.o elphon_accumulators.o elphon_kgrid.o transport.o elphon_common.o elphon_mels.o elphon_selfen_ph.o elphon_driver.o linear_response.o auger.o dmatrix.o phonon.o elphon_derivative.o wannier_mats.o elphon.o core_con_mat.o embed.o rpa_high.o  main.o  -Llib -ldmy -Lparser -lparser -lstdc++ -L/usr/physics/oneapi/2024.2.1/mkl/2024.2/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -L/usr/physics/hdf/5/1.14.1-2_intel2021/lib -lhdf5_fortran /cmt2/lniu6305/Packages/soc_topology_20260922_1435/wannier90-3.1.0/libwannier.a 
+ifx: command line remark #10412: option '-mkl=sequential' is deprecated and will be removed in a future release. Please use the replacement option '-qmkl=sequential'
+make[2]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+make[1]: Leaving directory '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/vasp/build/ncl'
+No broken requirements found.
+Python packages import successfully
+Tool build completed; WCC job performs the runtime overlap pilot.

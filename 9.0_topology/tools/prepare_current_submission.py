@@ -6,10 +6,10 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-REPO = Path('/cmt2/lniu6305/H-Beryllene_20250718')
+REPO = Path(__file__).resolve().parents[2]
 ROOT = REPO / '9.0_topology'
 SCRIPTS = ROOT / 'tools'
-PREFIX = Path('/cmt2/lniu6305/Packages/soc_topology_20260922_1435')
+PREFIX = ROOT / 'packages' / 'soc_topology'
 PYTHON = PREFIX / 'venv/bin/python'
 VASP = Path('/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl')
 DIRECTORIES = dict(alpha='a-Beryllene', beta='b-Beryllene', st='c-Beryllene_trilayer',
