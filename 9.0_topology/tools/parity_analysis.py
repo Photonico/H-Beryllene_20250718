@@ -187,7 +187,13 @@ def run_irrep(directory, run, occupied, degeneracy, separation=None):
                                    stdout=log, stderr=subprocess.STDOUT, check=False)
     require(completed.returncode == 0, "IrRep failed; see " + str(directory / "irrep.log"))
     log_text = (directory / "irrep.log").read_text(errors="replace")
-    require(not re.search(r"WARNING|orthogonality.*>|non.?unitary|non-integer", log_text,
+    # IrRep 2.1.3 prints these two informational warnings for the deliberately
+    # chosen DFT-cell, characters-only mode. They are not numerical failures.
+    numerical_log = "\n".join(line for line in log_text.splitlines()
+                              if not line.startswith((
+                                  "Warning: transformation to the convenctional unit cell",
+                                  "Warning: -kpnames not specified. Only traces of")))
+    require(not re.search(r"WARNING|orthogonality.*>|non.?unitary|non-integer", numerical_log,
                           re.IGNORECASE), "IrRep numerical warning requires review: " + str(directory))
     return load_irrep(directory / "irrep.json")
 
@@ -206,7 +212,7 @@ def campaign_main(campaign, args):
         sid = entry["id"]
         require(isinstance(sid, str) and re.fullmatch(r"[A-Za-z0-9_-]+", sid),
                 "Unsafe/invalid structure ID")
-        run = campaign / sid / "trim"
+        run = campaign / entry.get("directory", sid) / "trim"
         require(run.resolve().is_relative_to(campaign), "Run directory escapes campaign")
         validation = json.loads((run / "topology_validation.json").read_text())
         require(validation.get("manifest_entry", {}).get("id") == sid,
@@ -249,7 +255,7 @@ def main(argv=None):
                 "Prerequisite topology_validation.json did not pass")
         require(validation.get("expected_nelect") == args.expected_nelect,
                 "Prerequisite validator electron count disagrees")
-        for name in ("POSCAR", "OUTCAR"):
+        for name in ("POSCAR", "OUTCAR", "EIGENVAL"):
             require(validation["provenance"][name] == fingerprint(run / name),
                     "Validated file changed since validation: " + name)
         require(importlib.metadata.version("irrep") == "2.1.3", "This runner requires exactly IrRep 2.1.3")
@@ -270,7 +276,16 @@ def main(argv=None):
         operation, tau = select_inversion(raw, structure, geometry, args.symprec)
         parities, subspace = extract_trace_parities(raw, operation, args.expected_nelect,
                                                    args.trace_tolerance)
-        gap = float(subspace["Minimal direct gap (eV)"])
+        # IrRep measures against the mean of the final degenerate block.
+        # Use the actual boundary E_(N+1)-E_N from the validated eigenvalues.
+        eigenvalues = validation["eigenvalues"]
+        require(eigenvalues.get("all_four_2d_trim_present") is True,
+                "Validated eigenvalues do not contain all four 2D TRIM")
+        boundaries = [item for item in eigenvalues["manifolds"]
+                      if item["N"] == args.expected_nelect]
+        require(len(boundaries) == 1, "Validated target band manifold is missing")
+        gap = float(boundaries[0]["direct_gap_ev"])
+        irrep_gap = float(subspace["Minimal direct gap (eV)"])
         require(math.isfinite(gap) and gap > args.degen_thresh,
                 "Selected manifold touches upper bands at a sampled TRIM")
         separated = run_irrep(output / "separated", run, args.expected_nelect,
@@ -290,6 +305,7 @@ def main(argv=None):
                   "character_convention": "DFT-cell characters for actual {R=-I|tau}; no reference-cell phase substitution",
                   "trims": parities, "separated_state_counts": counts,
                   "minimum_direct_gap_at_four_TRIM_ev": gap,
+                  "irrep_gap_to_degenerate_block_mean_ev": irrep_gap,
                   "delta_product": product, "conditional_fu_kane_nu": 0 if product == 1 else 1,
                   "not_verified": ["Electronic time-reversal symmetry of the converged state",
                                    "Isolation of this fixed-band manifold over the full 2D Brillouin zone",

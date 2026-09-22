@@ -185,6 +185,8 @@ def main():
     parser.add_argument("structure_dir", type=Path)
     parser.add_argument("tools_dir", type=Path)
     parser.add_argument("--nelect", type=int, choices=(5,), default=5)
+    parser.add_argument("--gap-stage", action="append", default=[], metavar="DIRECTORY",
+                        help="Additional completed SOC gap-mesh/refinement directory, relative to structure_dir")
     args = parser.parse_args()
     structure, tools = args.structure_dir.resolve(), args.tools_dir.resolve()
     python = tools / "venv" / "bin" / "python"
@@ -193,11 +195,15 @@ def main():
         raise RuntimeError("Missing WCC Python environment")
     if Path(sys.prefix).resolve() != (tools / "venv").resolve():
         os.execv(str(python), [str(python), str(Path(__file__).resolve()),
-                             str(structure), str(tools), "--nelect", str(args.nelect)])
+                             str(structure), str(tools), "--nelect", str(args.nelect)]
+                 + [item for stage in args.gap_stage for item in ("--gap-stage", stage)])
     checker = Path(__file__).resolve().with_name("wcc_line_check.py")
     sources = [structure / "scf" / name for name in
                ("POSCAR", "POTCAR", "INCAR", "CHGCAR", "EIGENVAL", "OUTCAR")]
     sources += [structure / "trim" / name for name in ("EIGENVAL", "OUTCAR")]
+    stages = list(dict.fromkeys(["scf", "trim"] + args.gap_stage))
+    sources += [structure / stage / name for stage in stages if stage not in ("scf", "trim")
+                for name in ("EIGENVAL", "OUTCAR")]
     sources += [checker, Path(__file__).resolve()]
     for source in sources:
         if not source.is_file() or source.stat().st_size == 0:
@@ -226,7 +232,7 @@ def main():
               "nelect": 5, "threshold_ev": THRESHOLD, "manifolds": {}}
     try:
         eigenvals = {}
-        for stage in ("scf", "trim"):
+        for stage in stages:
             check_outcar(structure / stage / "OUTCAR")
             eigenvals[stage] = read_eigenval(structure / stage / "EIGENVAL")
             if eigenvals[stage]["nelect"] != 5:

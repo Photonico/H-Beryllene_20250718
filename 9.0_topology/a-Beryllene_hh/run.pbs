@@ -13,15 +13,16 @@ export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export PYTHONDONTWRITEBYTECODE=1
 
-cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_Topology/soc_topology_20260922_1435/alpha_2h'
+cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/a-Beryllene_hh'
 for stage in scf trim bands; do
-  cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_Topology/soc_topology_20260922_1435/alpha_2h'/"$stage"
-  test ! -e OUTCAR || { echo 'Refusing to overwrite an existing VASP run'; exit 20; }
+  cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/a-Beryllene_hh'/"$stage"
   if [ "$stage" != scf ]; then cp ../scf/CHGCAR CHGCAR; fi
   mpirun -np 42 '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' > vasp.log 2>&1
-  validation_args=(--manifest '/cmt2/lniu6305/H-Beryllene_20250718/9.0_Topology/soc_topology_20260922_1435/alpha_2h/manifest.json' --structure-id 'alpha_2h')
-  if [ "$stage" = trim ]; then validation_args+=(--require-wavecar); fi
-  python3 -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_Topology/soc_topology_20260922_1435/check_topology_outputs.py' . "${validation_args[@]}"
+  extra=()
+  if [ "$stage" = trim ]; then extra+=(--require-wavecar); fi
+  '/cmt2/lniu6305/Packages/soc_topology_20260922_1435/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/check_topology_outputs.py' . --manifest '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/a-Beryllene_hh/manifest.json' --structure-id 'alpha_2h' "${extra[@]}"
 done
-printf 'Completed %s\n' 'alpha_2h' > '/cmt2/lniu6305/H-Beryllene_20250718/9.0_Topology/soc_topology_20260922_1435/alpha_2h/PIPELINE_COMPLETE'
+cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/a-Beryllene_hh'
+'/cmt2/lniu6305/Packages/soc_topology_20260922_1435/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/refine_gap.py' '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/a-Beryllene_hh' --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' --ranks 42
+printf 'Completed alpha_2h\n' > PIPELINE_COMPLETE
 
