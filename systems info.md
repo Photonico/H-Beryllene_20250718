@@ -1,0 +1,33 @@
+# About
+
+## before commit and push to GitHub repo, run the following code:
+
+git add -u
+
+git ls-files -o --exclude-standard -z | while IFS= read -r -d '' f; do
+  [ -e "$f" ] || continue
+  size=$(wc -c < "$f" 2>/dev/null || echo 0)
+  if [ "$size" -le "$MAX" ]; then
+    git add -- "$f"
+  else
+    echo "skip large: $f ($size bytes)"
+  fi
+done
+
+## or
+
+git_add_safe() {
+  MAX=$((99*1024*1024))
+  git add -u
+  git ls-files -o --exclude-standard -z | while IFS= read -r -d '' f; do
+    [ -e "$f" ] || continue
+    size=$(wc -c < "$f" 2>/dev/null || echo 0)
+    if [ "$size" -le "$MAX" ]; then
+      git add -- "$f"
+    else
+      echo "skip large: $f ($size bytes)"
+    fi
+  done
+}
+
+git_add_safe
