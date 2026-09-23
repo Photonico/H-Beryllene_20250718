@@ -84,7 +84,7 @@ def incar_text(source, bands):
         "LSORBIT": ".TRUE.", "LNONCOLLINEAR": ".TRUE.", "MAGMOM": "9*0",
         "ISYM": "-1", "SAXIS": "0 0 1", "ALGO": "Normal", "EDIFF": "1E-8",
         "NELM": "200", "NELMDL": "-5", "NBANDS": str(NBANDS),
-        "NCORE": "6", "KPAR": "1", "LWAVE": ".FALSE.", "LCHARG": ".FALSE.",
+        "NCORE": "1", "KPAR": "1", "LWAVE": ".FALSE.", "LCHARG": ".FALSE.",
         "LWANNIER90": ".TRUE.", "LWANNIER90_RUN": ".FALSE.",
         "LWRITE_MMN_AMN": ".TRUE.", "LWRITE_UNK": ".FALSE.",
         "NUM_WANN": str(bands), "LOPTICS": ".FALSE.", "LEPSILON": ".FALSE.",
@@ -153,7 +153,7 @@ def run_manifold(destination, tools, bands, attempt):
         python, "wcc_line_check.py", "--archive", destination / "lines",
         "--bands", bands, "--nbands", NBANDS, "--threshold", THRESHOLD,
     ))
-    command = (f"mpirun -np 42 {shlex.quote(str(executable))} > vasp.log 2>&1; "
+    command = (f"mpirun -np 28 {shlex.quote(str(executable))} > vasp.log 2>&1; "
                f"vasp_status=$?; {check} --vasp-exit \"$vasp_status\"")
 
     def loop_request(points):
@@ -229,7 +229,7 @@ def main():
         raise RuntimeError("Expected three atoms in the 1H-beta POSCAR")
     owner = {"owner": OWNER, "structure": str(structure),
              "source_sha256": {str(path): sha256(path) for path in sources}}
-    root = structure / "wcc_direct"
+    root = structure / "wcc_direct_v2"
     try:
         root.mkdir()
         write_json_new(root / "owner.json", owner)
