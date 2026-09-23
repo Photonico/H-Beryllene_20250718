@@ -184,8 +184,10 @@ def validate(args):
         expected_target = (index + 1) % nkpts + 1
         if (source, target) != (index + 1, expected_target):
             raise ValueError("nnkp links do not follow the requested loop order")
+        # nnkp kpoints may be folded into the first Brillouin zone; its
+        # reciprocal shifts refer to the unwrapped Wannier90 input path.
         actual_step = [b + g - a for a, b, g in
-                       zip(nnpoints[source - 1], nnpoints[target - 1], shift)]
+                       zip(points[source - 1], points[target - 1], shift)]
         intended_step = [b - a for a, b in zip(points[index], points[index + 1])]
         if any(abs(a - b) > 2e-7 for a, b in zip(actual_step, intended_step)):
             raise ValueError("nnkp reciprocal translation follows a wrong periodic image")
