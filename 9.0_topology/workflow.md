@@ -100,3 +100,13 @@ for entry in json.loads((topology / "manifest.json").read_text())["structures"]:
 ## references
 
 Coexistence of superconductivity and topological aspects in beryllenes
+
+## 2026-09-23: continue SOC topology calculations
+
+The three beta SCF jobs hit the 200 GB memory limit before electronic iterations. Their SCF KPAR is now 1 instead of 7, retaining 42 MPI ranks, NCORE=6, 200 GB, and all physical settings. The preparation template also uses KPAR=1. Successful alpha, st, and alpha_2h calculations are retained.
+
+K-point review: all six SCF meshes remain Gamma-centered 105x105x1 with zero shift. Separate reciprocal-coordinate TRIM calculations include (0,0,0), (1/2,0,0), (0,1/2,0), and (1/2,1/2,0). Band paths retain the original reference coordinates; for distorted beta cells the nominal K label is a reference-path label, not an exact high-symmetry assignment. Local refinement and WCC reciprocal coordinates are unchanged. Finite sampling does not certify a gap everywhere.
+
+WCC screening now includes bands and verifies completed stage validation and input fingerprints. Reported subspace Z2 values remain conditional on electronic time-reversal symmetry; they are not automatically Fermi-level insulating invariants.
+
+Submitted jobs: beta=42143.headnode, beta_1h=42144.headnode, beta_2h=42145.headnode, parity=42146.headnode, wcc=42147.headnode. Parity waits for beta and beta_2h; WCC waits for beta_1h. No backup or recovery script is required; changes are managed in Git.

@@ -92,7 +92,7 @@ NWRITE = 3
             shutil.copyfile(src/'CONTCAR',d/'POSCAR')
             shutil.copyfile(src/'POTCAR',d/'POTCAR')
             if stage=='scf':
-                inc=common+'ISTART = 0\nICHARG = 1\nISYM = 2\nKPAR = 7\nLWAVE = .FALSE.\nLCHARG = .TRUE.\n'
+                inc=common+'ISTART = 0\nICHARG = 1\nISYM = 2\nKPAR = 1\nLWAVE = .FALSE.\nLCHARG = .TRUE.\n'
                 shutil.copyfile(src/'CHGCAR',d/'CHGCAR')
                 write(d/'KPOINTS','Dense SOC charge and sampled gap\n0\nGamma\n105 105 1\n0 0 0\n')
             else:
