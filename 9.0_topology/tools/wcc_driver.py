@@ -19,6 +19,7 @@ from wcc_line_check import check_outcar, gap_summary, read_eigenval
 OWNER = "beryllene-direct-wcc-v1"
 THRESHOLD = 1e-4
 NBANDS = 28
+VALIDATED_INPUTS = ("POSCAR", "POTCAR", "INCAR", "KPOINTS", "EIGENVAL", "OUTCAR")
 
 
 def sha256(path):
@@ -27,6 +28,20 @@ def sha256(path):
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def validate_stage_prerequisites(stage):
+    """Reject failed/stale evidence; a zero moment does not certify time reversal."""
+    report = json.loads((stage / "topology_validation.json").read_text())
+    if report.get("validation_passed") is not True or report.get("expected_nelect") != 5:
+        raise RuntimeError(f"Stage lacks valid neutral five-electron validation: {stage}")
+    if report.get("magnetism_warning"):
+        raise RuntimeError(f"Electronic magnetization prevents ordinary TR-Z2 analysis: {stage}")
+    for name in VALIDATED_INPUTS:
+        source = stage / name
+        current = {"bytes": source.stat().st_size, "sha256": sha256(source)}
+        if report.get("provenance", {}).get(name) != current:
+            raise RuntimeError(f"Validated input changed or lacks provenance: {source}")
 
 
 def write_json_new(path, data):
@@ -169,8 +184,9 @@ def run_manifold(destination, tools, bands, attempt):
     invariant = int(z2pack.invariant.z2(result, check_kramers_pairs=True))
     summary = {
         "status": "converged_sampled_subspace", "bands": bands, "z2": invariant,
-        "interpretation": "Isolated lowest-even-band subspace; not a Fermi-level insulating invariant.",
-        "limits": "Finite k-point sampling does not prove a nonzero direct gap everywhere.",
+        "topology_certified": False, "time_reversal_electronic_state_certified": False,
+        "interpretation": "Conditional Z2 of a sampled isolated lowest-even-band subspace, assuming electronic time reversal; not a Fermi-level insulating invariant.",
+        "limits": "Finite k-point sampling does not prove a nonzero direct gap everywhere. Zero total magnetization and boundary Kramers pairing do not certify electronic time-reversal symmetry.",
         "gap_threshold_ev": THRESHOLD, "convergence": report,
         "surface": "[t, s/2, 0]", "line_positions": to_native(result.t),
         "wcc": to_native(result.wcc), "z2pack_version": z2pack.__version__,
@@ -198,16 +214,16 @@ def main():
                              str(structure), str(tools), "--nelect", str(args.nelect)]
                  + [item for stage in args.gap_stage for item in ("--gap-stage", stage)])
     checker = Path(__file__).resolve().with_name("wcc_line_check.py")
-    sources = [structure / "scf" / name for name in
-               ("POSCAR", "POTCAR", "INCAR", "CHGCAR", "EIGENVAL", "OUTCAR")]
-    sources += [structure / "trim" / name for name in ("EIGENVAL", "OUTCAR")]
-    stages = list(dict.fromkeys(["scf", "trim"] + args.gap_stage))
-    sources += [structure / stage / name for stage in stages if stage not in ("scf", "trim")
-                for name in ("EIGENVAL", "OUTCAR")]
+    stages = list(dict.fromkeys(["scf", "trim", "bands"] + args.gap_stage))
+    sources = [structure / "scf" / "CHGCAR"]
+    sources += [structure / stage / name for stage in stages
+                for name in (*VALIDATED_INPUTS, "topology_validation.json")]
     sources += [checker, Path(__file__).resolve()]
     for source in sources:
         if not source.is_file() or source.stat().st_size == 0:
             raise RuntimeError(f"Missing or empty input: {source}")
+    for stage in stages:
+        validate_stage_prerequisites(structure / stage)
     poscar = (structure / "scf" / "POSCAR").read_text().splitlines()
     if sum(map(int, poscar[6].split())) != 3:
         raise RuntimeError("Expected three atoms in the 1H-beta POSCAR")
@@ -229,7 +245,9 @@ def main():
         raise RuntimeError("Another WCC driver is already running")
     attempt = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
     status = {"started_utc": datetime.now(timezone.utc).isoformat(),
-              "nelect": 5, "threshold_ev": THRESHOLD, "manifolds": {}}
+              "nelect": 5, "threshold_ev": THRESHOLD, "manifolds": {},
+              "topology_certified": False, "time_reversal_electronic_state_certified": False,
+              "interpretation": "Conditional even-band subspace analysis assuming electronic time reversal; electronic time-reversal symmetry is not certified."}
     try:
         eigenvals = {}
         for stage in stages:
