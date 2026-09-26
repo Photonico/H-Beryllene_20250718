@@ -1,12 +1,13 @@
 #!/bin/bash
 #PBS -N topo_spin
 #PBS -q cmt
-#PBS -l select=1:ncpus=42:mpiprocs=42:mem=120gb
-#PBS -l walltime=12:00:00
+#PBS -l select=1:ncpus=24:mpiprocs=24:mem=100gb
+#PBS -l walltime=6:00:00
 #PBS -j oe
 # Submit from 9.0_topology: qsub -N spin_<id> -v STRUCTURE=<directory under 9.0_topology> tools/spin_screen.pbs
 set -euo pipefail
 source '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/modules.sh'
 campaign='/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology'
 cd "$campaign/tools"
-"$campaign/packages/soc_topology/venv/bin/python" -B spin_screen.py "$campaign/$STRUCTURE" --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_std' --ranks 42
+"$campaign/packages/soc_topology/venv/bin/python" -B spin_screen.py "$campaign/$STRUCTURE" \
+  --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_std' --ranks "$(wc -l < "$PBS_NODEFILE")"
