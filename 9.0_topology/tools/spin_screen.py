@@ -50,7 +50,11 @@ def seeds_for(poscar):
 
 
 def site_moments(outcar):
-    """Last LORBIT=11 'magnetization (x)' table: per-ion and total 'tot' column."""
+    """Last LORBIT=11 'magnetization (x)' table: per-ion and total 'tot' column.
+
+    VASP omits the 'tot' row when there is a single ion; the table then ends
+    at the first blank line after the ion rows.
+    """
     lines = outcar.read_text(errors='replace').splitlines()
     starts = [i for i, line in enumerate(lines) if line.strip() == 'magnetization (x)']
     if not starts:
@@ -62,6 +66,8 @@ def site_moments(outcar):
             return rows, float(fields[-1])
         if fields and fields[0].isdigit():
             rows.append(float(fields[-1]))
+        elif rows and not fields:
+            return rows, sum(rows)
     return None, None
 
 
@@ -76,6 +82,8 @@ def main():
     parser.add_argument('structure_dir', type=Path)
     parser.add_argument('--vasp', type=Path, required=True)
     parser.add_argument('--ranks', type=int, default=42)
+    parser.add_argument('--summary-only', action='store_true',
+                        help='rebuild spin_screen_summary.json from the existing seed runs without running VASP')
     args = parser.parse_args()
     root = args.structure_dir.resolve(strict=True)
     vasp = args.vasp.resolve(strict=True)
@@ -83,28 +91,30 @@ def main():
     scf = root / 'scf'
     labels, seeds = seeds_for(scf / 'POSCAR')
     screen = root / 'spin_screen'
-    screen.mkdir()
+    if not args.summary_only:
+        screen.mkdir()
     report = {'created_utc': datetime.now(timezone.utc).isoformat(), 'structure_id': entry['id'],
               'expected_nelect': nelect, 'vasp': str(vasp), 'atoms': labels,
               'inputs': {name: fingerprint(scf / name) for name in ('POSCAR', 'POTCAR', 'KPOINTS', 'INCAR')},
               'moment_tolerance_muB': MOMENT_TOLERANCE_MUB, 'seeds': {}}
     for name, magmom in seeds.items():
         run = screen / name
-        run.mkdir()
-        for source in ('POSCAR', 'POTCAR', 'KPOINTS'):
-            shutil.copyfile(scf / source, run / source)
-        text = (scf / 'INCAR').read_text()
-        for tag in ('LSORBIT', 'LNONCOLLINEAR', 'SAXIS', 'ISYM'):
-            text = re.sub(r'^\s*' + tag + r'\s*=.*\n?', '', text, flags=re.MULTILINE | re.IGNORECASE)
-        text = text.replace('SOC topology', 'collinear spin screen (' + name + ')')
-        text = set_incar(text, {'ISPIN': 2, 'MAGMOM': ' '.join('%g' % m for m in magmom),
-                                'NBANDS': 14, 'ISTART': 0, 'ICHARG': 2, 'KPAR': 1, 'NELM': 300,
-                                'EDIFF': '1E-7', 'LWAVE': '.FALSE.', 'LCHARG': '.FALSE.', 'LORBIT': 11})
-        (run / 'INCAR').write_text(text)
-        print('Running', entry['id'], name, 'MAGMOM', magmom, flush=True)
-        with (run / 'vasp.log').open('x') as log:
-            subprocess.run(['mpirun', '-np', str(args.ranks), str(vasp)], cwd=run,
-                           stdout=log, stderr=subprocess.STDOUT, check=True)
+        if not args.summary_only:
+            run.mkdir()
+            for source in ('POSCAR', 'POTCAR', 'KPOINTS'):
+                shutil.copyfile(scf / source, run / source)
+            text = (scf / 'INCAR').read_text()
+            for tag in ('LSORBIT', 'LNONCOLLINEAR', 'SAXIS', 'ISYM'):
+                text = re.sub(r'^\s*' + tag + r'\s*=.*\n?', '', text, flags=re.MULTILINE | re.IGNORECASE)
+            text = text.replace('SOC topology', 'collinear spin screen (' + name + ')')
+            text = set_incar(text, {'ISPIN': 2, 'MAGMOM': ' '.join('%g' % m for m in magmom),
+                                    'NBANDS': 14, 'ISTART': 0, 'ICHARG': 2, 'KPAR': 1, 'NELM': 300,
+                                    'EDIFF': '1E-7', 'LWAVE': '.FALSE.', 'LCHARG': '.FALSE.', 'LORBIT': 11})
+            (run / 'INCAR').write_text(text)
+            print('Running', entry['id'], name, 'MAGMOM', magmom, flush=True)
+            with (run / 'vasp.log').open('x') as log:
+                subprocess.run(['mpirun', '-np', str(args.ranks), str(vasp)], cwd=run,
+                               stdout=log, stderr=subprocess.STDOUT, check=True)
         metadata, errors = read_outcar(run / 'OUTCAR')
         errors = [e for e in errors if not e.startswith(('LSORBIT', 'LNONCOLLINEAR'))]
         sites, site_total = site_moments(run / 'OUTCAR')
@@ -121,6 +131,8 @@ def main():
                                 if report['all_seeds_collapsed'] else
                                 'At least one seed kept a moment or failed: compare its energy with an ISPIN=1 '
                                 'reference before any TR-based Z2 statement.')
+    if args.summary_only:
+        (screen / 'spin_screen_summary.json').unlink(missing_ok=True)
     dump(screen / 'spin_screen_summary.json', report)
     print(screen / 'spin_screen_summary.json', flush=True)
 

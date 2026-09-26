@@ -15,16 +15,18 @@ Research data, manuscript text, figures, and third-party files may be subject to
 ## systems information
 
 * single atom energy
-  * Hydrogen atom:    `E_H = -.14200286E-01`
-  * Beryllium atom:   `E_Be = -.38385171E-01`
+  * Hydrogen atom:    `E_H = -.11174239E+01` (spin polarized, 1 μB, 20 Å box; `1.0_convergence/single_Hydrogen_spin`)
+  * Beryllium atom:   `E_Be = -.38385171E-01` (closed-shell 2s², ISPIN = 1 is correct)
+  * Hydrogen molecule: `E_H2 = -.67727611E+01` (relaxed H–H 0.750 Å, 20 Å box; `1.0_convergence/H2_molecule`)
+  * Correction (2026-09-26): the earlier `E_H = -.14200286E-01` (`1.0_convergence/single_Hydrogen`) was a non-spin-polarized H atom and must not be used; hydrogen adsorption is referenced to H2.
 
 * general information
   * energy cutoff:    `ENCUT = 600`
   * xenes k-points:   `105 105 1`
   * bulks k-points:   `105 105 105`
 
-* cohesive energy formula: `E_tot - m*E_Be - n*E_H`
-* aborption energy formula: `E_tot - E_base - n*E_H`
+* cohesive energy formula: `E_tot - m*E_Be - n*E_H` (spin-polarized atoms)
+* adsorption energy formula (per H, relative to H2): `(E_tot - E_base - n/2*E_H2)/n`; negative = hydrogenation exothermic
 
 ### α-family
 
@@ -47,8 +49,8 @@ Research data, manuscript text, figures, and third-party files may be subject to
 
 * α-beryllene double side adhesion
   * material energy:  `E_a_hh = -.10406248E+02`
-  * cohesive energy:  `E_a_hh - 1*E_Be - 2*E_H = -10.339462257`
-  * absorption:       `E_a_hh - E_a_xene - 2*E_H = -7.405382728`  
+  * cohesive energy:  `E_a_hh - 1*E_Be - 2*E_H = -8.133015029` (-2.711 eV/atom)
+  * adsorption:       `(E_a_hh - E_a_xene - E_H2)/2 = -0.330511100` eV/H
   * lattice constant: `2.322032201315347`
   * H-Be bond length: `1.59940(0), 1.59941(0), (2:1)`
   * occupied states:  `2/140`
@@ -69,8 +71,8 @@ Research data, manuscript text, figures, and third-party files may be subject to
 
 * β-beryllene single side adhesion
   * material energy:  `E_b_b = -.10116602E+02`
-  * cohesive energy:  `E_b_b - 2*E_Be - 1*E_H = -10.025631372`
-  * absorption:       `E_b_b - E_b_xene - 1*E_H = -3.455363214`
+  * cohesive energy:  `E_b_b - 2*E_Be - 1*E_H = -8.922407758` (-2.974 eV/atom)
+  * adsorption:       `E_b_b - E_b_xene - E_H2/2 = -0.083182950` eV/H
   * lattice constant: `2.322152643164112`
   * H-Be bond length: `1.45061(0), 1.45058(0), (1:1)`
   * occupied states:  `3/140`
@@ -79,8 +81,8 @@ Research data, manuscript text, figures, and third-party files may be subject to
 
 * β-beryllene double side adhesion
   * material energy:  `E_b_bb = -.13775686E+02`
-  * cohesive energy:  `E_b_bb - 2*E_Be - 2*E_H = -13.670515086`
-  * absorption:       `E_b_bb - E_b_xene - 2*E_H = -7.100246928`
+  * cohesive energy:  `E_b_bb - 2*E_Be - 2*E_H = -11.464067858` (-2.866 eV/atom)
+  * adsorption:       `(E_b_bb - E_b_xene - E_H2)/2 = -0.177943200` eV/H
   * lattice constant: `2.5960359691490167`
   * H-Be bond length: `1.44653(0), 1.44642(0), (1:1)`
   * occupied states:  `3/140`
