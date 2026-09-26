@@ -35,10 +35,17 @@ def seeds_for(poscar):
     fm = [1.0 if name == 'Be' else 0.5 for name in labels]
     seeds = {'fm': fm}
     if len(beryllium) >= 2:
+        # Layer-alternating Be moments; for two Be this is also inversion-odd.
         afm = [0.0] * len(labels)
         for rank, (_, index) in enumerate(beryllium):
             afm[index] = 1.0 if rank % 2 == 0 else -1.0
         seeds['afm'] = afm
+    if len(beryllium) >= 3 and len(beryllium) % 2:
+        # Odd layer count: alternating seed is inversion-even, so add the
+        # inversion-odd (PT-symmetric) pattern +, 0, ..., 0, -.
+        odd = [0.0] * len(labels)
+        odd[beryllium[0][1]], odd[beryllium[-1][1]] = 1.0, -1.0
+        seeds['p_odd'] = odd
     return labels, seeds
 
 
