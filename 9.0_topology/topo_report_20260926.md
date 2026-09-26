@@ -17,7 +17,7 @@ Report, 2026-09-26. Supersedes the topology claims of the collaborator draft `20
 
 N is the number of spinor bands in the subspace (N = NELECT for the even-electron structures). "Indirect" is min E(N+1) − max E(N) over all sampled k. A negative value means bands N and N+1 both cross E_F.
 
-- **The only insulating case is 2H-α, and it is trivial.** Its gap is +4.84 eV in PBE and its ν = 0 is a genuine Fermi-level classification, still conditional on TR stability (Section 4.3).
+- **The only insulating case is 2H-α, and it is trivial.** Its gap is +4.84 eV in PBE and its ν = 0 is a genuine Fermi-level classification; its nonmagnetic, TR-symmetric ground state is supported by the spin-polarised screen (Section 4.3).
 - **α and ST are ν = 1, but only as isolated subspaces of metals.** The lowest two (α) and six (ST) bands form Z₂-nontrivial subspaces, separated from the next band everywhere sampled by spin–orbit direct gaps of 1.13 meV (α) and 0.73 meV (ST). They are not QSH insulators.
 - **β, 2H-β and 1H-β are trivial** in the analysed subspaces.
 
