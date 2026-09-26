@@ -15,16 +15,16 @@ Research data, manuscript text, figures, and third-party files may be subject to
 ## systems information
 
 * single atom energy
-  * Hydrogen atom:    `E_H = -.11174239E+01`
+  * Hydrogen atom:      `E_H = -.11174239E+01`
     * spin polarized, 1 μB, 20 Å box
-    * folder: `1.0_convergence/single_Hydrogen_spin`
-  * Beryllium atom:   `E_Be = -.38385171E-01` (closed-shell 2s², ISPIN = 1 is correct)
-  * Hydrogen molecule: `E_H2 = -.67727611E+01`
+    * folder:           `1.0_convergence/single_Hydrogen_spin`
+  * Beryllium atom:     `E_Be = -.38385171E-01` (closed-shell 2s², ISPIN = 1 is correct)
+  * Hydrogen molecule:  `E_H2 = -.67727611E+01`
     * relaxed H–H 0.750 Å, 20 Å box
-    * folder: `1.0_convergence/H2_molecule`
+    * folder:           `1.0_convergence/H2_molecule`
   * Correction (2026-09-26):
-    * the earlier `E_H = -.14200286E-01` is a non-spin-polarized H atom
-    * old folder:     `1.0_convergence/single_Hydrogen`
+    * the earlier       `E_H = -.14200286E-01` is a non-spin-polarized H atom
+    * old folder:       `1.0_convergence/single_Hydrogen`
     * it must not be used; hydrogen adsorption is referenced to H2
 
 * general information
