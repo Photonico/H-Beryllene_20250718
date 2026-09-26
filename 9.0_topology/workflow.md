@@ -145,3 +145,5 @@ TRIM NSCF runs converged in 7–8 Davidson steps (final dE ≤ 6.7e-9 eV); Krame
 
 The six first-attempt spin jobs (43021–43026, 42 cores) were deleted before starting and resubmitted at 24 cores.
 
+**Results notebook (2026-09-26).** `../9.0_topology.ipynb` only calls `vmatplot/band_topology.py`: `extract_*` readers for the campaign reports, `summarize_*` Markdown tables and `plot_topology_bands`, `plot_direct_gap_maps`, `plot_gap_zoom`, `plot_wcc`, whose figures are saved to `figures/9_topology/9.1–9.4_*.pdf`. The module only reads files; `plot_*("help")` prints the argument order.
+
