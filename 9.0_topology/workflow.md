@@ -147,3 +147,5 @@ The six first-attempt spin jobs (43021–43026, 42 cores) were deleted before st
 
 **Results notebook (2026-09-26).** `../9.0_topology.ipynb` only calls `vmatplot/band_topology.py`: `extract_*` readers for the campaign reports, `summarize_*` Markdown tables and `plot_topology_bands`, `plot_direct_gap_maps`, `plot_gap_zoom`, `plot_wcc`, whose figures are saved to `figures/9_topology/9.1–9.4_*.pdf`. The module only reads files; `plot_*("help")` prints the argument order.
 
+**Spin-screen results (2026-09-27).** Jobs 43030–43035 finished with exit 0. All 11 seeds (FM for every structure; layer-alternating/inversion-odd AFM for β, 2H-β, 1H-β; ST also (+, −, +) and (+, 0, −)) relaxed to total and site moments below 1e-3 μB, and the seeds of each structure converge to one energy (spread ≤ 7e-7 eV). `spin_screen.py` now also parses the single-ion LORBIT table (VASP omits its `tot` row) and has `--summary-only` to rebuild `spin_screen_summary.json` from existing runs; α's summary was rebuilt that way.
+
