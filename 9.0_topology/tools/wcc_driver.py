@@ -173,7 +173,7 @@ def run_manifold(destination, tools, bands, attempt):
         system=system, surface=lambda s, t: [t, s / 2, 0],
         pos_tol=0.005, gap_tol=0.3, move_tol=0.3, num_lines=21,
         min_neighbour_dist=0.001, iterator=range(12, 101, 4),
-        save_file=str(checkpoint), serializer="json",
+        save_file=str(checkpoint), serializer="auto",
         load=checkpoint.exists(), load_quiet=False,
     )
     report = to_native(result.convergence_report)
@@ -229,7 +229,7 @@ def main():
         raise RuntimeError("Expected three atoms in the 1H-beta POSCAR")
     owner = {"owner": OWNER, "structure": str(structure),
              "source_sha256": {str(path): sha256(path) for path in sources}}
-    root = structure / "wcc_direct_v2"
+    root = structure / "wcc_direct_v3"
     try:
         root.mkdir()
         write_json_new(root / "owner.json", owner)
