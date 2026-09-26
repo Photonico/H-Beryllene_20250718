@@ -42,7 +42,7 @@ GAP_CMAP = LinearSegmentedColormap.from_list(
 GAP_NORM = LogNorm(vmin=1e-3, vmax=10.0)
 
 
-# ---------------------------------------------------------------- data access
+# data access
 
 def campaign(topology=None):
     """Return (campaign directory, manifest entries with a 'folder' Path)."""
@@ -118,7 +118,7 @@ def gap_text(ev):
     return "%.3g eV" % ev if ev >= 0.1 else "%.3g meV" % (1000 * ev)
 
 
-# ---------------------------------------------------------------- tables
+# tables
 
 def show_table(header, rows):
     """Render a Markdown table in Jupyter (plain text elsewhere)."""
@@ -266,7 +266,7 @@ def time_reversal_tables(topology=None):
               "Collapsed"], spins))
 
 
-# ---------------------------------------------------------------- band path and BZ grids
+# band path and BZ grids
 
 def band_path(folder):
     """Fixed-density SOC bands on the line-mode path: x (1/Å), E (eV), fractional k, ticks."""
@@ -355,7 +355,7 @@ def _finish(fig, save):
     return fig
 
 
-# ---------------------------------------------------------------- figures
+# figures
 
 def plot_topology_bands(topology=None, ids=None, window=(-11.0, 5.0), save=None):
     """SOC bands (E − E_F) with the lowest-N subspace coloured, and E_(N+1) − E_N along the path."""
