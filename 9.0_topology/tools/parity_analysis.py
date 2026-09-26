@@ -171,6 +171,152 @@ def check_separated(data, inversion_index, expected, occupied, tolerance):
             for name, count in counts.items()}
 
 
+def read_wavecar(path):
+    """Plane-wave coefficients of a noncollinear VASP WAVECAR (all k, all bands)."""
+    import numpy as np
+    with path.open("rb") as stream:
+        reclen, nspin, rtag = (int(v) for v in np.fromfile(stream, np.float64, 3))
+        require(nspin == 1 and rtag in (45200, 45210), "Unsupported WAVECAR header")
+        dtype = np.complex64 if rtag == 45200 else np.complex128
+        stream.seek(reclen)
+        header = np.fromfile(stream, np.float64, 12)
+        nk, nb, encut = int(header[0]), int(header[1]), float(header[2])
+        lattice = header[3:12].reshape(3, 3)
+        points, record = [], 2
+        for _ in range(nk):
+            stream.seek(record * reclen)
+            info = np.fromfile(stream, np.float64, 4 + 3 * nb)
+            npw, k = int(info[0]), info[1:4]
+            coefficients = np.empty((nb, npw), dtype)
+            for band in range(nb):
+                stream.seek((record + 1 + band) * reclen)
+                coefficients[band] = np.fromfile(stream, dtype, npw)
+            points.append((k, info[4:].reshape(nb, 3)[:, 0], coefficients))
+            record += nb + 1
+    return rtag, encut, lattice, points
+
+
+def wavecar_gvectors(lattice, k, encut, coefficients_per_band):
+    """G vectors in WAVECAR order (x fastest); the count must match the file."""
+    import numpy as np
+    reciprocal = 2 * np.pi * np.linalg.inv(lattice).T
+    kmax2 = encut / (13.605826 * 0.529177249 ** 2)  # VASP HSQDTM = RYTOEV*AUTOA^2
+    bound = np.ceil(np.sqrt(kmax2) * np.linalg.norm(lattice, axis=1) / (2 * np.pi)).astype(int) + 1
+    axes = [np.concatenate([np.arange(0, b + 1), np.arange(-b, 0)]) for b in bound]
+    gz, gy, gx = np.meshgrid(axes[2], axes[1], axes[0], indexing="ij")
+    g = np.stack([gx.ravel(), gy.ravel(), gz.ravel()], axis=1)
+    kg = (g + k) @ reciprocal
+    g = g[np.einsum("ij,ij->i", kg, kg) < kmax2]
+    require(2 * len(g) == coefficients_per_band,
+            "WAVECAR plane-wave count does not match the reconstructed G sphere")
+    return g
+
+
+def independent_wavefunction_check(run, occupied, tau, degeneracy, tolerance, expected):
+    """Double-precision inversion representation from the WAVECAR itself.
+
+    PAW pseudo-wavefunctions are orthonormal in the S metric, not the plain
+    plane-wave metric that IrRep's orthogonality message uses, and WAVECAR
+    stores single-precision coefficients. S commutes with inversion, so
+    genuine parity mixing appears as opposite-parity plain overlaps or a
+    non-unitary inversion matrix on the Lowdin-orthonormalised subspace.
+    Both are required below tolerance; same-parity overlaps are reported.
+    """
+    import numpy as np
+    rtag, encut, lattice, points = read_wavecar(run / "WAVECAR")
+    tau = np.array(tau, float)
+    results = {}
+    for k, energies, raw in points:
+        name = trim_name(k)
+        require(name not in results, "Duplicate TRIM " + name)
+        g = wavecar_gvectors(lattice, k, encut, raw.shape[1])
+        ng = len(g)
+        top = occupied + 2
+        while top < len(energies) and energies[top] - energies[top - 1] <= degeneracy:
+            top += 1
+        coefficients = raw[:top].astype(np.complex128)
+        raw_norm = np.einsum("ij,ij->i", coefficients.conj(), coefficients).real
+        coefficients /= np.sqrt(raw_norm)[:, None]
+        single = raw[:occupied].copy()
+        single /= np.sqrt(np.abs(np.einsum("ij,ij->i", single.conj(), single)))[:, None]
+        single_deviation = np.abs(single.conj() @ single.T - np.eye(occupied)).max()
+        # {-1|tau}: coefficient at G' = -G - 2k is c(G) exp(2 pi i (k+G).tau).
+        shift = np.rint(2 * k).astype(int)
+        index = {tuple(v): i for i, v in enumerate(g)}
+        try:
+            target = np.array([index[tuple(-v - shift)] for v in g])
+        except KeyError:
+            raise InvalidRun(name + ": G sphere is not closed under inversion")
+        phase = np.exp(2j * np.pi * ((g + k) @ tau))
+        transformed = np.zeros_like(coefficients)
+        for spin in (0, 1):
+            transformed[:, spin * ng + target] = coefficients[:, spin * ng:(spin + 1) * ng] * phase
+
+        def subspace(count):
+            overlap = coefficients[:count].conj() @ coefficients[:count].T
+            matrix = coefficients[:count].conj() @ transformed[:count].T
+            values, vectors = np.linalg.eigh(overlap)
+            lowdin = vectors @ np.diag(values ** -0.5) @ vectors.conj().T
+            return overlap, lowdin.conj().T @ matrix @ lowdin
+
+        overlap, inversion = subspace(occupied)
+        singular = np.linalg.svd(inversion, compute_uv=False)
+        blocks, start = [], 0
+        for stop in range(1, top + 1):
+            if stop == top or energies[stop] - energies[stop - 1] > degeneracy:
+                blocks.append((start, stop))
+                start = stop
+        inner = [b for b in blocks if b[1] <= occupied]
+        require(inner and inner[-1][1] == occupied, name + ": degenerate block crosses band N")
+        off_block = inversion.copy()
+        parity, odd_states, eigenvalue_error = [0] * occupied, 0, 0.0
+        for b1, b2 in inner:
+            off_block[b1:b2, b1:b2] = 0
+            values = np.linalg.eigvals(inversion[b1:b2, b1:b2])
+            signs = np.where(values.real >= 0, 1, -1)
+            eigenvalue_error = max(eigenvalue_error, float(np.abs(values - signs).max()))
+            odd_states += int((signs < 0).sum())
+            if abs(signs.sum()) == b2 - b1:
+                parity[b1:b2] = [int(signs[0])] * (b2 - b1)
+        same = opposite = 0.0
+        for m in range(occupied):
+            for n in range(occupied):
+                if m != n and parity[m] and parity[n]:
+                    if parity[m] == parity[n]:
+                        same = max(same, abs(overlap[m, n]))
+                    else:
+                        opposite = max(opposite, abs(overlap[m, n]))
+        # Parity of the next complete block above band N; not used for delta.
+        _, extended = subspace(top)
+        above = [b for b in blocks if b[0] >= occupied][0]
+        boundary = np.linalg.eigvals(extended[above[0]:above[1], above[0]:above[1]]).real
+        record = {
+            "wavecar_single_precision": rtag == 45200,
+            "plain_metric_float32_max_deviation": float(single_deviation),
+            "plain_metric_float64_diagonal_max_deviation": float(np.abs(np.diag(overlap) - 1).max()),
+            "plain_metric_float64_same_parity_max_overlap": float(same),
+            "plain_metric_float64_opposite_parity_max_overlap": float(opposite),
+            "raw_pseudo_norm_range": [float(raw_norm[:occupied].min()), float(raw_norm[:occupied].max())],
+            "lowdin_inversion_singular_value_max_error": float(np.abs(singular - 1).max()),
+            "lowdin_inversion_off_block_max": float(np.abs(off_block).max()),
+            "lowdin_inversion_eigenvalue_max_error": eigenvalue_error,
+            "odd_states": odd_states,
+            "next_block_above_N_bands_one_based": [above[0] + 1, above[1]],
+            "next_block_above_N_gap_ev": float(energies[above[0]] - energies[occupied - 1]),
+            "next_block_above_N_parity_eigenvalues": [round(float(v), 6) for v in boundary],
+        }
+        for key in ("plain_metric_float64_opposite_parity_max_overlap",
+                    "lowdin_inversion_singular_value_max_error",
+                    "lowdin_inversion_off_block_max",
+                    "lowdin_inversion_eigenvalue_max_error"):
+            require(record[key] <= tolerance, name + ": " + key + " = %.3g exceeds %.1g" % (record[key], tolerance))
+        require(odd_states == 2 * expected[name]["odd_kramers_pairs"],
+                name + ": WAVECAR inversion matrix and IrRep trace parity disagree")
+        results[name] = record
+    require(set(results) == set(TRIMS), "WAVECAR must contain exactly the four 2D TRIM")
+    return results
+
+
 def run_irrep(directory, run, occupied, degeneracy, separation=None):
     directory.mkdir()
     command = [sys.executable, "-B", "-c", "from irrep.cli import cli; cli()",
@@ -193,9 +339,17 @@ def run_irrep(directory, run, occupied, degeneracy, separation=None):
                               if not line.startswith((
                                   "Warning: transformation to the convenctional unit cell",
                                   "Warning: -kpnames not specified. Only traces of")))
-    require(not re.search(r"WARNING|orthogonality.*>|non.?unitary|non-integer", numerical_log,
+    # Kpoint.Separate prints max|<psi|psi>-1| of single-precision PAW pseudo-
+    # wavefunctions in the plain metric. It is recorded here and replaced by
+    # independent_wavefunction_check, which the caller must run.
+    orthogonality = [float(value) for value in re.findall(
+        r"^orthogonality \(largest of diag\. <psi_nk\|psi_mk>\):\s*(\S+) > 1e-5\s*$",
+        numerical_log, re.MULTILINE)]
+    numerical_log = re.sub(r"^orthogonality \(largest of diag\. <psi_nk\|psi_mk>\):\s*\S+ > 1e-5\s*$",
+                           "", numerical_log, flags=re.MULTILINE)
+    require(not re.search(r"WARNING|orthogonal|non.?unitary|non-integer", numerical_log,
                           re.IGNORECASE), "IrRep numerical warning requires review: " + str(directory))
-    return load_irrep(directory / "irrep.json")
+    return load_irrep(directory / "irrep.json"), orthogonality
 
 
 def campaign_main(campaign, args):
@@ -221,7 +375,8 @@ def campaign_main(campaign, args):
                 "Validator electron count differs from campaign manifest")
         code = main([str(run), "--expected-nelect", str(entry["expected_nelect"]),
                      "--symprec", str(args.symprec), "--degen-thresh", str(args.degen_thresh),
-                     "--trace-tolerance", str(args.trace_tolerance)])
+                     "--trace-tolerance", str(args.trace_tolerance),
+                     "--wavefunction-tolerance", str(args.wavefunction_tolerance)])
         results.append({"id": sid, "run": str(run), "exit_code": code})
     path = campaign / ("parity_batch_" + uuid.uuid4().hex + ".json")
     with path.open("x") as stream:
@@ -238,6 +393,7 @@ def main(argv=None):
     parser.add_argument("--symprec", type=float, default=1e-5)
     parser.add_argument("--degen-thresh", type=float, default=1e-5)
     parser.add_argument("--trace-tolerance", type=float, default=1e-3)
+    parser.add_argument("--wavefunction-tolerance", type=float, default=1e-6)
     args = parser.parse_args(argv)
     run = args.run_dir.resolve(strict=True)
     output = None
@@ -247,6 +403,8 @@ def main(argv=None):
         require(args.expected_nelect in (2, 4, 6), "Expected project manifolds have 2, 4 or 6 spinor bands")
         require(all(0 < v <= 1e-2 for v in (args.symprec, args.degen_thresh, args.trace_tolerance)),
                 "Numerical tolerances must be positive and <=1e-2")
+        require(0 < args.wavefunction_tolerance <= 1e-5,
+                "Wavefunction tolerance must be positive and no looser than IrRep's 1e-5")
         for name in ("WAVECAR", "POSCAR", "OUTCAR"):
             require((run / name).is_file() and (run / name).stat().st_size > 0,
                     "Missing/nonempty input required: " + name)
@@ -272,7 +430,7 @@ def main(argv=None):
                         + "-" + uuid.uuid4().hex[:8])
         output.mkdir()
         source_fingerprints = {name: fingerprint(run / name) for name in ("POSCAR", "OUTCAR", "WAVECAR")}
-        raw = run_irrep(output / "characters", run, args.expected_nelect, args.degen_thresh)
+        raw, _ = run_irrep(output / "characters", run, args.expected_nelect, args.degen_thresh)
         operation, tau = select_inversion(raw, structure, geometry, args.symprec)
         parities, subspace = extract_trace_parities(raw, operation, args.expected_nelect,
                                                    args.trace_tolerance)
@@ -288,10 +446,13 @@ def main(argv=None):
         irrep_gap = float(subspace["Minimal direct gap (eV)"])
         require(math.isfinite(gap) and gap > args.degen_thresh,
                 "Selected manifold touches upper bands at a sampled TRIM")
-        separated = run_irrep(output / "separated", run, args.expected_nelect,
-                              args.degen_thresh, operation)
+        separated, orthogonality = run_irrep(output / "separated", run, args.expected_nelect,
+                                             args.degen_thresh, operation)
         counts = check_separated(separated, operation, parities, args.expected_nelect,
                                  args.trace_tolerance)
+        wavefunctions = independent_wavefunction_check(run, args.expected_nelect, tau,
+                                                       args.degen_thresh,
+                                                       args.wavefunction_tolerance, parities)
         require(source_fingerprints == {name: fingerprint(run / name) for name in source_fingerprints},
                 "Source files changed during parity analysis")
         product = math.prod(point["delta"] for point in parities.values())
@@ -304,6 +465,9 @@ def main(argv=None):
                   "inversion_center_fractional": [t / 2 for t in tau],
                   "character_convention": "DFT-cell characters for actual {R=-I|tau}; no reference-cell phase substitution",
                   "trims": parities, "separated_state_counts": counts,
+                  "irrep_plain_metric_orthogonality_messages": orthogonality,
+                  "wavefunction_tolerance": args.wavefunction_tolerance,
+                  "wavefunction_validation": wavefunctions,
                   "minimum_direct_gap_at_four_TRIM_ev": gap,
                   "irrep_gap_to_degenerate_block_mean_ev": irrep_gap,
                   "delta_product": product, "conditional_fu_kane_nu": 0 if product == 1 else 1,

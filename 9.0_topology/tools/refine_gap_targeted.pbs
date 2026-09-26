@@ -1,0 +1,17 @@
+#!/bin/bash
+#PBS -N topo_refine
+#PBS -q cmt
+#PBS -l select=1:ncpus=42:mpiprocs=42:mem=64gb
+#PBS -l walltime=6:00:00
+#PBS -j oe
+# Submit from 9.0_topology: qsub -N refine_<id> -v STRUCTURE=<dir>,CENTERS="k1:k2;k1:k2",HALFWIDTH=<h>,STEPS=<n> tools/refine_gap_targeted.pbs
+set -euo pipefail
+source '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/modules.sh'
+campaign='/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology'
+python="$campaign/packages/soc_topology/venv/bin/python"
+centers=()
+IFS=';' read -ra list <<< "$CENTERS"
+for center in "${list[@]}"; do centers+=(--center "${center/:/,}"); done
+cd "$campaign/tools"
+"$python" -B refine_gap_targeted.py "$campaign/$STRUCTURE" --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' \
+  --python "$python" --ranks 42 --halfwidth "$HALFWIDTH" --steps "$STEPS" "${centers[@]}"
