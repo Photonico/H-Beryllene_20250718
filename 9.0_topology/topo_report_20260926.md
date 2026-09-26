@@ -21,6 +21,15 @@ N is the number of spinor bands in the subspace (N = NELECT for the even-electro
 - **α and ST are ν = 1, but only as isolated subspaces of metals.** The lowest two (α) and six (ST) bands form Z₂-nontrivial subspaces, separated from the next band everywhere sampled by spin–orbit direct gaps of 1.13 meV (α) and 0.73 meV (ST). They are not QSH insulators.
 - **β, 2H-β and 1H-β are trivial** in the analysed subspaces.
 
+**Figures** (`figures/9_topology/`, drawn by `vmatplot/band_topology.py` from the results notebook):
+
+| File | Content |
+|---|---|
+| `9.1_topology_bands.pdf` | SOC bands (E − E_F) with the lowest-N subspace coloured and Kramers-pair parities at the TRIM on the path; below each, E(N+1) − E(N) along the path (log scale) and the BZ minimum |
+| `9.2_direct_gap_maps.pdf` | E(N+1) − E(N) over the unfolded 105 × 105 SCF grid, with the refined minima and their symmetry images marked |
+| `9.3_gap_zoom.pdf` | Adaptive-zoom minima versus sampling radius, with the local slope bounds |
+| `9.4_wcc_beta_1h.pdf` | Wilson-loop WCC evolution of the 1H-β lowest-4 and lowest-6 subspaces |
+
 ## 2. Computational methods
 
 First-principles calculations used VASP 6.5.0 [1] with PAW potentials [2,3] (PAW_PBE Be 06Sep2000, 2s² valence; H 15Jun2001) and the PBE functional [4].
