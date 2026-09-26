@@ -86,7 +86,9 @@ for entry in json.loads((topology / "manifest.json").read_text())["structures"]:
             print(stage, "valid:", data.get("validation_passed"))
             for gap in data.get("eigenvalues", {}).get("manifolds", []):
                 print("  N=", gap["N"], "direct eV=", gap["direct_gap_ev"], "indirect eV=", gap["indirect_gap_ev"], "k=", gap["direct_gap_k"])
-    for pattern in ("trim/parity-analysis-*/parity_summary.json", "trim/parity-analysis-*/PARITY_NOT_VALIDATED.json", "wcc_direct/status_*.json"):
+    for pattern in ("trim/parity-analysis-*/parity_summary.json", "trim/parity-analysis-*/PARITY_NOT_VALIDATED.json",
+                    "wcc_direct_v3/status_*.json", "tr_evidence.json", "gap_refine_3_summary.json",
+                    "spin_screen/spin_screen_summary.json"):
         for report in sorted(folder.glob(pattern)):
             print(report.relative_to(repo))
             print(json.dumps(json.loads(report.read_text()), indent=2))
@@ -110,3 +112,36 @@ K-point review: all six SCF meshes remain Gamma-centered 105x105x1 with zero shi
 WCC screening now includes bands and verifies completed stage validation and input fingerprints. Reported subspace Z2 values remain conditional on electronic time-reversal symmetry; they are not automatically Fermi-level insulating invariants.
 
 Submitted jobs: beta=42143.headnode, beta_1h=42144.headnode, beta_2h=42145.headnode, parity=42146.headnode, wcc=42147.headnode. Parity waits for beta and beta_2h; WCC waits for beta_1h. No backup or recovery script is required; changes are managed in Git.
+
+## 2026-09-26: parity diagnosis, time-reversal evidence, isolation and spin screen
+
+**WCC (1H-β).** The final WCC job 42175 finished with exit 0 after three fixes: VASP writes PEAD-type overlaps only with NCORE=1; the k-point connectivity check must compare Wannier90 coordinates modulo reciprocal lattice vectors (Wannier90 folds them into the first zone); Z2Pack checkpoints need `serializer="auto"`. Results are in `b-Beryllene_b/wcc_direct_v3/`: the lowest-4 and lowest-6 subspaces converge with conditional Z2 = 0 and 0; status `completed_conditional_screening`, `topology_certified: false`.
+
+**Parity job 42146 (exit 2) — diagnosis.** Only α passed; β, ST, 2H-α and 2H-β failed on IrRep's line `orthogonality (largest of diag. <psi_nk|psi_mk>): X > 1e-5`, printed by `Kpoint.Separate` (a check the IrRep source marks "Rm once tests are fixed"). The logged values are 1.1e-5–1.2e-5 (β), 1.3e-5–6.5e-3 (ST), 3.6e-5–4.4e-5 (2H-α) and 2.9e-3–1.55e-2 (2H-β). Two sources were identified; neither is poor wavefunction quality:
+
+1. *Single-precision normalisation.* WAVECAR stores complex64 coefficients (RTAG 45200) and IrRep normalises and forms ⟨ψ|ψ⟩ in complex64 over ≈1.1×10⁴ coefficients sorted by |k+G|. Its diagonal error (4.4e-6 to 4.5e-5; α passed only because its maximum was 9.5e-6) vanishes (≤1e-14) when the raw coefficients are normalised in float64.
+2. *PAW metric.* Pseudo-wavefunctions are orthonormal in the S metric S = 1 + Σ|p⟩q⟨p|, not the plain plane-wave metric. The remaining off-diagonal overlaps (up to 2.6e-2 over bands 1..N+2) occur only between same-parity bands at different energies; opposite-parity overlaps are ≤4.0e-8. An independent reconstruction of S from the POTCAR projectors and augmentation charges makes all 28 bands S-orthonormal to ≤1.3e-7 (diagonal) and ≤6.0e-8 (off-diagonal). IrRep's own `symm_matrix` uses the Gram right-inverse and is therefore correct in the non-orthogonal basis.
+
+TRIM NSCF runs converged in 7–8 Davidson steps (final dE ≤ 6.7e-9 eV); Kramers pairs of bands 1..N+2 are split by ≤3.8e-6 eV; the TRIM coordinates are the four 2D TRIM of spglib-primitive cells; the lowest N bands equal NELECT (Be 2s² and H 1s valence only); IrRep uses the geometric inversion {−1|(0,0,0.2)}.
+
+**Change to `tools/parity_analysis.py` (no threshold relaxed).** The regex no longer fails on the plain-metric orthogonality line; the values are recorded in `irrep_plain_metric_orthogonality_messages`, and every other IrRep warning still fails closed. `independent_wavefunction_check` rebuilds the inversion matrix from the WAVECAR in float64 (G sphere with VASP's HSQDTM = RYTOEV·AUTOA²) and requires, at every TRIM: Löwdin-orthonormalised inversion matrix on bands 1..N unitary, block-diagonal and with eigenvalues ±1 to 1e-6; opposite-parity plain overlap over bands 1..N+2 ≤1e-6; per-band inversion residual ‖Iψ−pψ‖ ≤1e-5 (IrRep's own scale); and odd-state counts identical to IrRep's trace parities. The rerun (2026-09-26, no VASP) passed for all five centrosymmetric structures: `parity_batch_57b2275a8b154208a7148a579825f89d.json`. Worst values: unitarity 2.5e-11, opposite-parity overlap 4.0e-8, residual 6.4e-6. Conditional ν: α 1, β 0, ST 1, 2H-α 0, 2H-β 0.
+
+**Electronic time reversal (existing outputs, `tools/tr_evidence.py` → `<structure>/tr_evidence.json`).** The converged SOC states are TR-invariant within numerical precision: max|m(r)| ≤ 2.6e-7 μB/Å³ (≤3.4e-7 of max ρ), ∫|m| ≤ 8.9e-7 μB, TR-odd one-centre Re(m) ≤ 3e-7 against the TR-even spin–orbit Im(m) of 7–9e-5, Kramers splitting of bands 1..N+2 at the TRIM ≤ 3.8e-6 eV. For 1H-β (C1, SCF on the full unsymmetrised 105×105 grid) E_n(k) = E_n(−k) holds to 4.0e-7 eV for bands 1–8 over 5512 ±k pairs. Every SCF started from m = 0, and for the five centrosymmetric structures ISYM=2 removed inversion-odd m by construction, so these data do not test stability against magnetic order.
+
+**Spin-polarised stability screen (`tools/spin_screen.py`, `tools/spin_screen.pbs`).** Collinear ISPIN=2 SCFs (vasp_std, no SOC) on the same geometry, 105×105 mesh, cutoff, smearing and dipole setup, seeded with ferromagnetic moments (Be 1 μB, H 0.5 μB), a layer-alternating Be pattern when there are two or more Be, and for ST an additional inversion-odd (+, 0, −) pattern. A seed "collapses" when the total and every LORBIT=11 site moment fall below 1e-3 μB. Supercell magnetic orders are not sampled.
+
+**Isolation of the lowest-N subspace.** The 105×105 SCF grid was unfolded with the symmetry VASP used (all IBZ weights reproduced) and every direct-gap basin below 0.3 eV located. The earlier refinements only followed the global minimum of each stage; three basins were unresolved: β N=4 B1 near (0.3234, 0.3619) and B2 near (0.328, 0.314), and ST N=6 on the Γ–M diagonal near (0.3194, 0.3194), never refined, with a Dirac-cone fit consistent with a near-zero gap. `tools/refine_gap_targeted.py` zooms into explicit basins with fixed-density SOC NSCF (ICHARG=11, ISYM=−1), 9×9 patches re-centred on each basin's minimum and shrunk 4× only when that minimum is interior; stages `gap_refine_3a…`, summary `gap_refine_3_summary.json`. α at K (1.15 meV, fit-converged) receives the same zoom for a local slope bound. 2H-α, 2H-β and 1H-β have eV-scale margins and need nothing further.
+
+**Fermi level.** Only 2H-α has E_F in a global gap (indirect +4.84 eV). α, β, ST and 2H-β have indirect overlaps of −4.03, −3.52, −3.75 and −6.15 eV; 1H-β has odd filling (bands 5 and 6 each half occupied). Their parity/WCC indices describe isolated band subspaces of metals.
+
+**Submitted 2026-09-26 (cmt queue, 24 cores each so that jobs backfill the free slot on cmt02; a 168-core request would wait for a whole node).**
+
+| Task | PBS job | Script |
+|---|---|---|
+| β zoom (B1, B2; 5 levels) | 43036 | `qsub -N refine_beta -v STRUCTURE=b-Beryllene,CENTERS='0.32338:0.36190:0.000595;0.3283:0.3135:0.00476',LEVELS=5 tools/refine_gap_targeted.pbs` |
+| ST zoom (diagonal basin; 5 levels) | 43037 | `CENTERS='0.31936:0.31936:0.00238',LEVELS=5` |
+| α zoom at K (4 levels) | 43038 | `CENTERS='0.333333333333:0.333333333333:0.000595',LEVELS=4` |
+| Spin screens α, β, ST, 2H-α, 2H-β, 1H-β | 43030–43035 | `qsub -N spin_<id> -v STRUCTURE=<dir> tools/spin_screen.pbs` |
+
+The six first-attempt spin jobs (43021–43026, 42 cores) were deleted before starting and resubmitted at 24 cores.
+
