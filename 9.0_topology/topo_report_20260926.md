@@ -133,10 +133,11 @@ All other IrRep warnings still fail closed, and no tolerance was relaxed. The re
 
 **These data cannot test whether a magnetic state has lower energy.** Every SCF started from m = 0, and for the centrosymmetric structures ISYM = 2 removed inversion-odd magnetisation by construction. The instability is most plausible for 1H-β, whose neutral Fermi level sits in a half-filled Kramers band, although its DOS at E_F is modest (0.36 states/eV/cell).
 
-**Stability screen submitted (jobs 43030–43035, results pending).**
-- Collinear spin-polarised SCFs on the same geometry, mesh and smearing.
-- Seeds: ferromagnetic (Be 1 μB, H 0.5 μB); layer-alternating Be (inversion-odd for β, 2H-β and 1H-β); and for ST also the inversion-odd (+, 0, −) pattern.
-- Collapse of every seed would support, but not prove, a nonmagnetic ground state; supercell orders are not sampled.
+**Stability screen (jobs 43030–43035, all exit 0): every magnetic seed collapses to the nonmagnetic state** (`<structure>/spin_screen/spin_screen_summary.json`).
+- Collinear spin-polarised SCFs (ISPIN = 2, no SOC) on the same geometry, 105 × 105 mesh, cutoff, smearing and dipole setup.
+- Seeds: ferromagnetic (Be 1 μB, H 0.5 μB) for all six structures; layer-alternating Be (inversion-odd for β, 2H-β and 1H-β) and, for ST, the layer-alternating (+, −, +) and inversion-odd (+, 0, −) patterns: 11 SCFs in total.
+- Every seed ends with total and site moments below 10⁻³ μB (printed as 0.000), and all seeds of one structure converge to the same energy (spread ≤ 7 × 10⁻⁷ eV), equal to the nonmagnetic energy.
+- This supports a nonmagnetic, time-reversal-symmetric ground state against ferromagnetic and in-cell antiferromagnetic order at the PBE level. It does not prove it: supercell (q ≠ 0) magnetic orders were not sampled.
 
 ### 4.4 Isolation of the fixed-band subspace over the 2D BZ
 
@@ -193,12 +194,12 @@ The legacy ν values for α, β and ST coincide with the current ones. The draft
 
 ## 6. Pending calculations and remaining limitations
 
-| Job | Purpose | Status (2026-09-26) |
+| Job | Purpose | Status (2026-09-27) |
 |---|---|---|
 | 43036 | β zoom into basins B1 and B2 | finished (Section 4.4) |
 | 43037 | ST zoom into the unrefined diagonal basin | finished (Section 4.4) |
 | 43038 | α zoom at K (local slope bound) | finished (Section 4.4) |
-| 43030–43035 | collinear spin-polarised stability screens (α, β, ST, 2H-α, 2H-β, 1H-β) | queued |
+| 43030–43035 | collinear spin-polarised stability screens (α, β, ST, 2H-α, 2H-β, 1H-β) | finished: all 11 seeds collapse to m = 0 (Section 4.3) |
 
 Limitations that remain after these jobs:
 
