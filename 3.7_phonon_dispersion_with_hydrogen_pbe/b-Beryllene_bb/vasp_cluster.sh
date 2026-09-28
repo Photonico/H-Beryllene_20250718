@@ -3,7 +3,7 @@
 #PBS -q cmt
 #PBS -j oe
 #PBS -l select=1:ncpus=24:mpiprocs=24:mem=100GB
-#PBS -l walltime=12:00:00
+#PBS -l walltime=24:00:00
 #PBS -J 1-12
 #PBS -m a
 #PBS -M luke.niu@sydney.edu.au
