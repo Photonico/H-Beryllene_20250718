@@ -166,6 +166,59 @@ def extract_direct_gap_grid(directory, subspace):
         raise ValueError(f"Unfolding incomplete or inconsistent ({disagreement:.2e} eV) in {directory}")
     return grid, mesh
 
+def extract_eigenvalue_grid(directory, bands):
+    # Eigenvalues of the selected (0-based) bands on the full Gamma-centred SCF grid, shape (M1, M2, len(bands))
+    with open(os.path.join(directory, "scf", "KPOINTS"), "r", encoding="utf-8") as f:
+        mesh = [int(v) for v in f.readlines()[3].split()[:2]]
+    with h5py.File(os.path.join(directory, "scf", "vaspout.h5"), "r") as f:
+        eigenvalues = f["/results/electron_eigenvalues/eigenvalues"][()][0][:, bands]
+        kpoints = f["/results/electron_eigenvalues/kpoint_coords"][()][:, :2]
+    grid = np.full(mesh + [len(bands)], np.nan)
+    disagreement = 0.0
+    for rotation in extract_point_group_2d(directory):
+        for sign in (1, -1):
+            images = sign * kpoints @ rotation * mesh
+            if np.abs(images - np.rint(images)).max() > 1e-4:
+                raise ValueError(f"Symmetry image off the SCF grid in {directory}")
+            index = np.rint(images).astype(int) % mesh
+            known = ~np.isnan(grid[index[:, 0], index[:, 1], 0])
+            if known.any():
+                disagreement = max(disagreement, float(np.abs(grid[index[known, 0], index[known, 1]] - eigenvalues[known]).max()))
+            grid[index[:, 0], index[:, 1]] = eigenvalues
+    if np.isnan(grid).any() or disagreement > 1e-4:
+        raise ValueError(f"Unfolding incomplete or inconsistent ({disagreement:.2e} eV) in {directory}")
+    return grid, mesh
+
+def extract_lindhard_susceptibility(directory, sigma=0.05, window=1.0):
+    # Constant-matrix-element static susceptibility chi0(q) and nesting function xi(q) on the SCF q grid.
+    # chi0(q) = 1/N sum_{k,n,m} [f(e_nk) - f(e_m,k+q)] / (e_m,k+q - e_nk), Gaussian occupations of width sigma;
+    # xi(q)   = 1/N sum_{k,n,m} d(e_nk - E_F) d(e_m,k+q - E_F). Bands with states within +/- window of E_F are used.
+    from scipy.special import erfc
+    fermi = extract_fermi_topology(directory)
+    with h5py.File(os.path.join(directory, "scf", "vaspout.h5"), "r") as f:
+        all_bands = f["/results/electron_eigenvalues/eigenvalues"][()][0]
+    bands = [n for n in range(all_bands.shape[1])
+             if all_bands[:, n].min() < fermi + window and all_bands[:, n].max() > fermi - window]
+    grid, mesh = extract_eigenvalue_grid(directory, bands)
+    x = (grid - fermi) / sigma
+    occupation = 0.5 * erfc(x)
+    delta = np.exp(-x ** 2) / (sigma * np.sqrt(np.pi))
+    chi0, xi = np.zeros(mesh), np.zeros(mesh)
+    count = mesh[0] * mesh[1]
+    for i in range(mesh[0]):
+        for j in range(mesh[1]):
+            shifted = np.roll(grid, (-i, -j), axis=(0, 1))
+            f_shift = np.roll(occupation, (-i, -j), axis=(0, 1))
+            d_shift = np.roll(delta, (-i, -j), axis=(0, 1))
+            de = shifted[:, :, None, :] - grid[:, :, :, None]
+            df = occupation[:, :, :, None] - f_shift[:, :, None, :]
+            small = np.abs(de) < 1e-6
+            ratio = np.where(small, delta[:, :, :, None], df / np.where(small, 1.0, de))
+            chi0[i, j] = ratio.sum() / count
+            xi[i, j] = (delta[:, :, :, None] * d_shift[:, :, None, :]).sum() / count
+    return {"chi0": chi0, "xi": xi, "mesh": mesh, "bands_one_based": [bands[0] + 1, bands[-1] + 1],
+            "fermi": fermi, "sigma": sigma}
+
 def extract_symmetry_images(directory, kpoint):
     images = {tuple(np.round(((sign * np.asarray(kpoint[:2]) @ rotation) + 0.5) % 1 - 0.5, 9))
               for rotation in extract_point_group_2d(directory) for sign in (1, -1)}
@@ -382,6 +435,26 @@ def summarize_frozen_phonon(directory):
         reference = energy if reference is None else reference
         rows.append([os.path.basename(folder), f"{energy:.6f}", f"{1000 * (energy - reference):+.2f}"])
     return show_table(["Amplitude", "E0 (eV)", "E0 − E0(A0) (meV)"], rows)
+
+def summarize_lindhard(matters_list, sigmas=(0.02, 0.05, 0.10)):
+    # Rank of chosen q points in chi0(q) and xi(q): matters [label, structure directory, (q1, q2)]
+    rows = []
+    for label, directory, qpoint in matters_list:
+        for sigma in sigmas:
+            result = extract_lindhard_susceptibility(directory, sigma=sigma)
+            mesh = result["mesh"]
+            index = tuple(int(round(v * m)) % m for v, m in zip(qpoint, mesh))
+            mask = np.ones(mesh, bool); mask[0, 0] = False
+            cells = []
+            for name in ("chi0", "xi"):
+                grid = result[name]
+                peak = np.unravel_index(np.argmax(np.where(mask, grid, -np.inf)), mesh)
+                rank = int((grid[mask] > grid[index]).sum()) + 1
+                cells += [f"{grid[index]:.3f}", f"{rank}/{mask.sum()}",
+                          f"{grid[peak]:.3f} at ({(peak[0] / mesh[0] + 0.5) % 1 - 0.5:.3f}, {(peak[1] / mesh[1] + 0.5) % 1 - 0.5:.3f})"]
+            rows.append([label, f"({qpoint[0]:g}, {qpoint[1]:g})", f"{sigma:.2f}", *cells])
+    header = ["Structure", "q", "σ (eV)", "χ₀(q)", "χ₀ rank", "χ₀ max (q ≠ 0)", "ξ(q)", "ξ rank", "ξ max (q ≠ 0)"]
+    return show_table(header, rows)
 
 ## Plotting
 
@@ -676,4 +749,58 @@ def plot_gap_zoom(title, matters_list=None):
 
     # Legend
     plt.legend(loc="upper right", frameon=False)
+    plt.tight_layout()
+
+
+def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
+    # Help information
+    help_info = """
+    Usage: plot_lindhard_susceptibility
+        arg[0]: suptitle;
+        arg[1]: matters list, [[label, structure directory, (q1, q2)], ...];
+        arg[2]: Gaussian width sigma in eV (default 0.05);
+    Constant-matrix-element static susceptibility chi0(q) and nesting function xi(q) on the SCF q grid;
+    crosses mark the chosen q and its symmetry images.
+    """
+    if suptitle in ["help", "Help"]:
+        print(help_info)
+        return
+
+    # Figure settings
+    fig_setting = canvas_setting(12.5, 5.4 * len(matters_list))
+    params = fig_setting[2]; plt.rcParams.update(params)
+    fig, axes = plt.subplots(len(matters_list), 2, figsize=fig_setting[0], dpi=fig_setting[1], squeeze=False)
+
+    # Colors calling
+    annotate_color = color_sampling("Grey")
+    marker_color = color_sampling("Red")[1]
+    sequential = LinearSegmentedColormap.from_list("susceptibility", gap_colormap(np.linspace(0, 1, 13))[::-1])
+
+    # Title
+    fig.suptitle(f"{suptitle}", fontsize=fig_setting[3][0], y=1.00)
+
+    # Data calling and plotting
+    for row, (label, directory, qpoint) in enumerate(matters_list):
+        result = extract_lindhard_susceptibility(directory, sigma=sigma)
+        mesh = result["mesh"]
+        shift = [m // 2 for m in mesh]
+        edges = [(np.arange(m + 1) - shift[i] - 0.5) / m for i, m in enumerate(mesh)]
+        frac_1, frac_2 = np.meshgrid(edges[0], edges[1], indexing="ij")
+        reciprocal = extract_reciprocal_2d(directory)
+        qx = frac_1 * reciprocal[0, 0] + frac_2 * reciprocal[1, 0]
+        qy = frac_1 * reciprocal[0, 1] + frac_2 * reciprocal[1, 1]
+        points = extract_symmetry_images(directory, qpoint) @ reciprocal
+        for ax, name, title in ((axes[row, 0], "chi0", r"$\chi_0(\mathbf{q})$"), (axes[row, 1], "xi", r"$\xi(\mathbf{q})$")):
+            values = np.roll(result[name], shift, axis=(0, 1))
+            upper = np.delete(result[name].ravel(), 0).max()  # q = 0 (intraband self-nesting) excluded from the colour scale
+            image = ax.pcolormesh(qx, qy, np.minimum(values, upper), cmap=sequential, vmax=upper, shading="flat", rasterized=True)
+            ax.plot(points[:, 0], points[:, 1], linestyle="none", marker="x", ms=11, mew=2.0, color=marker_color, zorder=5)
+            ax.plot(0, 0, marker="o", ms=6, mfc="white", mec=annotate_color[0], mew=0.9, zorder=4)
+            ax.set_title(f"{label}: {title}, σ = {sigma:g} eV", fontsize=fig_setting[3][1] - 4)
+            ax.set_aspect("equal")
+            ax.set_xlabel(r"$q_x$ (Å$^{-1}$)")
+            ax.set_ylabel(r"$q_y$ (Å$^{-1}$)")
+            ax.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
+            fig.colorbar(image, ax=ax, shrink=0.85, pad=0.03)
+
     plt.tight_layout()
