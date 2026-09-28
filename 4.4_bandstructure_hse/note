@@ -1,0 +1,20 @@
+HSE06 checks (2026-09-29)
+
+Purpose
+1. HSE06 band gap and band edges of 2H-alpha (a-Beryllene_hh), the only insulator (PBE indirect gap 4.84 eV).
+2. Band order and inversion parities at the four TRIM under HSE06 for the conditional Fu-Kane indices
+   (critical case: 2H-beta at M, where the pair above band 6 has the opposite parity and lies only 0.177 eV higher in PBE).
+
+Cost-saving choices
+- No SOC: Be/H spin-orbit splittings are about 1 meV, and inversion acts on the spatial part only, so spinless parities
+  equal the Kramers-pair parities.
+- 20 A cell instead of 40 A (slab <= 3.8 A thick, centred at z = 0.5, DIPOL 0.5 0.5 0.5): about 2-4x cheaper.
+- Each job first runs PBE in the same cell (reference, and the starting WAVECAR), then HSE06 (ISTART = 1, ALGO = Damped).
+- scf/: Gamma-centred 12x12 k mesh (contains all four TRIM); metals use NKREDX = NKREDY = 2 and PRECFOCK = Fast;
+  2H-alpha uses the full 12x12 exchange mesh.
+- 2H-alpha band structure split into four independent jobs: IBZ of the 12x12 mesh (43 points, with weights) plus
+  zero-weight path points: Gamma-K (13), K-M (10), M-Gamma (13), and 18 points around the PBE VBM (0.2546, 0.2546)
+  and CBM (0.4268, 0).
+
+Outputs: *.pbe files = PBE step, plain OUTCAR/EIGENVAL/vasprun.xml = HSE06 step. Parities at the TRIM come from IrRep
+on the HSE06 WAVECAR (non-spinor).
