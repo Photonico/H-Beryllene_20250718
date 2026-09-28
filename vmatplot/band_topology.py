@@ -322,6 +322,67 @@ def summarize_time_reversal(topology_dir="9.0_topology", spin_screen=False):
                   "TRIM Kramers splitting (eV)", "max \\|E(k)−E(−k)\\| (eV)"]
     return show_table(header, rows)
 
+def extract_incar_tag(incar_path, tag):
+    # Active (uncommented) value of one INCAR tag, or None
+    if not os.path.isfile(incar_path):
+        return None
+    with open(incar_path, "r", encoding="utf-8") as f:
+        for line in f:
+            text = line.split("#")[0].strip()
+            if text.upper().startswith(tag.upper()) and "=" in text:
+                return text.split("=", 1)[1].strip()
+    return None
+
+def summarize_phonon_stability(matters_list):
+    # Phonopy finite-displacement runs: [label, phonopy parent directory], one row per run
+    import phonopy
+    rows = []
+    for label, directory in matters_list:
+        displacements = sorted(glob.glob(os.path.join(directory, "disp-*")))
+        incar = os.path.join(displacements[0], "INCAR") if displacements else os.path.join(directory, "INCAR")
+        ivdw, sigma = extract_incar_tag(incar, "IVDW"), extract_incar_tag(incar, "SIGMA")
+        kpoints = os.path.join(os.path.dirname(incar), "KPOINTS")
+        mesh_k = "×".join(open(kpoints, encoding="utf-8").readlines()[3].split()[:2]) if os.path.isfile(kpoints) else "?"
+        setting = f"PBE{'+D3' if ivdw else ''}, SIGMA {sigma}, k {mesh_k}"
+        if not os.path.isfile(os.path.join(directory, "FORCE_SETS")):
+            done = sum(os.path.isfile(os.path.join(d, "OUTCAR")) and "General timing" in open(os.path.join(d, "OUTCAR"), errors="replace").read()
+                       for d in displacements)
+            rows.append([label, directory, setting, f"pending ({done}/{len(displacements)} displacements finished)", "", "", ""])
+            continue
+        yaml = os.path.join(directory, "phonopy_disp.yaml")
+        yaml = yaml if os.path.isfile(yaml) else os.path.join(directory, "phonopy.yaml")
+        ph = phonopy.load(yaml, force_sets_filename=os.path.join(directory, "FORCE_SETS"), produce_fc=True, log_level=0)
+        first = ph.dataset["first_atoms"]
+        pairs = [(np.array(a["forces"]) + np.array(b["forces"])) / 2 for i, a in enumerate(first) for b in first[i+1:]
+                 if a["number"] == b["number"] and np.allclose(a["displacement"], -np.array(b["displacement"]), atol=1e-8)]
+        residual = f"{np.abs(np.mean(pairs, axis=0)).max():.1e}" if pairs else "—"
+        mesh = [int(round(v)) for v in np.diag(ph.supercell_matrix)[:2]]
+        commensurate = [(i / mesh[0], j / mesh[1], 0) for i in range(mesh[0]) for j in range(mesh[1])]
+        ph.run_qpoints(commensurate); f_comm = ph.get_qpoints_dict()["frequencies"]
+        fine = [(i / 60, j / 60, 0) for i in range(60) for j in range(60)]
+        ph.run_qpoints(fine); f_fine = ph.get_qpoints_dict()["frequencies"]
+        index = int(np.argmin(f_fine.min(axis=1)))
+        q_min = np.round(((np.array(fine[index][:2]) + 0.5) % 1 - 0.5), 3)
+        rows.append([label, directory, setting, residual, f"{f_comm.min():+.3f}",
+                     f"{f_fine.min():+.3f} at q = ({q_min[0]:g}, {q_min[1]:g})", f"{f_fine.max():.1f}"])
+    header = ["Structure", "Directory", "Forces", "Residual force (eV/Å)", "Min. ν, commensurate q (THz)",
+              "Min. ν, 60×60 grid (THz)", "Max. ν (THz)"]
+    return show_table(header, rows)
+
+def summarize_frozen_phonon(directory):
+    # Frozen-phonon energies E0(A) - E0(A0) from the OSZICAR of each amplitude folder
+    rows, reference = [], None
+    for folder in sorted(glob.glob(os.path.join(directory, "A*"))):
+        oszicar = os.path.join(folder, "OSZICAR")
+        final = [line for line in open(oszicar, encoding="utf-8") if " E0= " in line] if os.path.isfile(oszicar) else []
+        if not final:
+            rows.append([os.path.basename(folder), "pending", ""])
+            continue
+        energy = float(final[-1].split("E0=")[1].split()[0])
+        reference = energy if reference is None else reference
+        rows.append([os.path.basename(folder), f"{energy:.6f}", f"{1000 * (energy - reference):+.2f}"])
+    return show_table(["Amplitude", "E0 (eV)", "E0 − E0(A0) (meV)"], rows)
+
 ## Plotting
 
 def create_matters_topology(matters_list):
