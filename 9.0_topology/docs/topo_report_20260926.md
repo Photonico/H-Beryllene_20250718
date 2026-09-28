@@ -1,6 +1,6 @@
 # SOC band topology of beryllene and hydrogenated beryllenes
 
-Report, 2026-09-26. Supersedes the topology claims of the collaborator draft `20260922_draft/topo_draft.md` for the current reference geometries. Results and figures are read by `../9.0_topology.ipynb`; methods, job records and troubleshooting are in [`workflow.md`](workflow.md).
+Report, 2026-09-26. Supersedes the topology claims of the collaborator draft `20260922_draft/topo_draft.md` for the current reference geometries. Results and figures are read by `../../9.0_topology.ipynb`; methods, job records and troubleshooting are in [`workflow.md`](../workflow.md).
 
 > **Status: conditional screening, not certified.** Every Z₂ value below belongs to a fixed lowest-N spinor-band subspace and is conditional on electronic time-reversal (TR) symmetry and on isolation of that subspace over the whole 2D Brillouin zone (BZ). Five of the six structures are metallic at neutral filling, so their indices are not Fermi-level quantum-spin-Hall (QSH) invariants. All reports carry `topology_certified: false`.
 

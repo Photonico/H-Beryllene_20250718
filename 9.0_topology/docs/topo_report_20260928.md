@@ -1,6 +1,6 @@
 # SOC band topology and stability of beryllene and hydrogenated beryllenes
 
-Report, 2026-09-28. Update of [`9.0_topology/topo_report_20260926.md`](../9.0_topology/topo_report_20260926.md), which keeps the full methods, parity tables and references. Results are displayed in [`9.0_topology.ipynb`](../9.0_topology.ipynb); the analysis code is `vmatplot/band_topology.py`.
+Report, 2026-09-28. Update of [`topo_report_20260926.md`](topo_report_20260926.md), which keeps the full methods, parity tables and references. Results are displayed in [`9.0_topology.ipynb`](../../9.0_topology.ipynb); the analysis code is `vmatplot/band_topology.py`.
 
 > **Status: conditional screening, not certified.** Every Z₂ value belongs to a fixed lowest-N spinor-band subspace and is conditional on electronic time-reversal (TR) symmetry and on isolation of that subspace over the whole 2D Brillouin zone (BZ). Five of the six structures are metallic at neutral filling, so their indices are not Fermi-level quantum-spin-Hall invariants. All reports carry `topology_certified: false`.
 
@@ -77,7 +77,7 @@ The full audit is in `3.5_phonon_dispersion_with_hydrogen_selected/audit_2026092
 **Problems in the earlier phonon results:**
 1. **Functional mismatch.** The force calculations used PBE+D3 (IVDW = 12) and SIGMA 0.1 on geometries relaxed with PBE without D3 and SIGMA 0.05. The structures were therefore not at equilibrium for the force field used: residual forces were 0.014–0.063 eV/Å.
 2. **Incomplete band path.** The hexagonal Γ–K–M–Γ path was used for C2/m, P1 and P-1 cells, so inequivalent directions were never plotted. It missed a 2H-β mode at −0.646 THz at the commensurate q = (0.4, 0.6) (POSCAR reciprocal basis). The notebook therefore reported only −0.013 THz at Γ.
-   The mode appears only with the dense supercell k mesh: the otherwise identical run with 5 × 5 k (25 × 25 unit-cell equivalent, `b-Beryllene_bb_alt2`) has no imaginary frequency at any commensurate q (−0.000 THz), whereas 13 × 13 k (65 × 65) gives −0.646 THz at q = (0.4, 0.6). It also survives removal of the residual forces. This k sensitivity points to an electronic, Fermi-surface-driven softening rather than a numerical artefact.
+   The mode appears only with the dense supercell k mesh: the otherwise identical run with 5 × 5 k (25 × 25 unit-cell equivalent, `b-Beryllene_bb_alt2`) has no imaginary frequency at any commensurate q (−0.000 THz), whereas 13 × 13 k (65 × 65) gives −0.646 THz at q = (0.4, 0.6). It also survives removal of the residual forces. This k sensitivity points to an electronic origin rather than a numerical artefact. It is not Fermi-surface nesting, however (Section 5): the bare susceptibility has no peak at this q.
 3. **Interpolation artefact.** The 1H-β imaginary pocket is not a real instability: all commensurate q are stable, and the pocket lies at |q| ≤ 0.12 on the flexural (ZA) branch.
 
 **Recomputation** (`3.7_phonon_dispersion_with_hydrogen_pbe`):
@@ -132,10 +132,10 @@ Ranked by weight. Most results so far are corrections rather than discoveries.
 1. **Most promising, not yet established: the nearly zero-frequency 2H-β mode at q = (0.4, 0.6).**
    - It is k-mesh sensitive (Section 3.2) and strongly anharmonic (frozen phonon: +0.58 / +12.45 meV, ratio 21 instead of 4). Hydrogenated β-beryllene therefore sits at the edge of a lattice (charge-density-wave-type) instability.
    - If this mode carries a large electron–phonon coupling λ, the story "hydrogenation drives β-beryllene to the edge of a lattice instability and enhances superconductivity" has real physical content, comparable to strongly anharmonic modes in other phonon-mediated superconductors.
-   - Needed to establish it:
-     - (a) Fermi-surface nesting / bare susceptibility χ₀(q) from the existing 105 × 105 SCF eigenvalues. This needs no new VASP run: a peak at q = (0.4, 0.6) would confirm the electronic origin.
-     - (b) Frozen-phonon energies at a few smearing widths (electronic temperatures), the signature of a CDW-type soft mode.
-     - (c) The full PBE phonons (array 43597[], running) and the collaborator's electron–phonon calculation.
+   - Checks:
+     - (a) **Done: no nesting.** The constant-matrix-element bare susceptibility χ₀(q) and nesting function ξ(q) were computed from the unfolded 105 × 105 SOC SCF eigenvalues (bands 5–8). At q = (0.4, 0.6), χ₀ ranks 8700–8900 of 11 024 q points and ξ ranks 3800–8400, for σ = 0.02, 0.05 and 0.10 eV. χ₀ peaks instead at small q ≈ (0.11, 0.10). The softening is therefore not nesting-driven. Together with its k sensitivity, it most likely comes from a q-dependent electron–phonon matrix element (as for the charge-density wave of NbSe₂, where nesting is also weak) or from the lattice itself. Only the collaborator's electron–phonon calculation can tell these apart. Figure: `figures/9_topology/9.7_lindhard_b_bb.pdf`.
+     - (b) **Running:** frozen-phonon energies at σ = 0.02 and 0.10 eV, plus a smaller amplitude (0.024 Å) at σ = 0.05 eV to fix the sign of the harmonic term (jobs 43606–43614, `3.6_phonon_soft_mode_check/b-Beryllene_bb`). A CDW-type mode softens further as σ decreases.
+     - (c) **Running:** full PBE phonons (array 43597[]). The collaborator's electron–phonon calculation (λ_q at this q) remains the decisive test.
 2. **Solid, but a correction: topology and superconductivity are decoupled.** α and ST are metals. Their Z₂ band inversions lie 1.2–2.7 eV above E_F and are protected only by ~1 meV spin–orbit gaps, so they are unrelated to the Fermi surface that sets T_c (Section 4). This suits one section of a combined paper.
 3. **Worth stating, limited novelty.**
    - Full hydrogenation turns α-beryllene into a trivial wide-gap insulator (2H-α, PBE gap 4.84 eV), analogous to graphene → graphane.
@@ -143,7 +143,7 @@ Ranked by weight. Most results so far are corrections rather than discoveries.
    - The Z₂ classification of the hydrogenated structures is trivial in every case and serves completeness.
 4. **Not physics novelty.** The IrRep orthogonality false alarm (single-precision normalisation plus the PAW metric) and the corrected phonon settings belong in the methods or supplement.
 
-**Suggested paper focus:** hydrogenation-tuned superconductivity and the near-unstable 2H-β mode, with the topology section as a clarification of earlier claims.
+**Suggested paper focus:** hydrogenation-tuned superconductivity and the near-unstable 2H-β mode, with the topology section as a clarification of earlier claims. Because nesting is ruled out, the mode is interesting only if its electron–phonon coupling turns out large. This should be settled before it is made a headline result.
 
 ## 6. Pending work and limitations
 
