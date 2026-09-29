@@ -10,11 +10,13 @@ Cost-saving choices
   equal the Kramers-pair parities.
 - 20 A cell instead of 40 A (slab <= 3.8 A thick, centred at z = 0.5, DIPOL 0.5 0.5 0.5): about 2-4x cheaper.
 - Each job first runs PBE in the same cell (reference, and the starting WAVECAR), then HSE06 (ISTART = 1, ALGO = Damped).
-- scf/: Gamma-centred 12x12 k mesh (contains all four TRIM); metals use NKREDX = NKREDY = 2 and PRECFOCK = Fast;
-  2H-alpha uses the full 12x12 exchange mesh.
-- 2H-alpha band structure split into four independent jobs: IBZ of the 12x12 mesh (43 points, with weights) plus
-  zero-weight path points: Gamma-K (13), K-M (10), M-Gamma (13), and 18 points around the PBE VBM (0.2546, 0.2546)
-  and CBM (0.4268, 0).
+- Accuracy is not reduced to save time (revised 2026-09-29 at the user's request): full 12x12 exchange q mesh (no NKRED),
+  PRECFOCK = Normal. The in-job PBE step in the 20 A cell is compared with the 40 A / 105x105 PBE eigenvalues at the TRIM
+  to quantify the vacuum and k-mesh effect; the mesh is increased if that difference is not negligible.
+- scf/: Gamma-centred 12x12 k mesh (contains all four TRIM).
+- 2H-alpha band structure split into 10 independent jobs of <= 10 zero-weight points each, on top of the weighted IBZ of the
+  12x12 mesh (43 points): Gamma-K 30, K-M 15, M-Gamma 26 points (proportional to segment length), plus 9 points around the
+  PBE VBM (0.2546, 0.2546) and 9 around the CBM (0.4268, 0).
 
 Outputs: *.pbe files = PBE step, plain OUTCAR/EIGENVAL/vasprun.xml = HSE06 step. Parities at the TRIM come from IrRep
 on the HSE06 WAVECAR (non-spinor).
