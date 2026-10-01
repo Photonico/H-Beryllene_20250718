@@ -29,7 +29,7 @@ mpl.rcParams["lines.dash_joinstyle"]  = "round"
 
 # Four 2D TRIM in the reciprocal basis of the DFT cell
 trim_points = {"Gamma": (0.0, 0.0), "X": (0.5, 0.0), "Y": (0.0, 0.5), "M": (0.5, 0.5)}
-structure_labels = {"alpha": "α", "beta": "β", "st": "ST", "alpha_2h": "2H-α", "beta_1h": "1H-β", "beta_2h": "2H-β"}
+structure_labels = {"alpha": "α", "beta": "β (P-1, superseded)", "beta_p3m1": "β", "st": "ST", "alpha_2h": "2H-α", "beta_1h": "1H-β", "beta_2h": "2H-β"}
 
 # Blue[1], Orange[1] and Cyan[1] pass the colour-blind all-pairs check (worst ΔE 15.4, tritan 6.1);
 # Orange is below 3:1 on white, so it is always direct-labelled.
@@ -224,6 +224,63 @@ def extract_symmetry_images(directory, kpoint):
               for rotation in extract_point_group_2d(directory) for sign in (1, -1)}
     return np.array(sorted(images))
 
+def extract_eigenval(file_path):
+    # Fractional k, weights and band energies (eV) of a non-spin-polarised EIGENVAL
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    nk, nb = (int(v) for v in lines[5].split()[1:3])
+    kpoints, weights, energies = [], [], []
+    for index in range(7, 7 + nk * (nb + 2), nb + 2):
+        values = lines[index].split()
+        kpoints.append([float(v) for v in values[:3]])
+        weights.append(float(values[3]))
+        energies.append([float(lines[index + 1 + band].split()[1]) for band in range(nb)])
+    return np.array(kpoints), np.array(weights), np.array(energies)
+
+def extract_hse_bands(directory):
+    # HSE06 (EIGENVAL) and same-cell PBE (EIGENVAL.pbe) of the zero-weight chunks band_<nn>_<from>-<to>_<i> in
+    # 4.4_bandstructure_hse/<structure>; edge chunks (band_<nn>_edge-*) and the weighted scf IBZ only enter the extrema
+    with open(os.path.join(directory, "scf", "POSCAR"), "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    lattice = np.array([[float(v) for v in line.split()[:3]] for line in lines[2:5]]) * float(lines[1].split()[0])
+    reciprocal = (2 * np.pi * np.linalg.inv(lattice).T)[:2, :2]
+    with open(os.path.join(directory, "scf", "OUTCAR"), "r", encoding="utf-8", errors="replace") as f:
+        occupied = int(round(float(next(line for line in f if "NELECT" in line).split()[2]))) // 2
+    chunks = sorted(glob.glob(os.path.join(directory, "band_*")))
+    results = {"occupied_bands": occupied}
+    for functional, file_name in (("HSE06", "EIGENVAL"), ("PBE", "EIGENVAL.pbe")):
+        path_k, path_e, all_k, all_e, ticks, segment = [], [], [], [], [], None
+        for chunk in chunks:
+            kpoints, weights, energies = extract_eigenval(os.path.join(chunk, file_name))
+            zero = weights == 0
+            all_k.append(kpoints[zero]); all_e.append(energies[zero])
+            name = os.path.basename(chunk).split("_")[2]
+            if name.startswith("edge"):
+                continue
+            if name != segment:  # first chunk of a segment: tick at its start point
+                ticks.append((sum(len(k) for k in path_k), name.split("-")[0]))
+                segment = name
+            path_k.append(kpoints[zero]); path_e.append(energies[zero])
+        ticks.append((sum(len(k) for k in path_k) - 1, segment.split("-")[1]))
+        kpoints, weights, energies = extract_eigenval(os.path.join(directory, "scf", file_name))
+        all_k.append(kpoints); all_e.append(energies)
+        path_k, path_e = np.concatenate(path_k)[:, :2], np.concatenate(path_e)
+        all_k, all_e = np.concatenate(all_k)[:, :2], np.concatenate(all_e)
+        steps = np.linalg.norm(np.diff(path_k @ reciprocal, axis=0), axis=1)
+        kpath = np.concatenate([[0.0], np.cumsum(steps)])
+        valence, conduction = all_e[:, occupied - 1], all_e[:, occupied]
+        direct = conduction - valence
+        results[functional] = {"kpath": kpath, "energies": path_e, "kpoints": path_k,
+                               "ticks": [(kpath[i], label) for i, label in ticks],
+                               "vbm": (valence.max(), all_k[valence.argmax()]),
+                               "cbm": (conduction.min(), all_k[conduction.argmin()]),
+                               "direct": (direct.min(), all_k[direct.argmin()]), "points": len(all_k)}
+    return results
+
+def extract_hse_parity(directory):
+    # hse_parity.json written by 9.0_topology/tools/hse_parity.py into 4.4_bandstructure_hse/<structure>/scf
+    return extract_json(os.path.join(directory, "scf", "hse_parity.json"))
+
 def format_gap(gap_ev):
     return f"{gap_ev:.3g} eV" if gap_ev >= 0.1 else f"{1000*gap_ev:.3g} meV"
 
@@ -387,10 +444,14 @@ def extract_incar_tag(incar_path, tag):
     return None
 
 def summarize_phonon_stability(matters_list):
-    # Phonopy finite-displacement runs: [label, phonopy parent directory], one row per run
+    # Phonopy finite-displacement runs: [label, phonopy parent directory, optional symprec], one row per run
+    # A symprec of 1e-3 restores the hexagonal group of cells that deviate from it by ~1e-4 Å; with 1e-5 phonopy
+    # finds Cmmm / C2/m and breaks the C6 equivalence of supercell images in the interpolation.
     import phonopy
     rows = []
-    for label, directory in matters_list:
+    for current_matter in matters_list:
+        label, directory, *optional = current_matter
+        symprec = optional[0] if optional else 1e-5
         displacements = sorted(glob.glob(os.path.join(directory, "disp-*")))
         incar = os.path.join(displacements[0], "INCAR") if displacements else os.path.join(directory, "INCAR")
         ivdw, sigma = extract_incar_tag(incar, "IVDW"), extract_incar_tag(incar, "SIGMA")
@@ -400,11 +461,12 @@ def summarize_phonon_stability(matters_list):
         if not os.path.isfile(os.path.join(directory, "FORCE_SETS")):
             done = sum(os.path.isfile(os.path.join(d, "OUTCAR")) and "General timing" in open(os.path.join(d, "OUTCAR"), errors="replace").read()
                        for d in displacements)
-            rows.append([label, directory, setting, f"pending ({done}/{len(displacements)} displacements finished)", "", "", ""])
+            rows.append([label, directory, setting, "", f"pending ({done}/{len(displacements)} displacements finished)", "", "", ""])
             continue
         yaml = os.path.join(directory, "phonopy_disp.yaml")
         yaml = yaml if os.path.isfile(yaml) else os.path.join(directory, "phonopy.yaml")
-        ph = phonopy.load(yaml, force_sets_filename=os.path.join(directory, "FORCE_SETS"), produce_fc=True, log_level=0)
+        ph = phonopy.load(yaml, force_sets_filename=os.path.join(directory, "FORCE_SETS"), produce_fc=True, log_level=0,
+                          symprec=symprec)
         first = ph.dataset["first_atoms"]
         pairs = [(np.array(a["forces"]) + np.array(b["forces"])) / 2 for i, a in enumerate(first) for b in first[i+1:]
                  if a["number"] == b["number"] and np.allclose(a["displacement"], -np.array(b["displacement"]), atol=1e-8)]
@@ -416,9 +478,9 @@ def summarize_phonon_stability(matters_list):
         ph.run_qpoints(fine); f_fine = ph.get_qpoints_dict()["frequencies"]
         index = int(np.argmin(f_fine.min(axis=1)))
         q_min = np.round(((np.array(fine[index][:2]) + 0.5) % 1 - 0.5), 3)
-        rows.append([label, directory, setting, residual, f"{f_comm.min():+.3f}",
+        rows.append([label, directory, setting, ph.symmetry.get_international_table(), residual, f"{f_comm.min():+.3f}",
                      f"{f_fine.min():+.3f} at q = ({q_min[0]:g}, {q_min[1]:g})", f"{f_fine.max():.1f}"])
-    header = ["Structure", "Directory", "Forces", "Residual force (eV/Å)", "Min. ν, commensurate q (THz)",
+    header = ["Structure", "Directory", "Forces", "Space group", "Residual force (eV/Å)", "Min. ν, commensurate q (THz)",
               "Min. ν, 60×60 grid (THz)", "Max. ν (THz)"]
     return show_table(header, rows)
 
@@ -435,6 +497,113 @@ def summarize_frozen_phonon(directory):
         reference = energy if reference is None else reference
         rows.append([os.path.basename(folder), f"{energy:.6f}", f"{1000 * (energy - reference):+.2f}"])
     return show_table(["Amplitude", "E0 (eV)", "E0 − E0(A0) (meV)"], rows)
+
+def extract_poscar_cartesian(file_path):
+    # Lattice (Å), element symbol of every atom and Cartesian positions (Å) of a VASP5 POSCAR in direct coordinates
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    lattice = np.array([[float(v) for v in line.split()[:3]] for line in lines[2:5]]) * float(lines[1].split()[0])
+    symbols = [s for s, n in zip(lines[5].split(), lines[6].split()) for _ in range(int(n))]
+    start = 9 if lines[7].strip()[0] in "Ss" else 8
+    fractional = np.array([[float(v) for v in line.split()[:3]] for line in lines[start:start + len(symbols)]])
+    return lattice, symbols, fractional
+
+def summarize_frozen_phonon_fit(matters_list):
+    # Fit E(Q) - E(0) = alpha Q^2 + beta Q^4 in mass-weighted amplitude Q (amu^1/2 Å) over the A* folders:
+    # matters [label, directory]; harmonic nu = sqrt(2 alpha) / 2 pi (imaginary shown negative); well depth alpha^2 / 4 beta
+    from phonopy.structure.atoms import atom_data, symbol_map
+    rows = []
+    for label, directory in matters_list:
+        lattice, symbols, reference = extract_poscar_cartesian(os.path.join(directory, "A0", "POSCAR"))
+        masses = np.array([atom_data[symbol_map[s]][3] for s in symbols])
+        energies, q2, umax, cells = [], [], [], []
+        for folder in sorted(glob.glob(os.path.join(directory, "A*"))):
+            final = [line for line in open(os.path.join(folder, "OSZICAR"), encoding="utf-8") if " E0= " in line]
+            displacement = extract_poscar_cartesian(os.path.join(folder, "POSCAR"))[2] - reference
+            displacement = (displacement - np.round(displacement)) @ lattice
+            energies.append(float(final[-1].split("E0=")[1].split()[0]))
+            q2.append(float((masses * (displacement ** 2).sum(axis=1)).sum()))
+            umax.append(float(np.sqrt((displacement ** 2).sum(axis=1)).max()))
+        energies = 1000 * (np.array(energies) - energies[int(np.argmin(q2))])
+        q2, umax = np.array(q2), np.array(umax)
+        order = np.argsort(q2)[1:]
+        matrix = np.vstack([q2[order], q2[order] ** 2]).T
+        (alpha, beta), *_ = np.linalg.lstsq(matrix, energies[order], rcond=None)
+        residual = np.abs(energies[order] - matrix @ np.array([alpha, beta])).max()
+        omega2 = 2 * alpha / 0.1036427  # meV per amu Å^2 (rad/ps)^2
+        nu = np.sign(omega2) * np.sqrt(abs(omega2)) / (2 * np.pi)
+        well = (f"{alpha ** 2 / (4 * beta):.3f} at max \\|u\\| = {np.sqrt(-alpha / (2 * beta) / q2[order[0]]) * umax[order[0]]:.3f} Å"
+                if alpha < 0 else "none")
+        kpoints = open(os.path.join(directory, "A0", "KPOINTS"), encoding="utf-8").readlines()[3].split()[:2]
+        rows.append([label, extract_incar_tag(os.path.join(directory, "A0", "INCAR"), "SIGMA"), "×".join(kpoints),
+                     ", ".join(f"{e:+.3f} ({u:.3f} Å)" for e, u in zip(energies[order], umax[order])),
+                     f"{nu:+.2f}", well, f"{residual:.3f}"])
+    header = ["Series", "SIGMA (eV)", "Supercell k", "E − E(A0) in meV (max \\|u\\|)", "Harmonic ν (THz, − = imaginary)",
+              "Double-well depth (meV / cell)", "Max. fit residual (meV)"]
+    return show_table(header, rows)
+
+def extract_final_energy(directory):
+    # Final E0 (eV) of a VASP run from its OSZICAR
+    with open(os.path.join(directory, "OSZICAR"), "r", encoding="utf-8") as f:
+        return float([line for line in f if " E0= " in line][-1].split("E0=")[1].split()[0])
+
+def extract_phonon_free_energy(directory, temperatures, mesh=40):
+    # Harmonic vibrational free energy per cell (eV) at each temperature (0 K = ZPE), symprec as recorded in phonopy.yaml;
+    # imaginary and zero modes are left out
+    import phonopy, yaml
+    with open(os.path.join(directory, "phonopy.yaml"), "r", encoding="utf-8") as f:
+        symprec = float(yaml.safe_load(f)["phonopy"]["symmetry_tolerance"])
+    ph = phonopy.load(os.path.join(directory, "phonopy_disp.yaml"), force_sets_filename=os.path.join(directory, "FORCE_SETS"),
+                      produce_fc=True, log_level=0, symprec=symprec)
+    ph.run_mesh([mesh, mesh, 1])
+    data = ph.get_mesh_dict()
+    energies = 4.135667696e-3 * np.where(data["frequencies"] > 0, data["frequencies"], 0.0)  # THz -> eV
+    weights = data["weights"] / data["weights"].sum()
+    result = []
+    for temperature in temperatures:
+        free = 0.5 * energies
+        if temperature > 0:
+            kt = 8.617333262e-5 * temperature
+            free = free + kt * np.log1p(-np.exp(-np.where(energies > 0, energies, np.inf) / kt))
+        result.append(float((np.where(energies > 0, free, 0.0) * weights[:, None]).sum()))
+    return result
+
+def extract_h2_zero_point(directory):
+    # Zero-point energy (eV) of H2 from the stretching mode of an IBRION = 5 run (rotational residues excluded)
+    with open(os.path.join(directory, "OUTCAR"), "r", encoding="utf-8", errors="replace") as f:
+        modes = [float(line.split()[-2]) for line in f if " f  =" in line and "meV" in line]
+    return max(modes) / 2000
+
+def summarize_hydrogenation_energetics(matters_list, h2_dir, h2_freq_dir, temperature=298.15, delta_mu_h2=-0.31605):
+    # Adsorption energy per H against 1/2 H2: electronic, + ZPE, and the harmonic free energy at temperature and 1 bar.
+    # matters [label, relaxed slab, slab phonons, relaxed base, base phonons, number of H];
+    # delta_mu_h2 = H(T) - H(0) - T S of H2 at 1 bar (JANAF, 298.15 K: 8.467 kJ/mol, 130.680 J/mol/K)
+    e_h2 = extract_final_energy(h2_dir)
+    z_h2 = extract_h2_zero_point(h2_freq_dir)
+    rows = []
+    for label, slab, slab_ph, base, base_ph, count in matters_list:
+        energy = extract_final_energy(slab) - extract_final_energy(base) - count / 2 * e_h2
+        f_slab, f_base = extract_phonon_free_energy(slab_ph, [0, temperature]), extract_phonon_free_energy(base_ph, [0, temperature])
+        zpe = energy + f_slab[0] - f_base[0] - count / 2 * z_h2
+        free = energy + f_slab[1] - f_base[1] - count / 2 * (z_h2 + delta_mu_h2)
+        pressure = np.exp(2 * free / count / (8.617333262e-5 * temperature))
+        rows.append([label, count, f"{energy / count:+.3f}", f"{zpe / count:+.3f}", f"{free / count:+.3f}", f"{pressure:.1e}"])
+    header = ["Structure", "H per cell", "ΔE per H (eV)", "ΔE + ΔZPE per H (eV)", f"ΔG({temperature:g} K, 1 bar) per H (eV)",
+              f"Equilibrium p(H₂) at {temperature:g} K (bar)"]
+    return show_table(header, rows)
+
+def summarize_polymorph_energies(matters_list):
+    # Relaxed total energy per formula unit relative to the first entry: [label, relaxed directory, formula units]
+    import spglib
+    rows, reference = [], None
+    for label, directory, units in matters_list:
+        energy = extract_final_energy(directory) / units
+        reference = energy if reference is None else reference
+        lattice, symbols, fractional = extract_poscar_cartesian(os.path.join(directory, "CONTCAR"))
+        numbers = [sorted(set(symbols)).index(s) for s in symbols]
+        rows.append([label, directory, spglib.get_spacegroup((lattice, fractional, numbers), symprec=1e-3),
+                     f"{energy:.6f}", f"{1000 * (energy - reference):+.1f}"])
+    return show_table(["Structure", "Directory", "Space group (1e-3 Å)", "E0 per formula unit (eV)", "Relative (meV)"], rows)
 
 def summarize_lindhard(matters_list, sigmas=(0.02, 0.05, 0.10)):
     # Rank of chosen q points in chi0(q) and xi(q): matters [label, structure directory, (q1, q2)]
@@ -454,6 +623,52 @@ def summarize_lindhard(matters_list, sigmas=(0.02, 0.05, 0.10)):
                           f"{grid[peak]:.3f} at ({(peak[0] / mesh[0] + 0.5) % 1 - 0.5:.3f}, {(peak[1] / mesh[1] + 0.5) % 1 - 0.5:.3f})"]
             rows.append([label, f"({qpoint[0]:g}, {qpoint[1]:g})", f"{sigma:.2f}", *cells])
     header = ["Structure", "q", "σ (eV)", "χ₀(q)", "χ₀ rank", "χ₀ max (q ≠ 0)", "ξ(q)", "ξ rank", "ξ max (q ≠ 0)"]
+    return show_table(header, rows)
+
+def summarize_hse_parity(matters_list):
+    # Spinless HSE06 parities at the TRIM against the PBE+SOC screen: [label, 4.4_bandstructure_hse/<structure>]
+    rows = []
+    for label, directory in matters_list:
+        parity = extract_hse_parity(directory)
+        if parity is None:
+            rows.append([label, "pending", "", "", "", "", ""])
+            continue
+        trims = parity["trims"]
+        hse = " ".join(str(trims[name]["odd_bands"]) for name in trim_points)
+        pbe = " ".join(str(parity["reference"]["odd_kramers_pairs"][name]) for name in trim_points)
+        # Smallest gap above band n at a TRIM; a boundary inside an orbital doublet is split by SOC only
+        split = [name for name in trim_points if trims[name]["boundary_inside_degenerate_block"]]
+        name = min(trim_points, key=lambda n: trims[n]["gap_above_degenerate_block_ev"] if n in split else trims[n]["gap_above_n_ev"])
+        shown = {"Gamma": "Γ"}.get(name, name)
+        if split:
+            critical = f"{'/'.join(split)}: SOC-split doublet (parity {trims[split[0]]['next_block_parity']:+d})"
+        else:
+            critical = f"{shown}: {trims[name]['gap_above_n_ev']:.3f} / {trims[name]['pbe_gap_above_n_ev']:.3f}"
+        rows.append([label, 2 * parity["spinless_bands"], hse, pbe, parity["conditional_fu_kane_nu"],
+                     parity["reference"]["conditional_fu_kane_nu"], critical])
+    header = ["Structure", "N", "Odd pairs Γ X Y M (HSE06)", "Odd pairs Γ X Y M (PBE+SOC)", "ν (HSE06)", "ν (PBE+SOC)",
+              "Smallest E_N+1 − E_N at a TRIM, HSE06 / PBE (eV)"]
+    return show_table(header, rows)
+
+def summarize_hse_gap(matters_list):
+    # Band edges from all HSE06 chunks: [label, 4.4_bandstructure_hse/<structure>, optional 9.0_topology/<structure>]
+    rows = []
+    for current_matter in matters_list:
+        label, directory, *optional = current_matter
+        bands = extract_hse_bands(directory)
+        for functional in ("PBE", "HSE06"):
+            result = bands[functional]
+            gap = result["cbm"][0] - result["vbm"][0]
+            rows.append([label, f"{functional}, no SOC, 20 Å, 12×12 + {result['points'] - 43} path/edge k",
+                         "(%.4f, %.4f)" % tuple(result["vbm"][1]), "(%.4f, %.4f)" % tuple(result["cbm"][1]),
+                         f"{gap:.3f}", f"{result['direct'][0]:.3f} at ({result['direct'][1][0]:.4f}, {result['direct'][1][1]:.4f})"])
+        if optional:
+            reference = extract_gap_extrema(optional[0])[0][0]
+            rows.append([label, "PBE+SOC, 40 Å, 105×105 + refinements (9.0_topology)",
+                         "(%.4f, %.4f)" % tuple(reference["valence_max_k"][:2]), "(%.4f, %.4f)" % tuple(reference["conduction_min_k"][:2]),
+                         f"{reference['indirect_gap_ev']:.3f}",
+                         f"{reference['direct_gap_ev']:.3f} at ({reference['direct_gap_k'][0]:.4f}, {reference['direct_gap_k'][1]:.4f})"])
+    header = ["Structure", "Calculation", "VBM k", "CBM k", "Indirect gap (eV)", "Min. direct gap (eV)"]
     return show_table(header, rows)
 
 ## Plotting
@@ -803,4 +1018,78 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
             ax.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
             fig.colorbar(image, ax=ax, shrink=0.85, pad=0.03)
 
+    plt.tight_layout()
+
+def plot_hse_bands(title, matters_list=None, eigen_range=None, legend_loc=True):
+    # Help information
+    help_info = """
+    Usage: plot_hse_bands
+        arg[0]: title;
+        arg[1]: matters list, [label, 4.4_bandstructure_hse/<structure>, PBE line-mode directory or None,
+                HSE colour family, PBE colour family];
+        arg[2]: energy window relative to each VBM, e.g. (-8, 8);
+        arg[3]: legend (True/False);
+    HSE06 bands (no SOC) from the zero-weight chunks and PBE bands, each aligned at its own VBM: PBE from the given
+    line-mode run (e.g. 4.0_bandstructure/<structure>) or, with None, from the PBE step of the HSE06 jobs.
+    The shaded band marks the HSE06 gap; HSE06 band edges are taken over all chunks and the scf mesh.
+    """
+    if title in ["help", "Help"]:
+        print(help_info)
+        return
+
+    label, directory, *optional = matters_list
+    pbe_dir = optional[0] if len(optional) > 0 else None
+    colors = {"HSE06": color_sampling(optional[1] if len(optional) > 1 and optional[1] else "Orange")[1],
+              "PBE": color_sampling(optional[2] if len(optional) > 2 and optional[2] else "Blue")[1]}
+    bands = extract_hse_bands(directory)
+    occupied = bands["occupied_bands"]
+    curves = {"HSE06": bands["HSE06"]}
+    if pbe_dir is None:
+        curves["PBE"] = bands["PBE"]
+        positions = [position for position, _ in bands["HSE06"]["ticks"]]
+        labels = [{"Gamma": r"$\Gamma$"}.get(name, name) for _, name in bands["HSE06"]["ticks"]]
+    else:
+        from vmatplot.bandstructure import extract_kpath, extract_eigenvalues_bands_nonpolarized, kpoints_path_lists
+        energies = np.array(extract_eigenvalues_bands_nonpolarized(pbe_dir)).T
+        valence, conduction = energies[:, occupied - 1], energies[:, occupied]
+        curves["PBE"] = {"kpath": np.array(extract_kpath(pbe_dir)), "energies": energies,
+                         "vbm": (valence.max(), None), "cbm": (conduction.min(), None)}
+        positions, labels = kpoints_path_lists(pbe_dir)
+
+    # Figure settings
+    fig_setting = canvas_setting()
+    params = fig_setting[2]; plt.rcParams.update(params)
+    plt.figure(figsize=fig_setting[0], dpi=fig_setting[1])
+    plt.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
+
+    # Colors calling
+    vbm_color = color_sampling("Violet")
+    annotate_color = color_sampling("Grey")
+
+    # Data calling and plotting
+    for functional, width in (("PBE", 1.5), ("HSE06", 1.8)):
+        result = curves[functional]
+        energies = result["energies"] - result["vbm"][0]
+        gap = result["cbm"][0] - result["vbm"][0]
+        for band in range(energies.shape[1]):
+            plt.plot(result["kpath"], energies[:, band], c=colors[functional], lw=width, linestyle="solid",
+                     zorder=4 if functional == "HSE06" else 3, label=f"{functional}: indirect gap {gap:.2f} eV" if band == 0 else None)
+    hse = curves["HSE06"]
+    plt.axhspan(0, hse["cbm"][0] - hse["vbm"][0], color=colors["HSE06"], alpha=0.08, lw=0, zorder=1)
+    plt.axhline(y=0, color=vbm_color[0], alpha=0.8, linestyle="--", zorder=2)
+
+    # High symmetry path
+    for k_loc in positions[1:-1]:
+        plt.axvline(x=k_loc, color=annotate_color[1], linestyle="--", alpha=0.8, zorder=1)
+    plt.xticks(positions, labels)
+
+    # Title, axes and ranges
+    plt.title(f"{title}")
+    plt.xlim(positions[0], positions[-1])
+    plt.ylim(*(eigen_range if eigen_range is not None else (-8, 8)))
+    plt.ylabel(r"$E-E_\mathrm{VBM}$ (eV)")
+
+    # Legend
+    if legend_loc:
+        plt.legend(loc="lower right", frameon=True, framealpha=0.9)
     plt.tight_layout()

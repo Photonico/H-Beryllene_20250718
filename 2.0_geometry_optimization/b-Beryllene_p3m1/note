@@ -1,0 +1,18 @@
+beta-beryllene, P-3m1 relaxation at 27x27 k (2026-10-01)
+
+b-Beryllene_k27_relax (job 44066) relaxed the 11x11 P-1 geometry at 27x27 k: the cell became hexagonal
+(|a1| = 2.1669, |a2| = 2.1668 A, 120.005 deg; P-3m1 at symprec 1e-3) and E0 dropped by 4.5 meV per cell. The energy was
+constant to 1e-7 eV over ionic steps 20-28; the run then stopped with ZBRENT (EDIFFG -1E-3 below the force noise).
+Here the result is symmetrised (a = mean length, Be at (1/3, 2/3) and (2/3, 1/3), same buckling and centre) and relaxed
+again with the same INCAR, so that VASP keeps D3d. The P-1 cell of b-Beryllene is a k-mesh artefact of the 11x11 run.
+
+Downstream recomputation in this geometry (submitted 2026-10-01; each stage uses the INCAR/KPOINTS of the old beta
+directory next to it, only POSCAR changed; 5.0 PDoS with ISTART = 0 because there is no 105x105 WAVECAR):
+  2.4_self_consistent/b-Beryllene_p3m1        44069
+  4.0_bandstructure/b-Beryllene_p3m1          44070 (after 44069, CHGCAR from 2.4)
+  5.0_PDoS/b-Beryllene_p3m1                   44071 (after 44069)
+  6.0_dielectric_selection/b-Beryllene_p3m1   44072
+  9.0_topology/b-Beryllene_p3m1               44073 (after 44072; id beta_p3m1; scf/trim/bands + refine_gap)
+  9.0_topology/b-Beryllene_p3m1/spin_screen   44074 (after 44073)
+  3.8_phonon_dispersion_pbe/b-Beryllene_p3m1  44075[] (2 +- displacements, symprec 1e-3, path Gamma-M-K-Gamma)
+  4.4_bandstructure_hse/b-Beryllene_p3m1/scf  44076

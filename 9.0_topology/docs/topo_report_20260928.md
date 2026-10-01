@@ -1,5 +1,7 @@
 # SOC band topology and stability of beryllene and hydrogenated beryllenes
 
+> **Partly superseded by [`topo_report_20261001.md`](topo_report_20261001.md):** the β geometry (P-1 → P-3m1), the 2H-β soft mode (harmonically imaginary, −1.65 THz, with a negligible double well), the HSE06 check and the pristine phonons.
+
 Report, 2026-09-28. Update of [`topo_report_20260926.md`](topo_report_20260926.md), which keeps the full methods, parity tables and references. Results are displayed in [`9.0_topology.ipynb`](../../9.0_topology.ipynb); the analysis code is `vmatplot/band_topology.py`.
 
 > **Status: conditional screening, not certified.** Every Z₂ value belongs to a fixed lowest-N spinor-band subspace and is conditional on electronic time-reversal (TR) symmetry and on isolation of that subspace over the whole 2D Brillouin zone (BZ). Five of the six structures are metallic at neutral filling, so their indices are not Fermi-level quantum-spin-Hall invariants. All reports carry `topology_certified: false`.

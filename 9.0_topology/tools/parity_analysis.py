@@ -196,8 +196,8 @@ def read_wavecar(path):
     return rtag, encut, lattice, points
 
 
-def wavecar_gvectors(lattice, k, encut, coefficients_per_band):
-    """G vectors in WAVECAR order (x fastest); the count must match the file."""
+def wavecar_gvectors(lattice, k, encut, coefficients_per_band, components=2):
+    """G vectors in WAVECAR order (x fastest); the count must match the file (2 spinor components)."""
     import numpy as np
     reciprocal = 2 * np.pi * np.linalg.inv(lattice).T
     kmax2 = encut / (13.605826 * 0.529177249 ** 2)  # VASP HSQDTM = RYTOEV*AUTOA^2
@@ -207,7 +207,7 @@ def wavecar_gvectors(lattice, k, encut, coefficients_per_band):
     g = np.stack([gx.ravel(), gy.ravel(), gz.ravel()], axis=1)
     kg = (g + k) @ reciprocal
     g = g[np.einsum("ij,ij->i", kg, kg) < kmax2]
-    require(2 * len(g) == coefficients_per_band,
+    require(components * len(g) == coefficients_per_band,
             "WAVECAR plane-wave count does not match the reconstructed G sphere")
     return g
 

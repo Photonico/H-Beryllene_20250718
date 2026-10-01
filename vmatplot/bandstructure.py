@@ -171,20 +171,27 @@ def extract_bandgap_outcar(directory="."):
         # Calculate HOMO and LUMO band indices
         homo_band = int(nelect)
         lumo_band = homo_band + 1
-        # Extract HOMO and LUMO energies
+        # Extract HOMO and LUMO energies from the eigenvalue blocks ("band No.  band energies  occupation", one per
+        # k point) after the last E-fermi line, i.e. the final electronic step
+        start = max((i for i, line in enumerate(lines) if "E-fermi" in line), default=0)
         homo_energies = []
         lumo_energies = []
-        for line in lines:
-            if f"{homo_band:5d}" in line:  # Strictly match HOMO band
-                try:
-                    homo_energies.append(float(line.split()[1]))
-                except (ValueError, IndexError):
-                    pass
-            elif f"{lumo_band:5d}" in line:  # Strictly match LUMO band
-                try:
-                    lumo_energies.append(float(line.split()[1]))
-                except (ValueError, IndexError):
-                    pass
+        index = start
+        while index < len(lines):
+            if "band No." in lines[index]:
+                index += 1
+                while index < len(lines) and lines[index].split():
+                    values = lines[index].split()
+                    try:
+                        band, energy = int(values[0]), float(values[1])
+                    except (ValueError, IndexError):
+                        break
+                    if band == homo_band:
+                        homo_energies.append(energy)
+                    elif band == lumo_band:
+                        lumo_energies.append(energy)
+                    index += 1
+            index += 1
         if not homo_energies or not lumo_energies:
             return "Error: Could not extract HOMO or LUMO energies from OUTCAR."
         # Sort HOMO energies and take the last (maximum)
