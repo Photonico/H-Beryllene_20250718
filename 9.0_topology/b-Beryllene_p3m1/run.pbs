@@ -1,0 +1,40 @@
+#!/bin/bash
+#PBS -N topo_beta_p3m1
+#PBS -q cmt
+#PBS -l select=1:ncpus=24:mpiprocs=24:mem=100gb
+#PBS -l walltime=48:00:00
+#PBS -j oe
+set -euo pipefail
+source '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/modules.sh'
+
+ref='/cmt2/lniu6305/H-Beryllene_20250718/6.0_dielectric_selection/b-Beryllene_p3m1'
+cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_p3m1'
+# Manifest of the frozen reference (written once the dielectric run has finished), as in prepare_topology.py
+'/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/packages/soc_topology/venv/bin/python' -B - <<'PYEOF'
+import hashlib, json
+from pathlib import Path
+src = Path('/cmt2/lniu6305/H-Beryllene_20250718/6.0_dielectric_selection/b-Beryllene_p3m1')
+def sha(path):
+    h = hashlib.sha256()
+    with path.open('rb') as f:
+        for block in iter(lambda: f.read(1048576), b''): h.update(block)
+    return h.hexdigest()
+entry = dict(id='beta_p3m1', reference='6.0_dielectric_selection/b-Beryllene_p3m1', expected_nelect=4, atom_count=2,
+             inversion_expected=True, source_files={n: dict(bytes=(src / n).stat().st_size, sha256=sha(src / n))
+                                                    for n in ('CONTCAR', 'INCAR', 'POTCAR', 'KPOINTS', 'CHGCAR')},
+             directory='b-Beryllene_p3m1')
+with Path('manifest.json').open('x') as f: f.write(json.dumps(entry, indent=2) + '\n')
+PYEOF
+for stage in scf trim bands; do
+  cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_p3m1'/"$stage"
+  test ! -e OUTCAR || { echo 'Refusing to overwrite an existing VASP run'; exit 20; }
+  cp "$ref/CONTCAR" POSCAR; cp "$ref/POTCAR" POTCAR
+  if [ "$stage" = scf ]; then cp "$ref/CHGCAR" CHGCAR; else cp ../scf/CHGCAR CHGCAR; fi
+  mpirun -np 24 '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' > vasp.log 2>&1
+  extra=()
+  if [ "$stage" = trim ]; then extra+=(--require-wavecar); fi
+  '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/packages/soc_topology/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/check_topology_outputs.py' . --manifest '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_p3m1/manifest.json' --structure-id 'beta_p3m1' "${extra[@]}"
+done
+cd '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_p3m1'
+'/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/packages/soc_topology/venv/bin/python' -B '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/refine_gap.py' '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/b-Beryllene_p3m1' --vasp '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' --ranks 24
+printf 'Completed beta_p3m1\n' > PIPELINE_COMPLETE

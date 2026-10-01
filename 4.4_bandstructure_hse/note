@@ -20,3 +20,13 @@ Cost-saving choices
 
 Outputs: *.pbe files = PBE step, plain OUTCAR/EIGENVAL/vasprun.xml = HSE06 step. Parities at the TRIM come from IrRep
 on the HSE06 WAVECAR (non-spinor).
+
+Results (2026-10-01; jobs 43630-43644 all exit 0, SCF converged in 12-21 steps)
+- Parities (scf/hse_parity.json, 9.0_topology/tools/hse_parity.py): identical to PBE+SOC at all four TRIM for all five
+  structures; conditional nu unchanged. 2H-beta gap above band 6 at M: 0.171 eV (HSE06) vs 0.178 eV (PBE, same cell).
+  ST: the N = 6 boundary at M lies inside an orbital doublet of single parity, split only by SOC.
+- In-job PBE (20 A, 12x12) vs 40 A / 105x105 PBE+SOC TRIM gaps: <= 1 meV (2H-alpha), <= 8 meV (beta, ST, 2H-beta),
+  65 meV (alpha, gaps > 5 eV). No denser mesh or larger vacuum needed.
+- 2H-alpha: HSE06 indirect gap 5.998 eV (PBE 4.842 eV), direct 6.089 eV; VBM (0.2546, 0.2546), CBM (0.4268, 0) unchanged.
+- beta here uses the superseded P-1 geometry (see 2.0_geometry_optimization/b-Beryllene_p3m1/note).
+Details: 9.0_topology/docs/topo_report_20261001.md, Section 2.
