@@ -69,6 +69,8 @@ Research data, manuscript text, figures, and third-party files may be subject to
   * relaxation:       `2.0_geometry_optimization/a-Beryllium`
   * space group:      `P6_3/mmc` (hcp)
   * cohesive per atom: `-3.729` eV/atom
+  * phonon:           stable (PBE, `3.8_phonon_dispersion_pbe/a-Beryllium`, 4x4x3)
+    * superseded:     `3.0_phonon_dispersion/a-Beryllium_3` is the bcc supercell (identical POSCAR/DYNMAT)
 
 * α-beryllene xene
   * material energy:  `E_a_xene = -.29724647E+01`
@@ -187,6 +189,8 @@ Research data, manuscript text, figures, and third-party files may be subject to
   * angle:            `90.000`
   * relaxation:       `2.0_geometry_optimization/c0-Beryllium`
   * space group:      `Im-3m` (bcc)
+  * phonon:           harmonically unstable, `-3.90` THz at N (PBE, `3.8_phonon_dispersion_pbe/c0-Beryllium`, 4x4x4)
+    * bcc is the high-temperature phase of Be, stabilised by anharmonicity
 
 * cubic beryllene trilayer xene
   * material energy:  `E_c3 = -.10008456E+02`

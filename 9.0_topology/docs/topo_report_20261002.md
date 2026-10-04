@@ -72,7 +72,7 @@ Two square seeds were relaxed with the same settings as 2H-α (`2.1_geometry_opt
 
 ## 4. Notebooks and figures updated
 
-The new data are now used in notebooks 0.0–7.2 and `9.0_topology.ipynb`. Every replaced PDF was kept next to the new one with the suffix `_old`: 59 in `figures/`, `figures_for_publication/` and `figures_for_thesis_ch3/`, and 8 in `figures/9_topology/`.
+The new data are now used in notebooks 0.0–8.0 and `9.0_topology.ipynb`. Previous versions of every replaced PDF are in git (commit `c3acdcda` and earlier).
 
 | Notebook | Change | Replaced figures |
 |---|---|---|
@@ -86,25 +86,60 @@ The new data are now used in notebooks 0.0–7.2 and `9.0_topology.ipynb`. Every
 | 5.0, 5.2, 5.4 DOS/PDoS | β → P-3m1 (NBANDS 42) | figures 5.10, 5.11, 5.12 (PDoS) |
 | 6.1 dielectric | β → P-3m1 | fig3.16, fig3.18; figures 6.10, 6.11, 6.20, 6.22 |
 | 7.1, 7.2 optics | β → P-3m1 | fig3.17a/b, fig3.19a/b, S3.18a–c, S3.19a–c; figures 7.11–7.15, 7.21–7.25 |
-| 9.0 topology | HSE06 orange, PBE blue (9.8); phonon paths as above (9.5, 9.10–9.12) | 9.1–9.3, 9.5 (`_old` = last committed version), 9.8, 9.10, 9.12, 9.11 (`_old` = the P-1 β) |
+| 9.0 topology | HSE06 orange, PBE blue (9.8); phonon paths as above (9.5, 9.10–9.12) | 9.1–9.3, 9.5, 9.8, 9.10–9.12 |
 
 **Other changes:**
 - Paths whose case differs from the directory names (e.g. `4.0_bandstructure/b-beryllene`) were corrected on executable lines, so the notebooks also run on a case-sensitive file system. Savefig names now match the existing PDF names exactly.
 - Figures whose data did not change were restored byte for byte after execution.
 
+**Review fixes (after an independent check of the notebooks):**
+
+| Notebook | Problem | Fix | Figures |
+|---|---|---|---|
+| 4.1 band gaps | 1H-β and 2H-β read `4.0_bandstructure/b-Beryllene_h`, `_hh` (no OUTCAR) | read the `*_ollie` band runs used for fig3.10 | — |
+| 4.3 bands with H | the 2H-β cell saved into the 1H-β working file `4.32_BS_b_b.pdf` | 2H-β now saves to `4.33_BS_b_bb.pdf` | 4.32, 4.33 |
+| 5.0 DOS | in the hexagonal panel the α-bulk and α-monolayer directories were swapped | swapped back | 5.11 |
+| 5.1 DOS with H | pristine β still read the P-1 run | `5.0_PDoS/b-Beryllene_p3m1` | fig3.12a, 5.30 |
+| 5.3 PDoS analysis | `b-beryllene_h`, `_hh` do not exist | `b-Beryllene_b`, `b-Beryllene_bb` | — |
+| 5.4 PDoS | the β panel (y limit 1.2) clipped the P-3m1 peak of 1.25 states/eV | y limit 1.4 | 5.12 |
+| 8.0 AIMD | `time_step = 1.0` although POTIM = 0.5 fs: the time axis was doubled and only the first half of the 5.5 ps runs was shown | `time_step = 0.5` | fig3.7a1, fig3.7b1, fig3.7c1; 8_aimd/* |
+| 1.x, 2.2, 3.1–3.5, 5.1, 5.5, 8.0 | lowercase paths and savefig names that only work on a case-insensitive disk | case corrected | — |
+
+All notebooks 0.0–9.0 now execute without errors on a case-sensitive file system.
+
+**Recomputed after the check:**
+- **Bulk phonons (S3.13a, S3.13c).** They used PBE+D3, and the "hcp" run `3.0_phonon_dispersion/a-Beryllium_3` is the bcc supercell: its POSCAR and DYNMAT are identical to `c0-Beryllium_3`, so S3.13a showed bcc force constants on the hexagonal path. They are recomputed with PBE in `3.8_phonon_dispersion_pbe/a-Beryllium` (hcp, 4 × 4 × 3, job array 44153[]) and `c0-Beryllium` (bcc, 4 × 4 × 4, job array 44154[]); see `3.8_phonon_dispersion_pbe/bulk_note`.
+  - **bcc is harmonically unstable:** −3.90 THz at N, exact because N is commensurate with the supercell; the minimum on a 20³ mesh is −3.72 THz. bcc is the high-temperature phase of Be and is stabilised only by anharmonicity, so this is expected. The old S3.13c was plotted from 0 THz, which would hide the instability; the new figure starts at −5 THz.
+  - **hcp is stable over the whole BZ:**
+    - maximum 20.9 THz;
+    - Γ optical modes at 13.86 and 20.96 THz (the Raman E2g mode of Be is ≈ 13.7 THz, 456 cm⁻¹);
+    - residual force 3.7 × 10⁻⁴ eV/Å.
+  - **Figures:** S3.13a (hcp, Γ–K–M–Γ–A–H–L–A–Γ) and S3.13c (bcc, Γ–H–N–Γ–P–H|P–N, y from −5 THz) are regenerated with notebook 3.0. `3.0_phonon_dispersion_alt.ipynb` (S3.13c `_alt`) now uses the same PBE bcc run.
+- **β dielectric convergence tests (S3.7, S3.8).** Redone in the P-3m1 geometry (`6.0_dielectric_function/b-Beryllene_p3m1_*`, jobs 44155–44163, all exit 0).
+  - The legend shows the NBANDS that VASP actually used with 24 ranks: 72, 96, 144, 192 and 264.
+  - The k series is converged at 75 × 75 and 105 × 105.
+  - In P-3m1 the xx and yy components coincide, as required by the hexagonal symmetry.
+- **`exported_figures/`.** 26 of its 34 PDFs are replaced by the current versions: the 24 optics figures that contain β, plus S3.7 and S3.8. The README and manifest record the refresh; its β numbers and validation arrays are marked as superseded.
+
 **Not changed:**
-- The bulk hcp and bcc phonons (S3.13a, S3.13c) still use PBE+D3; they were not recomputed.
-- `3.5_phonon_dispersion_with_hydrogen_phonopy.ipynb` (working figures 3.31–3.33 `_phonopy`) still shows the old PBE+D3 phonopy runs.
-- `fig3.5_phonon_a_hh_alt.pdf`, whose savefig is commented out, is the old version.
 - The 1H-β and 2H-β band structures (fig3.10) come from the `*_ollie` runs. Their geometry matches the references, and D3 does not change eigenvalues.
-- The β dielectric convergence tests in 6.0 (S3.7, S3.8) still use the P-1 geometry.
-- 4.1 cells 2–3 point to `4.0_bandstructure/b-Beryllene_h`, `b-Beryllene_hh`, which contain no OUTCAR (as before).
+
+**Full regeneration (end of 2026-10-02):**
+- All 35 notebooks and the two figure-merge notebooks (`figures/0_structure_selected/merge.ipynb`, `figures_for_publication/fig3.7/merge.ipynb`) were re-executed with the current data and library. None has an error output, and every figure in `figures/`, `figures_for_publication/` and `figures_for_thesis_ch3/` was regenerated.
+- `3.0_phonon_dispersion_alt.ipynb` now plots the PBE bcc run with `vmatplot.phonon`; the module `vmatplot.phonon_alt` no longer exists.
+- `3.5_phonon_dispersion_with_hydrogen_phonopy.ipynb` shows the PBE runs of `3.7_phonon_dispersion_with_hydrogen_pbe`.
+- The AIMD panels in `figures_for_publication/fig3.7/` are synchronised with the corrected fig3.7a1/b1/c1.
+- All 34 PDFs in `exported_figures/` match their sources.
+- **Removed (history in git):**
+  - `3.5_phonon_dispersion_with_hydrogen_selected_backup.ipynb`, which would have overwritten fig3.5/fig3.6 with old data if run;
+  - the orphan PBE+D3 figures `S3.13c_phonon_bcc.pdf`, `3.20_phonon_c-Beryllium.pdf`, `3.32_phonon_b_b_alt.pdf`, `3.33_phonon_b_bb_alt1.pdf` and `3.33_phonon_b_bb_alt2.pdf`;
+  - all `_old` copies.
+- **Not regenerable here:** the structure renders (VESTA PNGs in `figures/0_structure_selected/`, `figures_for_publication/fig3.7/`) are made in VESTA by hand. The β render still shows the P-1 cell; it differs from P-3m1 by 2% in one lattice length and 0.2° in angle, which is invisible at figure scale, but it should be re-rendered from `2.0_geometry_optimization/b-Beryllene_p3m1/CONTCAR` for exactness.
 
 ## 5. Pending work
 
 | Item | Status |
 |---|---|
-| Repoint the optics and thesis notebooks to `b-Beryllene_p3m1` | not done (user notebooks) |
 | Anharmonic phonons of 2H-β (SSCHA) | not submitted: python-sscha and QE are not installed, and the 5 × 5 supercell with the dense k mesh the soft mode needs costs ~150 core-h per configuration, ~10⁴–10⁵ core-h in total |
 | Phonons of the puckered BeH₂ layer | optional; only if the polymorph is discussed beyond an energy comparison |
 
