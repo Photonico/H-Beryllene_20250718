@@ -18,7 +18,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap, LogNorm
 from matplotlib.lines import Line2D
 
-from vmatplot.output_settings import color_sampling, canvas_setting
+from vmatplot.output_settings import color_sampling, canvas_setting, figure_version
 
 import matplotlib as mpl
 
@@ -29,7 +29,9 @@ mpl.rcParams["lines.dash_joinstyle"]  = "round"
 
 # Four 2D TRIM in the reciprocal basis of the DFT cell
 trim_points = {"Gamma": (0.0, 0.0), "X": (0.5, 0.0), "Y": (0.0, 0.5), "M": (0.5, 0.5)}
-structure_labels = {"alpha": "α", "beta": "β (P-1, superseded)", "beta_p3m1": "β", "st": "ST", "alpha_2h": "2H-α", "beta_1h": "1H-β", "beta_2h": "2H-β"}
+structure_labels = {"alpha": "α", "beta": "β (P-1, superseded)", "beta_p3m1": "β", "st": "cubic trilayer", "alpha_2h": "2H-α", "beta_1h": "1H-β", "beta_2h": "2H-β"}
+# Manifest entries left out of the tables: the P-1 β cell is an artefact of an 11×11-k relaxation (P-3m1 at 27×27 k)
+superseded_ids = {"beta"}
 
 # Blue[1], Orange[1] and Cyan[1] pass the colour-blind all-pairs check (worst ΔE 15.4, tritan 6.1);
 # Orange is below 3:1 on white, so it is always direct-labelled.
@@ -50,10 +52,10 @@ def extract_latest(directory, pattern):
     matches = sorted(glob.glob(os.path.join(directory, pattern)))
     return matches[-1] if matches else None
 
-def extract_topology_manifest(topology_dir):
-    # Campaign manifest entries, each with its structure directory
+def extract_topology_manifest(topology_dir, superseded=False):
+    # Campaign manifest entries, each with its structure directory (superseded entries only on request)
     manifest = extract_json(os.path.join(topology_dir, "manifest.json"))
-    entries = manifest["structures"]
+    entries = [entry for entry in manifest["structures"] if superseded or entry["id"] not in superseded_ids]
     for entry in entries:
         entry["path"] = os.path.join(topology_dir, entry["directory"])
     return entries
@@ -61,7 +63,7 @@ def extract_topology_manifest(topology_dir):
 def extract_topology_entry(directory):
     # Manifest entry of one structure directory, e.g. "9.0_topology/a-Beryllene"
     directory = os.path.normpath(directory)
-    for entry in extract_topology_manifest(os.path.dirname(directory)):
+    for entry in extract_topology_manifest(os.path.dirname(directory), superseded=True):
         if entry["directory"] == os.path.basename(directory):
             return entry
     raise ValueError(f"{directory} is not in the campaign manifest")
@@ -508,38 +510,75 @@ def extract_poscar_cartesian(file_path):
     fractional = np.array([[float(v) for v in line.split()[:3]] for line in lines[start:start + len(symbols)]])
     return lattice, symbols, fractional
 
+def extract_frozen_phonon_fit(directory):
+    # Fit E(Q) - E(0) = alpha Q^2 + beta Q^4 (meV per supercell) in mass-weighted amplitude Q (amu^1/2 Å) over the A* folders
+    from phonopy.structure.atoms import atom_data, symbol_map
+    lattice, symbols, reference = extract_poscar_cartesian(os.path.join(directory, "A0", "POSCAR"))
+    masses = np.array([atom_data[symbol_map[s]][3] for s in symbols])
+    energies, q2, umax = [], [], []
+    for folder in sorted(glob.glob(os.path.join(directory, "A*"))):
+        final = [line for line in open(os.path.join(folder, "OSZICAR"), encoding="utf-8") if " E0= " in line]
+        displacement = extract_poscar_cartesian(os.path.join(folder, "POSCAR"))[2] - reference
+        displacement = (displacement - np.round(displacement)) @ lattice
+        energies.append(float(final[-1].split("E0=")[1].split()[0]))
+        q2.append(float((masses * (displacement ** 2).sum(axis=1)).sum()))
+        umax.append(float(np.sqrt((displacement ** 2).sum(axis=1)).max()))
+    energies = 1000 * (np.array(energies) - energies[int(np.argmin(q2))])
+    q2, umax = np.array(q2), np.array(umax)
+    order = np.argsort(q2)[1:]
+    matrix = np.vstack([q2[order], q2[order] ** 2]).T
+    (alpha, beta), *_ = np.linalg.lstsq(matrix, energies[order], rcond=None)
+    residual = np.abs(energies[order] - matrix @ np.array([alpha, beta])).max()
+    return {"alpha": alpha, "beta": beta, "residual": residual, "energies": energies[order], "q2": q2[order], "umax": umax[order]}
+
 def summarize_frozen_phonon_fit(matters_list):
     # Fit E(Q) - E(0) = alpha Q^2 + beta Q^4 in mass-weighted amplitude Q (amu^1/2 Å) over the A* folders:
     # matters [label, directory]; harmonic nu = sqrt(2 alpha) / 2 pi (imaginary shown negative); well depth alpha^2 / 4 beta
-    from phonopy.structure.atoms import atom_data, symbol_map
     rows = []
     for label, directory in matters_list:
-        lattice, symbols, reference = extract_poscar_cartesian(os.path.join(directory, "A0", "POSCAR"))
-        masses = np.array([atom_data[symbol_map[s]][3] for s in symbols])
-        energies, q2, umax, cells = [], [], [], []
-        for folder in sorted(glob.glob(os.path.join(directory, "A*"))):
-            final = [line for line in open(os.path.join(folder, "OSZICAR"), encoding="utf-8") if " E0= " in line]
-            displacement = extract_poscar_cartesian(os.path.join(folder, "POSCAR"))[2] - reference
-            displacement = (displacement - np.round(displacement)) @ lattice
-            energies.append(float(final[-1].split("E0=")[1].split()[0]))
-            q2.append(float((masses * (displacement ** 2).sum(axis=1)).sum()))
-            umax.append(float(np.sqrt((displacement ** 2).sum(axis=1)).max()))
-        energies = 1000 * (np.array(energies) - energies[int(np.argmin(q2))])
-        q2, umax = np.array(q2), np.array(umax)
-        order = np.argsort(q2)[1:]
-        matrix = np.vstack([q2[order], q2[order] ** 2]).T
-        (alpha, beta), *_ = np.linalg.lstsq(matrix, energies[order], rcond=None)
-        residual = np.abs(energies[order] - matrix @ np.array([alpha, beta])).max()
+        fit = extract_frozen_phonon_fit(directory)
+        alpha, beta, residual, energies, q2, umax = (fit[key] for key in ("alpha", "beta", "residual", "energies", "q2", "umax"))
         omega2 = 2 * alpha / 0.1036427  # meV per amu Å^2 (rad/ps)^2
         nu = np.sign(omega2) * np.sqrt(abs(omega2)) / (2 * np.pi)
-        well = (f"{alpha ** 2 / (4 * beta):.3f} at max \\|u\\| = {np.sqrt(-alpha / (2 * beta) / q2[order[0]]) * umax[order[0]]:.3f} Å"
+        well = (f"{alpha ** 2 / (4 * beta):.3f} at max \\|u\\| = {np.sqrt(-alpha / (2 * beta) / q2[0]) * umax[0]:.3f} Å"
                 if alpha < 0 else "none")
         kpoints = open(os.path.join(directory, "A0", "KPOINTS"), encoding="utf-8").readlines()[3].split()[:2]
         rows.append([label, extract_incar_tag(os.path.join(directory, "A0", "INCAR"), "SIGMA"), "×".join(kpoints),
-                     ", ".join(f"{e:+.3f} ({u:.3f} Å)" for e, u in zip(energies[order], umax[order])),
+                     ", ".join(f"{e:+.3f} ({u:.3f} Å)" for e, u in zip(energies, umax)),
                      f"{nu:+.2f}", well, f"{residual:.3f}"])
     header = ["Series", "SIGMA (eV)", "Supercell k", "E − E(A0) in meV (max \\|u\\|)", "Harmonic ν (THz, − = imaginary)",
               "Double-well depth (meV / cell)", "Max. fit residual (meV)"]
+    return show_table(header, rows)
+
+def summarize_frozen_phonon_quantum(matters_list, temperatures=(0, 300)):
+    # One-mode quantum treatment of the quartic fit V(Q) = alpha Q^2 + beta Q^4 (kinetic energy Q'^2 / 2, Q mass-weighted):
+    # exact eigenstates on a finite-difference grid, and the self-consistent harmonic frequency of the single mode,
+    # c Omega^2 = 2 alpha + 12 beta <Q^2>, <Q^2> = hbar / (2 c Omega) coth(hbar Omega / 2 kT). Coupling to the other modes is
+    # left out, so this indicates the size of the quantum fluctuations; it is not a substitute for a full SSCHA.
+    from scipy.linalg import eigh_tridiagonal
+    from scipy.optimize import brentq
+    hbar, c, kB, thz = 0.6582119569, 0.1036427, 0.08617333262, 4.135667696  # meV ps, meV/(amu Å^2 ps^-2), meV/K, meV/THz
+    kinetic = hbar ** 2 / c / 2
+    grid = np.linspace(-3.0, 3.0, 12001); step = grid[1] - grid[0]
+    rows = []
+    for label, directory in matters_list:
+        fit = extract_frozen_phonon_fit(directory)
+        alpha, beta = fit["alpha"], fit["beta"]
+        levels, states = eigh_tridiagonal(alpha * grid ** 2 + beta * grid ** 4 + 2 * kinetic / step ** 2,
+                                          -kinetic / step ** 2 * np.ones(len(grid) - 1), select="i", select_range=(0, 1))
+        ground = states[:, 0] ** 2 / step
+        if ground[0] > 1e-12 * ground.max():
+            raise ValueError(f"Ground state of {label} reaches the edge of the Q grid")
+        harmonic = np.sign(alpha) * np.sqrt(2 * abs(alpha) / c) / (2 * np.pi)
+        depth = alpha ** 2 / (4 * beta) if alpha < 0 else 0.0
+        q2 = lambda omega, t: hbar / (2 * omega * c) * (1 / np.tanh(hbar * omega / (2 * kB * t)) if t > 0 else 1.0)
+        scha = [brentq(lambda omega: c * omega ** 2 - 2 * alpha - 12 * beta * q2(omega, t), 1e-3, 500) / (2 * np.pi)
+                for t in temperatures]
+        rows.append([label, f"{harmonic:+.2f}", f"{depth:.3f}", f"{levels[0] + depth:.2f}", f"{(levels[1] - levels[0]) / thz:.2f}",
+                     *[f"{nu:.2f}" for nu in scha],
+                     f"{np.sqrt((ground * grid ** 2).sum() * step):.3f} / {np.sqrt(max(-alpha / (2 * beta), 0)):.3f}"])
+    header = ["Series", "Harmonic ν (THz)", "Well depth (meV)", "E₀ above the well bottom (meV)", "Exact E₁ − E₀ (THz)",
+              *[f"One-mode SCHA ν at {t:g} K (THz)" for t in temperatures], "√⟨Q²⟩₀ / Q at the minimum (amu^½ Å)"]
     return show_table(header, rows)
 
 def extract_final_energy(directory):
@@ -698,27 +737,36 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
         arg[3]: figure legend (True/False);
     Upper panels: SOC bands with the lowest-N subspace coloured and Kramers-pair parities at the TRIM;
     lower panels: direct gap E_(N+1) - E_N along the path (log scale) and the minimum over the whole BZ.
+    Article version: up to three structures per row (three structures give a 1x3 row with the legend below);
+    thesis version (figure_version("thesis")): two columns, so three structures give a 2x2 grid with the legend
+    in the fourth panel.
     """
     if suptitle in ["help", "Help"]:
         print(help_info)
         return
 
     matters = create_matters_topology(matters_list)
-    columns = min(3, len(matters))
+    thesis = figure_version() == "thesis"
+    columns = min(2 if thesis else 3, len(matters))
     rows = math.ceil(len(matters) / columns)
+    legend_cell = (rows - 1, columns - 1) if legend_loc and rows * columns > len(matters) else None
 
-    # Figure settings
-    fig_setting = canvas_setting(6 * columns, 6.4 * rows)
+    # Figure settings (margins in inches: suptitle above, legend or tick labels below)
+    cell_width, cell_height = (7.0, 6.8) if thesis else (6.0, 6.4)
+    top_space, bottom_space = (1.5 if thesis else 1.0), (1.2 if legend_loc and legend_cell is None else 0.6)
+    width, height = cell_width * columns, cell_height * rows + top_space + bottom_space
+    fig_setting = canvas_setting(width, height)
     params = fig_setting[2]; plt.rcParams.update(params)
     fig = plt.figure(figsize=fig_setting[0], dpi=fig_setting[1])
-    outer = gridspec.GridSpec(rows, columns, figure=fig, left=0.07, right=0.98, top=0.93, bottom=0.08, hspace=0.3, wspace=0.26)
+    outer = gridspec.GridSpec(rows, columns, figure=fig, left=1.0 / width, right=1 - 0.25 / width,
+                              top=1 - top_space / height, bottom=bottom_space / height, hspace=0.32, wspace=0.26)
 
     # Colors calling
     fermi_color = color_sampling("Violet")
     annotate_color = color_sampling("Grey")
 
     # Title
-    fig.suptitle(f"{suptitle}", fontsize=fig_setting[3][0], y=0.985)
+    fig.suptitle(f"{suptitle}", fontsize=fig_setting[3][0], y=1 - 0.25 / height, va="top")
 
     # Data calling and plotting
     energy_window = eigen_range if eigen_range is not None else (-11, 5)
@@ -777,13 +825,24 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
             ax_bands.set_ylabel(r"$E-E_\mathrm{F}$ (eV)")
             ax_gap.set_ylabel(r"$E_{N+1}-E_N$ (eV)")
 
-    # Legend
+    # Legend: below the row (article) or in the free panel of the grid (thesis)
     if legend_loc:
-        handles = [Line2D([], [], c=color_sampling("Blue")[1], lw=1.8, label="lowest-N subspace (bands 1…N)"),
-                   Line2D([], [], c=color_sampling("Orange")[1], lw=1.8, label="1H-β bands 5–6 (lowest-6 subspace)"),
-                   Line2D([], [], c=annotate_color[2], lw=1.2, label="bands above N"),
-                   Line2D([], [], c=fermi_color[0], lw=1.0, linestyle="--", label="Fermi energy")]
-        fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 0.0))
+        handles = [Line2D([], [], c=color_sampling("Blue")[1], lw=1.8, label="lowest-N subspace (bands 1…N)")]
+        for label, directory, entry, subspaces, colors in matters:
+            if len(subspaces) > 1:
+                separator = "\n" if legend_cell is not None else " "
+                handles.append(Line2D([], [], c=colors[1], lw=1.8,
+                                      label=f"{label} bands {subspaces[0] + 1}–{subspaces[1]}{separator}(lowest-{subspaces[1]} subspace)"))
+                break
+        handles += [Line2D([], [], c=annotate_color[2], lw=1.2, label="bands above N"),
+                    Line2D([], [], c=annotate_color[0], lw=1.0, linestyle=":", label=r"minimum of $E_{N+1}-E_N$ over the BZ"),
+                    Line2D([], [], c=fermi_color[0], lw=1.0, linestyle="--", label="Fermi energy")]
+        if legend_cell is not None:
+            ax_legend = fig.add_subplot(outer[legend_cell[0], legend_cell[1]])
+            ax_legend.axis("off")
+            ax_legend.legend(handles=handles, loc="center", frameon=False, fontsize=params["legend.fontsize"] + 3)
+        else:
+            fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, bbox_to_anchor=(0.5, 0.0))
 
 def annotate_parities(ax, kpath, eigenvalues, kpoints, parity, text_color):
     # Parities of the Kramers pairs of the lowest-N subspace; nearly degenerate pairs share one label
@@ -813,7 +872,10 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
         arg[1]: matters list, [[label, structure directory], ...];
         arg[2]: colour range of E_(N+1) - E_N in eV, default (1e-2, 10), log scale;
     Direct gap over the sampled reciprocal cell (105x105 SCF grid unfolded with the point group and k -> -k);
-    crosses mark the refined minima and their symmetry images, circles the TRIM.
+    crosses mark the refined minima and their symmetry images, circles the TRIM. One panel per subspace.
+    Article version: one row of up to four panels with the colour bar at the right;
+    thesis version (figure_version("thesis")): two columns, with the colour bar and the marker legend in a free
+    fourth panel when there is one.
     """
     if suptitle in ["help", "Help"]:
         print(help_info)
@@ -821,13 +883,18 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
 
     matters = create_matters_topology(matters_list)
     panels = [(matter, subspace) for matter in matters for subspace in matter[3]]
-    columns = min(4, len(panels))
+    thesis = figure_version() == "thesis"
+    columns = min(2 if thesis else 4, len(panels))
     rows = math.ceil(len(panels) / columns)
+    free_cells = rows * columns - len(panels)
     gap_limits = gap_range if gap_range is not None else (1e-2, 10)
     norm = LogNorm(vmin=gap_limits[0], vmax=gap_limits[1])
 
-    # Figure settings
-    fig_setting = canvas_setting(5.2 * columns + 1.2, 5.4 * rows)
+    # Figure settings (margins in inches)
+    cell, top_space = (5.6, 1.6) if thesis else (5.2, 1.1)
+    right_space, bottom_space = (0.3, 0.6) if free_cells else (1.6, 1.1)
+    width, height = cell * columns + 0.9 + right_space, (cell + 1.0) * rows + top_space + bottom_space
+    fig_setting = canvas_setting(width, height)
     params = fig_setting[2]; plt.rcParams.update(params)
     fig, axes = plt.subplots(rows, columns, figsize=fig_setting[0], dpi=fig_setting[1], squeeze=False)
 
@@ -836,7 +903,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
     minimum_color = color_sampling("Red")[1]
 
     # Title
-    fig.suptitle(f"{suptitle}", fontsize=fig_setting[3][0], y=1.00)
+    fig.suptitle(f"{suptitle}", fontsize=fig_setting[3][0], y=1 - 0.25 / height, va="top")
 
     # Data calling and plotting
     image = None
@@ -872,10 +939,22 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
     for ax in list(axes.flat)[len(panels):]:
         ax.axis("off")
 
-    # Colorbar
-    fig.subplots_adjust(left=0.06, right=0.88, top=0.88, bottom=0.07, hspace=0.38, wspace=0.42)
-    colorbar = fig.colorbar(image, ax=axes, shrink=0.8, pad=0.03, extend="min")
-    colorbar.set_label(r"$E_{N+1}-E_N$ (eV)")
+    # Colour bar and marker legend: in the first free panel (thesis grid) or at the right and below (article row)
+    handles = [Line2D([], [], linestyle="none", marker="o", ms=6, mfc="white", mec=annotate_color[0], mew=0.9, label="TRIM"),
+               Line2D([], [], linestyle="none", marker="x", ms=10, mew=2.0, color=minimum_color,
+                      label="refined minima and their symmetry images")]
+    fig.subplots_adjust(left=0.9 / width, right=1 - right_space / width, top=1 - top_space / height, bottom=bottom_space / height,
+                        hspace=0.42, wspace=0.42)
+    if free_cells:
+        ax_free = list(axes.flat)[len(panels)]
+        colorbar = fig.colorbar(image, cax=ax_free.inset_axes([0.08, 0.62, 0.84, 0.07]), orientation="horizontal", extend="min")
+        colorbar.set_label(r"$E_{N+1}-E_N$ (eV)")
+        ax_free.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.4), frameon=False, fontsize=params["legend.fontsize"] + 3)
+    else:
+        colorbar = fig.colorbar(image, ax=axes, shrink=0.8, pad=0.03, extend="min")
+        colorbar.set_label(r"$E_{N+1}-E_N$ (eV)")
+        fig.legend(handles=handles, loc="lower center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.0),
+                   fontsize=params["legend.fontsize"] + 3)
 
 def plot_wcc(suptitle, matters_list=None):
     # Help information
@@ -962,8 +1041,8 @@ def plot_gap_zoom(title, matters_list=None):
     plt.xlabel(r"Sampling radius (Å$^{-1}$), finer $\rightarrow$")
     plt.ylabel(r"Min. $E_{N+1}-E_N$ in patch (meV)")
 
-    # Legend
-    plt.legend(loc="upper right", frameon=False)
+    # Legend (lower left: the curves stay above 0.5 meV and the whiskers reach down at fine radii)
+    plt.legend(loc="lower left", frameon=False)
     plt.tight_layout()
 
 
@@ -981,8 +1060,10 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
         print(help_info)
         return
 
-    # Figure settings
-    fig_setting = canvas_setting(12.5, 5.4 * len(matters_list))
+    # Figure settings: panel width from the aspect of the reciprocal cell, so that the colour bars sit beside the panels
+    ratio = max(np.ptp(corners[:, 0]) / np.ptp(corners[:, 1]) for matter in matters_list
+                for corners in [np.array([[0.5, 0.5], [0.5, -0.5], [-0.5, 0.5], [-0.5, -0.5]]) @ extract_reciprocal_2d(matter[1])])
+    fig_setting = canvas_setting(2 * (5.5 * ratio + 2.4), 7.0 * len(matters_list))
     params = fig_setting[2]; plt.rcParams.update(params)
     fig, axes = plt.subplots(len(matters_list), 2, figsize=fig_setting[0], dpi=fig_setting[1], squeeze=False)
 
@@ -1011,7 +1092,7 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
             image = ax.pcolormesh(qx, qy, np.minimum(values, upper), cmap=sequential, vmax=upper, shading="flat", rasterized=True)
             ax.plot(points[:, 0], points[:, 1], linestyle="none", marker="x", ms=11, mew=2.0, color=marker_color, zorder=5)
             ax.plot(0, 0, marker="o", ms=6, mfc="white", mec=annotate_color[0], mew=0.9, zorder=4)
-            ax.set_title(f"{label}: {title}, σ = {sigma:g} eV", fontsize=fig_setting[3][1] - 4)
+            ax.set_title(f"{label}\n{title}, σ = {sigma:g} eV", fontsize=fig_setting[3][1] - 4)
             ax.set_aspect("equal")
             ax.set_xlabel(r"$q_x$ (Å$^{-1}$)")
             ax.set_ylabel(r"$q_y$ (Å$^{-1}$)")

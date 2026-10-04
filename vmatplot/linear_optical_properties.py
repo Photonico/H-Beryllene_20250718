@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from vmatplot.dielectric_function import dielectric_systems_list
 from vmatplot.commons import process_boundary_alt, extract_part
-from vmatplot.output_settings import canvas_setting, color_sampling
+from vmatplot.output_settings import canvas_setting, color_sampling, figure_version
 from vmatplot.algorithms import energy_to_wavelength, energy_to_frequency, wavelength_to_energy
 
 from matplotlib.colors import ListedColormap
@@ -177,7 +177,8 @@ def lop_plotting_help():
                 "\t systems_list: dielectric function data list; \n" +\
                 "\t components: select components in a list ({'xx'<default>, 'yy', 'zz', 'xy', 'yx', 'yz', 'zy', 'zx', 'xz'}); \n" +\
                 "\t expansion: select one variable to expansion (rescale<auto>, properties, systems); \n" +\
-                "\t layout: subfigures layout (horizontal<default>, vertical); \n" +\
+                "\t layout: subfigures layout (horizontal<default>, vertical); with figure_version(\"thesis\") a horizontal row of three \n" +\
+                "\t         components becomes a 2x2 grid with the shared legend in the fourth panel; \n" +\
                 "\t unit: x-axis unit (eV<default>, nm); \n" +\
                 "\t photon_boundary: x-axis range <optional>; \n" +\
                 "\t value_boundary: y-axis range tuple or component-to-range dictionary <optional>; \n" +\
@@ -504,6 +505,7 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
 
     elif multi_comp_flag is True:
         ## figure settings
+        legend_panel = None
         if len(components) == 2:
             if layout_flag == "horizontal":
                 fig_setting = canvas_setting(16, 6) if figure_size == (None, None) else canvas_setting(figure_size[0], figure_size[1])
@@ -522,7 +524,16 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
                 nrows, ncols = np.atleast_2d(axs).shape
                 axes_element = [axs[i, 0] for i in range(2)]
         elif len(components) in [3, 5, 7]:
-            if layout_flag == "horizontal":
+            if layout_flag == "horizontal" and len(components) == 3 and figure_version() == "thesis":
+                # Thesis version: the 1x3 row becomes a 2x2 grid with the shared legend in the fourth panel
+                fig_setting = canvas_setting(16, 12) if figure_size == (None, None) else canvas_setting(figure_size[0], figure_size[1])
+                params = fig_setting[2]
+                plt.rcParams.update(params)
+                fig, axs = plt.subplots(2, 2, figsize=fig_setting[0], dpi=fig_setting[1])
+                nrows, ncols = 2, 2
+                axes_element = [axs[0, 0], axs[0, 1], axs[1, 0]]
+                legend_panel = axs[1, 1]
+            elif layout_flag == "horizontal":
                 fig_setting = canvas_setting(8*len(components), 6) if figure_size == (None, None) else canvas_setting(figure_size[0], figure_size[1])
                 params = fig_setting[2]
                 plt.rcParams.update(params)
@@ -622,7 +633,8 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
             else: pass
 
             # axis labels
-            ax.legend(loc="best")
+            if legend_panel is None:
+                ax.legend(loc="best")
             if layout_flag == "horizontal" and len(components) == 2:
                 ax.set_xlabel(xaxis_str, fontsize=14+2*nrows)
                 if subplot_index == 0:
@@ -653,13 +665,20 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
                     ax.set_ylabel(f"{formula_title}", fontsize=14+2*ncols)
             elif layout_flag == "horizontal" and len(components) in [3,5,7]:
                 ax.set_xlabel(xaxis_str, fontsize=14+2*nrows)
-                if subplot_index == 0:
+                if subplot_index == 0 or (legend_panel is not None and subplot_index == 2):
                     ax.set_ylabel(f"{formula_title}", fontsize=14+2*ncols)
             elif layout_flag == "vertical" and len(components) in [3,5,7]:
                 if subplot_index == len(components)-1:
                     ax.set_xlabel(xaxis_str, fontsize=14+2*nrows)
                 ax.set_ylabel(f"{formula_title}", fontsize=14+2*ncols)
             ax.ticklabel_format(style="sci", axis="y", scilimits=(-3,3), useOffset=False, useMathText=True)
+            plt.tight_layout()
+
+        # shared legend in the free panel of the thesis grid
+        if legend_panel is not None:
+            legend_panel.axis("off")
+            handles, labels = axes_element[0].get_legend_handles_labels()
+            legend_panel.legend(handles, labels, loc="center", frameon=False, fontsize=params["legend.fontsize"]+3)
             plt.tight_layout()
 
 def plot_merged_linear_optical_property(suptitle, systems=None, properties=None, components="xx",
