@@ -2,6 +2,7 @@
 # pylint: disable = C0103, C0114, C0116, C0301, C0321, R0913, R0914
 
 import os
+import math
 import matplotlib.pyplot as plt
 
 import matplotlib as mpl
@@ -40,7 +41,7 @@ def vasprun_directory(directory="."):
 
     return complete_folders
 
-def canvas_setting(*args):
+def _canvas_setting_article(*args):
     help_info = "Usage: canvas_setting(length, width, dpi, font)\n" + \
                 "The default setting is length: 10, width: 6, dpi: 196, font: 'Serif'" + \
                 "The return values are :" + \
@@ -110,6 +111,91 @@ def canvas_setting(*args):
                              "legend.fontsize": 12,
                              "figure.facecolor": "w"}
         return (args[0],args[1]), args[2], customized_params, (args[4],args[5]), args[6]
+
+## Figure versions: article (default) and thesis
+# figure_version("thesis") switches every later figure to the thesis typography below (the thesis settings of
+# o-B14_20241024), and save_figure() then writes <name>_thesis.pdf instead of <name>.pdf. Some plotting functions
+# also change their layout for the thesis, e.g. a 1x3 row becomes a 2x2 grid with the legend in the fourth panel.
+figure_settings = {"version": "article"}
+thesis_params = {"axes.titlesize": 24, "axes.labelsize": 18, "xtick.labelsize": 18, "ytick.labelsize": 18,
+                 "legend.fontsize": 12, "axes.titlepad": 10, "pdf.fonttype": 42}
+article_params = {"axes.titlepad": 6.0, "pdf.fonttype": 3}      # matplotlib defaults, restored when switching back
+thesis_titles = (24, 22)                                        # suptitle and subtitle fontsize
+
+def figure_version(version=None):
+    help_info = "Usage: figure_version(version)\n" + \
+                "Without argument it returns the current figure version; \"article\" (default) or \"thesis\" sets it.\n" + \
+                "The thesis version uses the thesis typography and saves files as <name>_thesis.pdf."
+    if version is None:
+        return figure_settings["version"]
+    if version == "help":
+        print(help_info)
+        return None
+    if version not in ("article", "thesis"):
+        raise ValueError('figure_version() takes "article" or "thesis"')
+    figure_settings["version"] = version
+    return version
+
+def canvas_setting(*args):
+    # Article canvas and typography, replaced by the thesis typography when figure_version() is "thesis"
+    settings = _canvas_setting_article(*args)
+    if settings is None:
+        return settings
+    size, dpi, params, titles, legend = settings
+    if figure_settings["version"] == "thesis":
+        params = {**params, **thesis_params}
+        if len(args) < 6:
+            titles = thesis_titles
+    else:
+        params = {**params, **article_params}
+    return size, dpi, params, titles, legend
+
+def fit_thesis_text(fig=None, margin=0.01):
+    # The thesis typography is applied to the article canvases, so a long title can leave the canvas and dense rotated
+    # tick labels can overlap. Those texts are scaled down until they fit; all other text keeps the thesis sizes.
+    fig = plt.gcf() if fig is None else fig
+    try:
+        renderer = fig.canvas.get_renderer()
+    except AttributeError:
+        return fig
+    left, right = fig.bbox.x0 + margin*fig.bbox.width, fig.bbox.x1 - margin*fig.bbox.width
+    titles = [fig._suptitle] + [title for ax in fig.axes for title in (ax.title, ax._left_title, ax._right_title)]
+    for text in titles:
+        if text is None or not text.get_visible() or not text.get_text():
+            continue
+        box = text.get_window_extent(renderer)
+        align = text.get_horizontalalignment()
+        if align == "left":
+            room = right - box.x0
+        elif align == "right":
+            room = box.x1 - left
+        else:
+            room = 2*min((box.x0 + box.x1)/2 - left, right - (box.x0 + box.x1)/2)
+        if 0 < room < box.width:
+            text.set_fontsize(text.get_fontsize()*room/box.width)
+    for ax in fig.axes:
+        labels = [label for label in ax.get_xticklabels() if label.get_visible() and label.get_text()]
+        if len(labels) < 2 or abs(math.sin(math.radians(labels[0].get_rotation()))) < 0.1:
+            continue
+        lower, upper = sorted(ax.get_xlim())
+        positions = sorted(ax.transData.transform((x, ax.get_ylim()[0]))[0] for x in ax.get_xticks() if lower <= x <= upper)
+        spacing = min(b - a for a, b in zip(positions, positions[1:])) if len(positions) > 1 else None
+        size = labels[0].get_fontsize()
+        needed = 1.1*size*fig.dpi/72/abs(math.sin(math.radians(labels[0].get_rotation())))
+        if spacing and spacing < needed:
+            ax.tick_params(axis="x", which="both", labelsize=size*spacing/needed)
+    return fig
+
+def save_figure(name, directory="figures", **kwargs):
+    # Save the current figure as <directory>/<name>.pdf (article) or <directory>/<name>_thesis.pdf (thesis);
+    # the PDF carries no creation date, so rerunning a notebook reproduces the file byte for byte
+    suffix = "_thesis" if figure_settings["version"] == "thesis" else ""
+    path = os.path.join(directory, f"{name}{suffix}.pdf")
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    if suffix:
+        fit_thesis_text(plt.gcf())
+    plt.savefig(path, metadata={"CreationDate": None}, **kwargs)
+    return path
 
 def color_sampling(color_family):
     help_info = "Usage: color_family(color_family)\n" + \

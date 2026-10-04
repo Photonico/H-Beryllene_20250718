@@ -9,6 +9,7 @@ Report, 2026-10-02. Update of [`topo_report_20261001.md`](topo_report_20261001.m
 1. **β-beryllene recomputed in the P-3m1 geometry.** The topology, HSE06, PBE phonons, bands, PDoS and dielectric run are now redone. The conclusions do not change: β is a metal with a trivial conditional ν = 0, and it is dynamically stable. Its smallest subspace gap is now an SOC gap pinned at K (Section 1).
 2. **Hydrogenation thermodynamics with zero-point energy and free energy.** Only 2H-α stays stable against H₂ release at room temperature and 1 bar. 1H-β becomes endothermic once ZPE is included. 2H-β needs about 90 bar of H₂ (Section 2).
 3. **2H-α is not the lowest BeH₂ monolayer.** A puckered square layer with tetrahedral Be is 38 meV per BeH₂ lower (Section 3).
+4. **One figure package (2026-10-04).** All figures are in `figures/`, as article (`<name>.pdf`) and thesis (`<name>_thesis.pdf`) versions; the energetics and phonon analyses moved from `9.0_topology.ipynb` to the notebooks of their topics (Section 6).
 
 All jobs 44069–44079 and 44093–44094 ended with exit 0 and converged SCFs/relaxations; the PDoS rerun 44095 was still running when this was written.
 
@@ -111,7 +112,7 @@ All notebooks 0.0–9.0 now execute without errors on a case-sensitive file syst
 - **Bulk phonons (S3.13a, S3.13c).** They used PBE+D3, and the "hcp" run `3.0_phonon_dispersion/a-Beryllium_3` is the bcc supercell: its POSCAR and DYNMAT are identical to `c0-Beryllium_3`, so S3.13a showed bcc force constants on the hexagonal path. They are recomputed with PBE in `3.8_phonon_dispersion_pbe/a-Beryllium` (hcp, 4 × 4 × 3, job array 44153[]) and `c0-Beryllium` (bcc, 4 × 4 × 4, job array 44154[]); see `3.8_phonon_dispersion_pbe/bulk_note`.
   - **bcc is harmonically unstable:** −3.90 THz at N, exact because N is commensurate with the supercell; the minimum on a 20³ mesh is −3.72 THz. bcc is the high-temperature phase of Be and is stabilised only by anharmonicity, so this is expected. The old S3.13c was plotted from 0 THz, which would hide the instability; the new figure starts at −5 THz.
   - **hcp is stable over the whole BZ:**
-    - maximum 20.9 THz;
+    - maximum 20.96 THz, the upper Γ optical mode;
     - Γ optical modes at 13.86 and 20.96 THz (the Raman E2g mode of Be is ≈ 13.7 THz, 456 cm⁻¹);
     - residual force 3.7 × 10⁻⁴ eV/Å.
   - **Figures:** S3.13a (hcp, Γ–K–M–Γ–A–H–L–A–Γ) and S3.13c (bcc, Γ–H–N–Γ–P–H|P–N, y from −5 THz) are regenerated with notebook 3.0. `3.0_phonon_dispersion_alt.ipynb` (S3.13c `_alt`) now uses the same PBE bcc run.
@@ -140,10 +141,133 @@ All notebooks 0.0–9.0 now execute without errors on a case-sensitive file syst
 
 | Item | Status |
 |---|---|
-| Anharmonic phonons of 2H-β (SSCHA) | not submitted: python-sscha and QE are not installed, and the 5 × 5 supercell with the dense k mesh the soft mode needs costs ~150 core-h per configuration, ~10⁴–10⁵ core-h in total |
+| Anharmonic phonons of 2H-β (SSCHA) | not submitted: python-sscha and QE are not installed, and the 5 × 5 supercell with the dense k mesh the soft mode needs costs ~150 core-h per configuration, ~10⁴–10⁵ core-h in total. One-mode estimate from the frozen-phonon fit (2026-10-05, `summarize_frozen_phonon_quantum`, notebook 3.5): about 4 THz at 0 K and 5.5–5.7 THz at 300 K for all three SIGMA; a static distortion would need α ≈ −45 to −50 meV amu⁻¹ Å⁻² (≈ 5i THz harmonic) against −2.1 to −6.2 from the fits. Mode–mode coupling is not included. |
 | Phonons of the puckered BeH₂ layer | optional; only if the polymorph is discussed beyond an energy comparison |
 
 The limitations of the topology screening are unchanged from the 2026-10-01 report.
+
+## 6. Figure package (2026-10-04)
+
+The figure folders `figures/<n>_<topic>/`, `figures_for_publication/`, `figures_for_thesis_ch3/` and `exported_figures/` are replaced by one flat folder, `figures/`. The file names in Section 4 refer to the old folders; the table at the end of this section maps them to the new names.
+
+- **Names.** `<quantity>_<structure or set>.pdf`, for example `phonon_2H-beta-beryllene.pdf` or `optics_pristine_absorption.pdf`. The names carry no figure numbers; the article and the thesis number their figures themselves.
+- **Two versions.** Every notebook that saves figures sets `figure_version("article")` in its prework cell. The article version is the default and is saved as `figures/<name>.pdf`. With `figure_version("thesis")` the same notebook saves `figures/<name>_thesis.pdf` in the thesis typography of `o-B14_20241024` (the rcParams of its thesis notebook): titles 24 pt, axis labels and ticks 18 pt, legend 12 pt, title pad 10 pt, TrueType fonts. This switch replaces the separate thesis blocks of `0.0_thesis_demo.ipynb`. Those blocks gave the previous thesis copies of the α/β optics (thesis 3.1, 4.1–4.5) larger legends (18 pt) and axis labels (20 pt); all thesis figures now share the `o-B14_20241024` values, which are set in one place, `thesis_params` in `vmatplot/output_settings.py`.
+- **Layouts that depend on the version.**
+  - `topology_bands_pristine`, `topology_bands_hydrogenated`: article 1 × 3 with the legend below; thesis 2 × 2 with the legend in the fourth panel.
+  - `topology_direct-gap_pristine`: article 1 × 3 with the colour bar at the right; thesis 2 × 2 with the colour bar and the marker legend in the fourth panel.
+  - `topology_direct-gap_hydrogenated` has four panels, because 1H-β has two subspaces (N = 4 and N = 6): article 1 × 4, thesis 2 × 2 with the colour bar at the right.
+  - `optics_pristine_*`, `optics_hydrogenated_*` (xx, yy, zz): article 1 × 3, each panel with its legend; thesis 2 × 2 with the shared legend in the fourth panel, as for the optical rows of `o-B14_20241024`.
+  - All other figures keep their layout in both versions; only the typography changes. As in `o-B14_20241024`, the two-panel rows and the 2 × 3 dielectric grids are not rearranged.
+- **Text that would not fit.** The thesis sizes are applied to the article canvases. Where a title would then leave the canvas, or rotated tick labels would overlap (the k-mesh labels of the convergence plots), `save_figure` scales that text down until it fits (`fit_thesis_text` in `vmatplot/output_settings.py`); the long convergence titles end up at about 17–18 pt. The article version is saved unchanged.
+- **Code.** `vmatplot/output_settings.py` has `figure_version()` (returns or sets the version) and `save_figure(name)` (writes the PDF without a creation date); `canvas_setting()` applies the thesis typography. `plot_topology_bands` and `plot_direct_gap_maps` (`vmatplot/band_topology.py`) and `plot_linear_optical_property` (`vmatplot/linear_optical_properties.py`) choose their grid from the version.
+- **Inputs that are not computed** are in `figures/sources/`:
+  - `structure_overview/` (bulk, pristine and hydrogenated grids: `structure_bulk`, `structure_pristine`, `structure_hydrogenated`) and `structure_single/` (top and side view of one hydrogenated layer: `structure_2H-alpha-beryllene`, `structure_1H-beta-beryllene`, `structure_2H-beta-beryllene`): VESTA files, renders and a merge notebook each. The merge notebooks have their own `figure_version` switch and write into `figures/`.
+  - `structure_library/`: the full set of VESTA renders.
+  - `brillouin_zone/`: GIMP source of the Brillouin-zone sketch. `figures/brillouin_zone.png` is the sketch itself, a static image used by both versions. Its right panel labels the low-symmetry path with X, S, Y and X₁, whereas the phonon paths of 1H-β and 2H-β are labelled Γ–X–M–Γ–Y–M′–Γ.
+- **Moved out of `9.0_topology.ipynb`**, which now shows only the topology screening:
+  - hydrogenation thermodynamics and BeH₂ polymorphs → `2.2_geometry_information_with_hydrogen.ipynb`;
+  - phonon stability tables → `3.0_phonon_dispersion.ipynb` (pristine) and `3.5_phonon_dispersion_with_hydrogen_selected.ipynb` (hydrogenated, with the 2H-β frozen phonon and the nesting analysis);
+  - HSE06 gap of 2H-α → `4.1_bandgap_with_hydrogen.ipynb`.
+
+  The PBE phonon and HSE06 band figures of 9.0 duplicated those of 3.0, 3.5 and 4.3 and were dropped. The tables show only the current runs: the superseded P-1 β cell and the PBE+D3 phonon runs are left out. The cubic trilayer is labelled "cubic trilayer" instead of "ST".
+- **Check.** The 19 figure notebooks and the two merge notebooks ran in both versions without errors: 92 article PDFs, each with its `_thesis` twin, plus `brillouin_zone.png`. A full rerun of both versions reproduces all 184 PDFs byte for byte. Of the 144 earlier figure files that have a successor, 143 keep their page size; the exception is the nesting figure, whose panels were brought next to their colour bars.
+- **Content check against the notebooks before the reorganisation.** The notebooks of the previous commit (3.0, 5.1, 5.4, 6.0, 6.1, 8.0 and the two merge notebooks) were run unchanged into a scratch folder: all 57 outputs match the new article figures pixel for pixel, so the reorganisation changed no figure content. Of the 137 earlier files with a successor, 92 are identical to the new article figures, `topology_gap-zoom` differs on purpose, and the remaining 44 differ because the committed PDFs (commit `c3acdcda`, the same files as `figures_old/`) predate the corrections of 2026-10-02 or were rendered on the Mac. Manuscripts that still use those files carry outdated figures, in particular the old S3.13a (hcp phonons computed in the bcc supercell), S3.13c, fig3.12a, S3.3–S3.12 and fig3.7a1–c1; use the files in `figures/` instead.
+- **Printed size in the thesis.** The thesis text width is 15.2 cm (measured on the chapter pages in `.agent/manuscript_previews/`). With the insertion fractions of `o-B14_20241024` (0.6 `\textwidth` for 10 × 6 in plots, 0.8 for two-panel rows and 2 × 2 grids, 1.0 for the 24 × 12 in grids), tick labels print at 4.5–7.3 pt and legends at 3.0–5.1 pt, the same range as the `o-B14_20241024` thesis figures (4.3–7.2 pt and 2.9–4.8 pt). The parity labels of `topology_bands_*` stay at 12 pt in the thesis version: at 14 pt neighbouring labels at X of the cubic trilayer overlap.
+- **Stale tools.** `.agent/sync_manuscripts.py` and `.agent/manuscript_sync.json` still copy from `exported_figures/`, which no longer exists.
+
+| New name (`figures/`) | Publication / thesis name before | Working copy before |
+|---|---|---|
+| `dielectric_alpha-beta` | `fig3.13_dielectric`, thesis `3.1_dielectric` | — |
+| `optics_alpha-beta_absorption` | `fig3.14a_absorption`, thesis `4.1_absorption` | — |
+| `optics_alpha-beta_refractive` | `fig3.14b_refractive`, thesis `4.2_refractive` | — |
+| `optics_alpha-beta_extinction` | `fig3.15_extinction`, thesis `4.3_extinction` | — |
+| `optics_alpha-beta_reflectivity` | `S3.16_reflectivity`, thesis `4.4_reflectivity` | — |
+| `optics_alpha-beta_energy-loss` | `S3.17_energy-loss`, thesis `4.5_energy-loss` | — |
+| `convergence_energy_encut_g-beryllene` | — | `1_convergence/1.1_conv_g_encut` |
+| `convergence_energy_kpoints_g-beryllene` | — | `1_convergence/1.2_conv_g` |
+| `convergence_energy_kpoints_hcp-beryllium` | `S3.2a_conv_hcp` | `1_convergence/1.3_conv_a0` |
+| `convergence_energy_kpoints_alpha-beryllene` | `S3.2b_conv_alpha` | `1_convergence/1.4_conv_a1` |
+| `convergence_energy_kpoints_bcc-beryllium` | `S3.2c_conv_bcc` | `1_convergence/1.5_conv_c0` |
+| `convergence_energy_kpoints_cubic-beryllene-monolayer` | — | `1_convergence/1.6_conv_c1` |
+| `convergence_energy_kpoints_cubic-beryllene-bilayer` | — | `1_convergence/1.7_conv_c2` |
+| `convergence_energy_kpoints_cubic-beryllene-trilayer` | `S3.2d_conv_cubic` | `1_convergence/1.8_conv_c3` |
+| `convergence_cohesive_encut_g-beryllene` | — | `1_convergence/2.1_coh_g_encut` |
+| `convergence_cohesive_kpoints_g-beryllene` | — | `1_convergence/2.2_coh_g_kpoints` |
+| `convergence_cohesive_kpoints_hcp-beryllium` | `S3.1a_conv_hcp` | `1_convergence/2.3_coh_a0` |
+| `convergence_cohesive_kpoints_alpha-beryllene` | `S3.1b_conv_alpha` | `1_convergence/2.4_coh_a1` |
+| `convergence_cohesive_kpoints_bcc-beryllium` | `S3.1c_conv_bcc` | `1_convergence/2.5_coh_c0` |
+| `convergence_cohesive_kpoints_cubic-beryllene-monolayer` | — | `1_convergence/2.6_coh_c1` |
+| `convergence_cohesive_kpoints_cubic-beryllene-bilayer` | — | `1_convergence/2.7_coh_c2` |
+| `convergence_cohesive_kpoints_cubic-beryllene-trilayer` | `S3.1d_conv_cubic` | `1_convergence/2.8_coh_c3` |
+| `phonon_hcp-beryllium` | `S3.13a_phonon_hcp` | `3_phonon/3.10_phonon_a-Beryllium` |
+| `phonon_alpha-beryllene` | `S3.13b_phonon_alpha` | `3_phonon/3.11_phonon_a-Beryllene`, `9_topology/9.10_phonon_a_pbe` |
+| `phonon_beta-beryllene` | `S3.13d_phonon_beta` | `3_phonon/3.12_phonon_b-Beryllene`, `9_topology/9.11_phonon_b_pbe` |
+| `phonon_bcc-beryllium` | `S3.13c_phonon_bcc_alt2` | `3_phonon/3.20_phonon_c-Beryllium_alt2` |
+| `phonon_cubic-beryllene-trilayer` | `fig3.4_phonon_c-Beryllene` | `3_phonon/3.21_phonon_c-Beryllene_trilayer`, `9_topology/9.12_phonon_st_pbe` |
+| `phonon_2H-alpha-beryllene` | `fig3.5_phonon_a_hh` | `3_phonon/3.31_phonon_a_hh`, `9_topology/9.5_phonon_a_hh_pbe` |
+| `phonon_1H-beta-beryllene` | `fig3.6a_phonon_b_b_alt` | `9_topology/9.6_phonon_b_b_pbe` |
+| `phonon_2H-beta-beryllene` | `fig3.6b_phonon_b_bb_alt` | `9_topology/9.9_phonon_b_bb_pbe` |
+| `bands_hcp-beryllium` | `S3.15a_bs_hcp` | `4_bs/4.10_BS_a_bulk` |
+| `bands_alpha-beryllene` | `S3.15b_bs_alpha` | `4_bs/4.11_BS_a` |
+| `bands_beta-beryllene` | `S3.15d_bs_beta` | `4_bs/4.12_BS_b` |
+| `bands_bcc-beryllium` | `S3.15c_bs_bcc` | `4_bs/4.20_BS_c_bulk` |
+| `bands_cubic-beryllene-trilayer` | `fig3.8_bs_cubic-trilayer-Beryllene` | `4_bs/4.21_BS_c` |
+| `bands_2H-alpha-beryllene` | `fig3.9_bs_a-Beryllene_hh` | `4_bs/4.31_BS_a_hh`, `9_topology/9.8_hse_bands_a_hh` |
+| `bands_1H-beta-beryllene` | `fig3.10a_bs_b-Beryllene_b_alt` | — |
+| `bands_2H-beta-beryllene` | `fig3.10b_bs_b-Beryllene_bb_alt` | — |
+| `dos_overview` | — | `5_dos/5.10_DoS_overview` |
+| `dos_hexagonal-family` | — | `5_dos/5.11_DoS_hex` |
+| `dos_cubic-family` | `fig3.11_DoS_cubic` | `5_dos/5.12_DoS_cubic` |
+| `dos_hydrogenated` | `fig3.12a_Total_DoS` | `5_dos/5.30_DoS_hydrogen` |
+| `pdos_hcp-beryllium` | — | `5_pdos/5.10_a-Beryllium` |
+| `pdos_alpha-beryllene` | — | `5_pdos/5.11_a-Beryllene` |
+| `pdos_beta-beryllene` | — | `5_pdos/5.12_b-Beryllene` |
+| `pdos_bcc-beryllium` | — | `5_pdos/5.20_c0-Beryllium` |
+| `pdos_cubic-beryllene-trilayer` | — | `5_pdos/5.21_c3-Beryllene` |
+| `pdos_2H-alpha-beryllene` | `fig3.12b_a_hh` | `5_pdos/5.31_a_hh` |
+| `pdos_1H-beta-beryllene` | `fig3.12c_b_b` | `5_pdos/5.32_b_h` |
+| `pdos_2H-beta-beryllene` | `fig3.12d_b_bb` | `5_pdos/5.33_b_hh` |
+| `convergence_dielectric_nbands_hcp-beryllium` | `S3.3_dielec_hcp` | `6_dielectric_test/6.10_dielec_a-Beryllium_nbands` |
+| `convergence_dielectric_kpoints_hcp-beryllium` | `S3.4_dielec_hcp` | `6_dielectric_test/6.10_dielec_a-Beryllium_kpoints` |
+| `convergence_dielectric_nbands_alpha-beryllene` | `S3.5_dielec_alpha` | `6_dielectric_test/6.11_dielec_a-Beryllene_nbands` |
+| `convergence_dielectric_kpoints_alpha-beryllene` | `S3.6_dielec_alpha` | `6_dielectric_test/6.11_dielec_a-Beryllene_kpoints` |
+| `convergence_dielectric_nbands_beta-beryllene` | `S3.7_dielec_beta` | `6_dielectric_test/6.12_dielec_b-Beryllene_nbands` |
+| `convergence_dielectric_kpoints_beta-beryllene` | `S3.8_dielec_beta` | `6_dielectric_test/6.12_dielec_b-Beryllene_kpoints` |
+| `convergence_dielectric_nbands_bcc-beryllium` | `S3.9_dielec_bcc` | `6_dielectric_test/6.20_dielec_c-Beryllium_nbands` |
+| `convergence_dielectric_kpoints_bcc-beryllium` | `S3.10_dielec_bcc` | `6_dielectric_test/6.20_dielec_c-Beryllium_kpoints` |
+| `convergence_dielectric_nbands_cubic-beryllene-trilayer` | `S3.11_dielec_cubic` | `6_dielectric_test/6.21_dielec_c-Beryllene_trilayer_nbands` |
+| `convergence_dielectric_kpoints_cubic-beryllene-trilayer` | `S3.12_dielec_cubic` | `6_dielectric_test/6.21_dielec_c-Beryllene_trilayer_kpoints` |
+| `dielectric_pristine` | `fig3.16_dielec` | `6_dielectric/6.10_dielec` |
+| `dielectric_hexagonal-family` | — | `6_dielectric/6.11_dielec_hex` |
+| `dielectric_cubic-family` | — | `6_dielectric/6.12_dielec_cubic` |
+| `dielectric_hydrogenated` | `fig3.18_dielec_H` | `6_dielectric/6.20_dielec_with_Hydrogen` |
+| `dielectric_alpha-family` | — | `6_dielectric/6.21_dielec_a` |
+| `dielectric_beta-family` | — | `6_dielectric/6.22_dielec_b` |
+| `optics_pristine_absorption` | `fig3.17a_abs` | `7_optical/7.11_absorption` |
+| `optics_pristine_refractive` | `S3.18a_refractive` | `7_optical/7.12_refractive` |
+| `optics_pristine_extinction` | `S3.18c_extinction` | `7_optical/7.13_extinction` |
+| `optics_pristine_reflectivity` | `S3.18b_reflectivity` | `7_optical/7.14_reflectivity` |
+| `optics_pristine_energy-loss` | `fig3.17b_energy-loss` | `7_optical/7.15_energy-loss` |
+| `optics_hydrogenated_absorption` | `fig3.19a_abs_H` | `7_optical/7.21_absorption_H` |
+| `optics_hydrogenated_refractive` | `S3.19a_refractive_H` | `7_optical/7.22_refractive_H` |
+| `optics_hydrogenated_extinction` | `S3.19c_extinction_H` | `7_optical/7.23_extinction_H` |
+| `optics_hydrogenated_reflectivity` | `S3.19b_reflectivity_H` | `7_optical/7.24_reflectivity_H` |
+| `optics_hydrogenated_energy-loss` | `fig3.19b_energy-loss_H` | `7_optical/7.25_energy-loss_H` |
+| `aimd_2H-alpha-beryllene` | `fig3.7a1` | `8_aimd/a-Beryllene_hh` |
+| `aimd_1H-beta-beryllene` | `fig3.7b1` | `8_aimd/b-Beryllene_b` |
+| `aimd_2H-beta-beryllene` | `fig3.7c1_aimd` | `8_aimd/b-Beryllene_bb` |
+| `structure_bulk` | `fig3.1_bulks_view` | — |
+| `structure_pristine` | `fig3.2_layers_view` | — |
+| `structure_hydrogenated` | `fig3.3_layers_H_view` | — |
+| `structure_2H-alpha-beryllene` | `fig3.7a2` | — |
+| `structure_1H-beta-beryllene` | `fig3.7b2` | — |
+| `structure_2H-beta-beryllene` | `fig3.7c2` | — |
+| `brillouin_zone.png` | `S3.14` | — |
+| `topology_bands_pristine` + `topology_bands_hydrogenated` | — | `9_topology/9.1_topology_bands` |
+| `topology_direct-gap_pristine` + `topology_direct-gap_hydrogenated` | — | `9_topology/9.2_direct_gap_maps` |
+| `topology_gap-zoom` | — | `9_topology/9.3_gap_zoom` |
+| `topology_wcc_1H-beta-beryllene` | — | `9_topology/9.4_wcc_beta_1h` |
+| `nesting_2H-beta-beryllene` | — | `9_topology/9.7_lindhard_b_bb` |
 
 ## Files
 
