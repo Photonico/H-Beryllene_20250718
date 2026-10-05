@@ -15,7 +15,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib.colors import LinearSegmentedColormap, LogNorm
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap, LogNorm
 from matplotlib.lines import Line2D
 from matplotlib.offsetbox import AnnotationBbox, DrawingArea
 from matplotlib.patches import Circle, PathPatch
@@ -41,10 +41,27 @@ superseded_ids = {"beta"}
 
 # Blue[1], Orange[1] and Cyan[1] pass the colour-blind all-pairs check (worst ΔE 15.4, tritan 6.1);
 # Orange is below 3:1 on white, so it is always direct-labelled.
-# One-hue sequential blue ramp for the direct-gap maps, dark = small gap.
-gap_colormap = LinearSegmentedColormap.from_list(
-    "direct_gap", ["#0d366b", "#104281", "#184f95", "#1c5cab", "#256abf", "#2a78d6", "#3987e5",
-                   "#5598e7", "#6da7ec", "#86b6ef", "#9ec5f4", "#b7d3f6", "#cde2fb"])
+# Six segments: smooth colour inside each segment, a small jump between segments.
+# RGB anchors and the interpolated palette use multiples of five.
+heatmap_segments = np.array([
+    [(255, 255, 255), (230, 245, 250)],
+    [(210, 235, 245), (185, 225, 240)],
+    [(155, 210, 230), (120, 190, 220)],
+    [(85, 165, 205), (55, 145, 190)],
+    [(30, 120, 175), (15, 90, 155)],
+    [(10, 60, 125), (5, 30, 85)],
+])
+heatmap_rgb = 5 * np.round(np.concatenate([np.linspace(a, b, 32) for a, b in heatmap_segments]) / 5)
+response_colormap = ListedColormap(heatmap_rgb / 255, name="response_steps")
+gap_colormap = response_colormap.reversed(name="direct_gap_steps")
+
+
+def style_heatmap_colorbar(colorbar):
+    """Outline the six gradient segments without flattening their colours."""
+    colorbar.ax.set_label("<colorbar>")
+    for fraction in np.linspace(0, 1, len(heatmap_segments)+1)[1:-1]:
+        colorbar.ax.plot([0, 1], [fraction, fraction], transform=colorbar.ax.transAxes,
+                         color="#787878", lw=.5, clip_on=False)
 
 ## Data extraction
 
@@ -918,7 +935,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
     fig, axes = plt.subplots(rows, columns, figsize=(width, height), dpi=settings[1], squeeze=False)
     fig.suptitle(suptitle, fontsize=settings[3][0], y=1-.16/height, va="top")
     grey = color_sampling("Grey")[0]
-    minimum_color = "orangered"
+    minimum_color = "#FF4600"
     vector = r"\vec" if thesis else r"\mathbf"
     for index, (ax, (matter, subspace)) in enumerate(zip(axes.flat, panels)):
         label, directory = matter[:2]
@@ -943,36 +960,56 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
             points = extract_symmetry_images(directory, point)
             ax.plot(points[:, 0], points[:, 1], ls="none", marker=r"$\odot$", ms=13,
                     color=minimum_color, zorder=6, clip_on=False)
-        ax.set_title(f"({chr(97+index)}) {label}\nN = {subspace}: sampled min {format_gap(best['direct_gap_ev'])}",
-                     fontsize=settings[3][1])
+        system = f"({chr(97+index)}) {label}"
+        note = f"N = {subspace}: sampled min {format_gap(best['direct_gap_ev'])}"
+        if thesis:
+            box = dict(boxstyle="round", fc="white", ec=plt.rcParams["legend.edgecolor"], alpha=.9)
+            # Leave the upper and lower refined minima visible in 2H-alpha.
+            if "2H-α" in label:
+                system = system.replace("-beryllene", "-\nberyllene")
+            title_x = .11 if "2H-β" in label else .025
+            note_y = .16 if "2H-α" in label else .025
+            ax.text(title_x, .93, system, transform=ax.transAxes, va="top", zorder=8,
+                    fontsize=settings[3][1], bbox=box)
+            ax.text(.025, note_y, note, transform=ax.transAxes, va="bottom", zorder=8,
+                    fontsize=STYLES["thesis"]["note"], bbox=box)
+        else:
+            ax.set_title(system + "\n" + note, fontsize=settings[3][1])
         ax.set(xlim=(-.54, .54), ylim=(-.54, .54), aspect="equal")
         ax.set_xticks([-.5, 0, .5]); ax.set_yticks([-.5, 0, .5])
         ax.set_xlabel(r"$k_1$ (units of $" + vector + r"{b}_1$)")
-        ax.set_ylabel(r"$k_2$ (units of $" + vector + r"{b}_2$)")
+        if not thesis or index % columns == 0:
+            ax.set_ylabel(r"$k_2$ (units of $" + vector + r"{b}_2$)")
+        if thesis and index + columns < len(panels):
+            ax.set_xlabel("")
+            ax.tick_params(labelbottom=False)
     for ax in list(axes.flat)[len(panels):]:
         ax.axis("off")
     handles = [Line2D([], [], ls="none", marker="o", ms=6, mfc="white", mec=grey, mew=.9, label="TRIM"),
                Line2D([], [], ls="none", marker=r"$\odot$", ms=13, color=minimum_color,
                       label="refined minima and their symmetry images")]
-    fig.subplots_adjust(left=.95/width, right=1-(.2 if free_cells else 1.05)/width,
-                        bottom=(.65 if free_cells else 1.05)/height, top=1-1.1/height,
-                        wspace=.28 if thesis else .26, hspace=.45)
+    fig.subplots_adjust(left=(.75 if thesis else .95)/width,
+                        right=1-(.18 if free_cells else (1.0 if thesis else 1.3))/width,
+                        bottom=(.6 if free_cells else 1.05)/height,
+                        top=1-(.48 if thesis else 1.1)/height,
+                        wspace=.10 if thesis else .26, hspace=.12 if thesis else .45)
     if free_cells:
         ax_free = list(axes.flat)[len(panels)]
-        cax = ax_free.inset_axes([.08, .62, .84, .07])
-        colorbar = fig.colorbar(image, cax=cax, orientation="horizontal", extend="min")
-        handles[1].set_label("refined minima and\ntheir symmetry images")
-        ax_free.legend(handles=handles, loc="upper center", bbox_to_anchor=(.5, .4), frameon=True,
-                       fancybox=True, facecolor="white", framealpha=.9)
+        cax = ax_free.inset_axes([.10, .15, .055, .72])
+        colorbar = fig.colorbar(image, cax=cax, extend="both", extendfrac=.04)
+        handles[1].set_label("refined minima\nand their\nsymmetry images")
+        ax_free.legend(handles=handles, loc="center left", bbox_to_anchor=(.45, .5),
+                       frameon=True, fancybox=True, facecolor="white", framealpha=.9,
+                       handlelength=1., handletextpad=.5, borderpad=.4)
     else:
         fig.canvas.draw()
         boxes = [ax.get_position() for ax in axes.flat]
         bottom, top = min(b.y0 for b in boxes), max(b.y1 for b in boxes)
         right = max(b.x1 for b in boxes)
-        colorbar = fig.colorbar(image, cax=fig.add_axes([right+.20/width, bottom, .13/width, top-bottom]), extend="min")
+        colorbar = fig.colorbar(image, cax=fig.add_axes([right+.20/width, bottom, .13/width, top-bottom]), extend="both", extendfrac=.04)
         fig.legend(handles=handles, loc="lower center", ncol=2, bbox_to_anchor=(.5, .015),
                    frameon=True, fancybox=True, facecolor="white", framealpha=.9)
-    colorbar.ax.set_label("<colorbar>")
+    style_heatmap_colorbar(colorbar)
     colorbar.set_label(r"$E_{N+1}-E_N$ (eV)")
 
 def plot_wcc(suptitle, matters_list=None):
@@ -1074,28 +1111,24 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
         arg[1]: matters list, [[label, structure directory, (q1, q2)], ...];
         arg[2]: Gaussian width sigma in eV (default 0.05);
     Constant-matrix-element static susceptibility chi0(q) and nesting function xi(q) on the SCF q grid;
-    crosses mark the chosen q and its symmetry images.
+    orange-red circle-dot markers mark the chosen q and its symmetry images.
     """
     if suptitle in ["help", "Help"]:
         print(help_info)
         return
 
-    # Figure settings: panel width from the aspect of the reciprocal cell, so that the colour bars sit beside the panels
+    # Keep the Cartesian reciprocal-cell geometry and place the two independent colour bars together on the right.
     ratio = max(np.ptp(corners[:, 0]) / np.ptp(corners[:, 1]) for matter in matters_list
                 for corners in [np.array([[0.5, 0.5], [0.5, -0.5], [-0.5, 0.5], [-0.5, -0.5]]) @ extract_reciprocal_2d(matter[1])])
-    fig_setting = canvas_setting(2 * (5.5 * ratio + 2.4), 7.0 * len(matters_list))
-    params = fig_setting[2]; plt.rcParams.update(params)
-    fig, axes = plt.subplots(len(matters_list), 2, figsize=fig_setting[0], dpi=fig_setting[1], squeeze=False)
-
-    # Colors calling
+    panel_height, panel_gap = 4.8, .45
+    panel_width = panel_height * ratio
+    width, height = 2 * panel_width + 3.7, 6.5 * len(matters_list)
+    fig_setting = canvas_setting(width, height)
+    plt.rcParams.update(fig_setting[2])
+    fig = plt.figure(figsize=fig_setting[0], dpi=fig_setting[1])
+    fig.suptitle(suptitle, fontsize=fig_setting[3][0], y=1 - .10 / height)
     annotate_color = color_sampling("Grey")
-    marker_color = color_sampling("Red")[1]
-    sequential = LinearSegmentedColormap.from_list("susceptibility", gap_colormap(np.linspace(0, 1, 13))[::-1])
 
-    # Title
-    fig.suptitle(f"{suptitle}", fontsize=fig_setting[3][0], y=1.00)
-
-    # Data calling and plotting
     for row, (label, directory, qpoint) in enumerate(matters_list):
         result = extract_lindhard_susceptibility(directory, sigma=sigma)
         mesh = result["mesh"]
@@ -1106,22 +1139,31 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
         qx = frac_1 * reciprocal[0, 0] + frac_2 * reciprocal[1, 0]
         qy = frac_1 * reciprocal[0, 1] + frac_2 * reciprocal[1, 1]
         points = extract_symmetry_images(directory, qpoint) @ reciprocal
-        for ax, name, title in ((axes[row, 0], "chi0", r"$\chi_0(\mathbf{q})$"), (axes[row, 1], "xi", r"$\xi(\mathbf{q})$")):
+        bottom = .65 + (len(matters_list) - row - 1) * 6.5
+        for column, (name, title, unit) in enumerate((("chi0", r"$\chi_0(\mathbf{q})$", r"eV$^{-1}$"),
+                                                   ("xi", r"$\xi(\mathbf{q})$", r"eV$^{-2}$"))):
             if figure_version() == "thesis":
                 title = title.replace(r"\mathbf{q}", r"\vec{q}\,")
+            left = .80 + column * (panel_width + panel_gap)
+            ax = fig.add_axes([left / width, bottom / height, panel_width / width, panel_height / height])
             values = np.roll(result[name], shift, axis=(0, 1))
             upper = np.delete(result[name].ravel(), 0).max()  # q = 0 (intraband self-nesting) excluded from the colour scale
-            image = ax.pcolormesh(qx, qy, np.minimum(values, upper), cmap=sequential, vmax=upper, shading="flat", rasterized=True)
-            ax.plot(points[:, 0], points[:, 1], linestyle="none", marker="x", ms=11, mew=2.0, color=marker_color, zorder=5)
-            ax.plot(0, 0, marker="o", ms=6, mfc="white", mec=annotate_color[0], mew=0.9, zorder=4)
+            image = ax.pcolormesh(qx, qy, np.minimum(values, upper), cmap=response_colormap, vmax=upper,
+                                 shading="flat", rasterized=True)
+            ax.plot(points[:, 0], points[:, 1], linestyle="none", marker=r"$\odot$", ms=13,
+                    color="#FF4600", zorder=5)
+            ax.plot(0, 0, marker="o", ms=6, mfc="white", mec=annotate_color[0], mew=.9, zorder=4)
             ax.set_title(f"{label}\n{title}, σ = {sigma:g} eV", fontsize=fig_setting[3][1] - 4)
             ax.set_aspect("equal")
             ax.set_xlabel(r"$q_x$ (Å$^{-1}$)")
-            ax.set_ylabel(r"$q_y$ (Å$^{-1}$)")
+            if column == 0:
+                ax.set_ylabel(r"$q_y$ (Å$^{-1}$)")
             ax.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
-            fig.colorbar(image, ax=ax, shrink=0.85, pad=0.03)
-
-    plt.tight_layout()
+            bar_left = .80 + 2 * panel_width + panel_gap + .28 + column * 1.02
+            cax = fig.add_axes([bar_left / width, bottom / height, .16 / width, panel_height / height])
+            colorbar = fig.colorbar(image, cax=cax, extend="both", extendfrac=.04)
+            colorbar.set_label(f"{title} ({unit})")
+            style_heatmap_colorbar(colorbar)
 
 def plot_hse_bands(title, matters_list=None, eigen_range=None, legend_loc=True):
     # Help information
@@ -1179,7 +1221,7 @@ def plot_hse_bands(title, matters_list=None, eigen_range=None, legend_loc=True):
             plt.plot(result["kpath"], energies[:, band], c=colors[functional], lw=width, linestyle="solid",
                      zorder=4 if functional == "HSE06" else 3, label=f"{functional}: indirect gap {gap:.2f} eV" if band == 0 else None)
     hse = curves["HSE06"]
-    plt.axhspan(0, hse["cbm"][0] - hse["vbm"][0], color=colors["HSE06"], alpha=0.08, lw=0, zorder=1,
+    plt.axhspan(0, hse["cbm"][0] - hse["vbm"][0], color=colors["HSE06"], alpha=0.12, lw=0, zorder=1,
                 label="HSE06 indirect gap (shaded)")
     # Each functional is aligned at its own VBM; zero is not the Fermi level.
     plt.axhline(y=0, color=vbm_color[0], lw=width, alpha=0.8, linestyle="--", zorder=2)

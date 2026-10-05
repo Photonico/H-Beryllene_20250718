@@ -11,7 +11,7 @@ STYLES = {
 }
 SIZES = {
     "article": {"bands": (18, 9), "gap_maps": (18, 6), "wcc": (12, 5), "gap_zoom": (10, 6)},
-    "thesis": {"bands": (8, 9), "gap_maps": (8, 8), "wcc": (8, 4), "gap_zoom": (8, 5)},
+    "thesis": {"bands": (8, 9), "gap_maps": (8, 7), "wcc": (8, 4), "gap_zoom": (8, 5)},
 }
 
 
