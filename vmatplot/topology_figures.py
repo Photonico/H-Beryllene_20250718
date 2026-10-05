@@ -67,7 +67,7 @@ def style_topology_figure(fig, version):
                              y=.97 if inside else 1., pad=0 if inside else 6.)
                 if box:
                     ax.title.set(x=.025, ha="left", va="top" if inside else "bottom", zorder=10,
-                                 bbox=dict(boxstyle="round", facecolor="white", alpha=.9,
+                                 bbox=dict(boxstyle="round", facecolor="white", alpha=.75,
                                            edgecolor=plt.rcParams["legend.edgecolor"]))
             for text in ax.texts:
                 text.set_fontsize(s["note"])
@@ -90,7 +90,7 @@ def style_topology_figure(fig, version):
         for text in [*legend.get_texts(), legend.get_title()]:
             text.set_fontsize(s["outside"] if outside else s["inside"])
         legend.set_frame_on(True)
-        legend.get_frame().set(facecolor="white", alpha=.9, edgecolor=plt.rcParams["legend.edgecolor"])
+        legend.get_frame().set(facecolor="white", alpha=.75, edgecolor=plt.rcParams["legend.edgecolor"])
     if fig._suptitle:
         fig._suptitle.set_fontsize(s["title"])
     return fig
