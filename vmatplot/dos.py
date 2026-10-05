@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from vmatplot.commons import extract_fermi, get_or_default, check_spin
-from vmatplot.output_settings import color_sampling, canvas_setting
+from vmatplot.output_settings import color_sampling, canvas_setting, FERMI_STYLE
 from functools import lru_cache
 
 import matplotlib as mpl
@@ -758,7 +758,7 @@ def plot_dos(title, matters_list = None, x_range = None, y_lim = None, dos_quant
                 efermi = matter[1][0]
         # Plot Fermi energy as a vertical line
         shift = efermi
-        plt.axvline(x=efermi-shift, linestyle="--", c=fermi_color[0], alpha=0.80, label="Fermi energy", zorder=1)
+        plt.axvline(x=efermi-shift, **FERMI_STYLE, label="Fermi energy", zorder=1)
         fermi_energy_text = _format_fermi_label_text(fermi_label, efermi)
 
         # Title
@@ -1483,7 +1483,7 @@ fermi_label controls the displayed Fermi-energy text and is False by default.
                 total_dos = dos_up[index] + dos_down[index]
                 plt.plot(dos_up[5], total_dos, c=curve_color, linestyle=line_style, lw=line_weight, alpha=line_alpha, label=total_label, zorder=3)
 
-    plt.axvline(x=0, linestyle="--", c=fermi_color[1], alpha=0.80, zorder=1)
+    plt.axvline(x=0, **FERMI_STYLE, zorder=1)
     plt.axhline(y=0, linestyle=":", c=fermi_color[1], alpha=0.80, zorder=1)
 
     plt.title(f"{title}")

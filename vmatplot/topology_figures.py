@@ -3,14 +3,15 @@ from functools import lru_cache
 from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
+from vmatplot.output_settings import LINE_WIDTH
 
 STYLES = {
     "article": dict(label=16, tick=14, title=20, panel=18, note=12, inside=12, outside=14, scale=1.),
-    "thesis": dict(label=13, tick=11, title=13, panel=11, note=11, inside=11, outside=11, scale=1.5/1.8),
+    "thesis": dict(label=13, tick=11, title=13, panel=11, note=11, inside=11, outside=11, scale=1.),
 }
 SIZES = {
-    "article": {"bands": (18, 9), "gap_maps": (22, 8), "wcc": (12, 5), "gap_zoom": (10, 6)},
-    "thesis": {"bands": (8, 9), "gap_maps": (8, 10), "wcc": (8, 4), "gap_zoom": (8, 5)},
+    "article": {"bands": (18, 9), "gap_maps": (18, 6), "wcc": (12, 5), "gap_zoom": (10, 6)},
+    "thesis": {"bands": (8, 9), "gap_maps": (8, 8), "wcc": (8, 4), "gap_zoom": (8, 5)},
 }
 
 
@@ -19,7 +20,7 @@ def topology_canvas(kind, version):
     params = {"font.family": "serif", "mathtext.fontset": "cm", "text.usetex": False,
               "axes.labelsize": s["label"], "axes.titlesize": s["panel"],
               "xtick.labelsize": s["tick"], "ytick.labelsize": s["tick"],
-              "legend.fontsize": s["inside"], "lines.linewidth": 1.8, "axes.titlepad": 6., "pdf.fonttype": 42,
+              "legend.fontsize": s["inside"], "lines.linewidth": LINE_WIDTH, "axes.titlepad": 6., "pdf.fonttype": 42,
               "figure.facecolor": "white", "axes.facecolor": "white", "path.simplify": False}
     return SIZES[version][kind], 196, params, (s["title"], s["panel"]), "upper right"
 
@@ -61,7 +62,7 @@ def style_topology_figure(fig, version):
             if title:
                 panel = len(panels) > 1 or fig._suptitle is not None
                 box = version == "thesis" and panel
-                inside = box and ax.get_ylabel().startswith("WCC")
+                inside = box and (ax.get_ylabel().startswith("WCC") or getattr(ax, "_topology_band_panel", False))
                 ax.set_title(title, fontsize=s["panel"] if panel else s["title"],
                              y=.97 if inside else 1., pad=0 if inside else 6.)
                 if box:
