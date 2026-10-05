@@ -163,14 +163,14 @@ The figure folders `figures/<n>_<topic>/`, `figures_for_publication/`, `figures_
 - **Inputs that are not computed** are in `figures/sources/`:
   - `structure_overview/` (bulk, pristine and hydrogenated grids: `structure_bulk`, `structure_pristine`, `structure_hydrogenated`) and `structure_single/` (top and side view of one hydrogenated layer: `structure_2H-alpha-beryllene`, `structure_1H-beta-beryllene`, `structure_2H-beta-beryllene`): VESTA files, renders and a merge notebook each. The merge notebooks have their own `figure_version` switch and write into `figures/`.
   - `structure_library/`: the full set of VESTA renders.
-  - `brillouin_zone/`: GIMP source of the Brillouin-zone sketch. `figures/brillouin_zone.png` is the sketch itself, a static image used by both versions. Its right panel labels the low-symmetry path with X, S, Y and X₁, whereas the phonon paths of 1H-β and 2H-β are labelled Γ–X–M–Γ–Y–M′–Γ.
+  - `brillouin_zone/`: GIMP source of the earlier raster sketch. The Brillouin-zone sketch is now drawn as vector graphics by `figures/brillouin_zone.ipynb` (`brillouin_zone.pdf`, `brillouin_zone_thesis.pdf`). Its right panel labels the low-symmetry path with X, S, Y and X₁, whereas the phonon paths of 1H-β and 2H-β are labelled Γ–X–M–Γ–Y–M′–Γ.
 - **Moved out of `9.0_topology.ipynb`**, which now shows only the topology screening:
   - hydrogenation thermodynamics and BeH₂ polymorphs → `2.2_geometry_information_with_hydrogen.ipynb`;
   - phonon stability tables → `3.0_phonon_dispersion.ipynb` (pristine) and `3.5_phonon_dispersion_with_hydrogen_selected.ipynb` (hydrogenated, with the 2H-β frozen phonon and the nesting analysis);
   - HSE06 gap of 2H-α → `4.1_bandgap_with_hydrogen.ipynb`.
 
   The PBE phonon and HSE06 band figures of 9.0 duplicated those of 3.0, 3.5 and 4.3 and were dropped. The tables show only the current runs: the superseded P-1 β cell and the PBE+D3 phonon runs are left out. The cubic trilayer is labelled "cubic trilayer" instead of "ST".
-- **Check.** The 19 figure notebooks and the two merge notebooks ran in both versions without errors: 92 article PDFs, each with its `_thesis` twin, plus `brillouin_zone.png`. A full rerun of both versions reproduces all 184 PDFs byte for byte. Of the 144 earlier figure files that have a successor, 143 keep their page size; the exception is the nesting figure, whose panels were brought next to their colour bars.
+- **Check.** The 19 figure notebooks and the two merge notebooks ran in both versions without errors: 92 article PDFs, each with its `_thesis` twin. A full rerun of both versions reproduces all 184 PDFs byte for byte. Of the 144 earlier figure files that have a successor, 143 keep their page size; the exception is the nesting figure, whose panels were brought next to their colour bars.
 - **Content check against the notebooks before the reorganisation.** The notebooks of the previous commit (3.0, 5.1, 5.4, 6.0, 6.1, 8.0 and the two merge notebooks) were run unchanged into a scratch folder: all 57 outputs match the new article figures pixel for pixel, so the reorganisation changed no figure content. Of the 137 earlier files with a successor, 92 are identical to the new article figures, `topology_gap-zoom` differs on purpose, and the remaining 44 differ because the committed PDFs (commit `c3acdcda`, the same files as `figures_old/`) predate the corrections of 2026-10-02 or were rendered on the Mac. Manuscripts that still use those files carry outdated figures, in particular the old S3.13a (hcp phonons computed in the bcc supercell), S3.13c, fig3.12a, S3.3–S3.12 and fig3.7a1–c1; use the files in `figures/` instead.
 - **Printed size in the thesis.** The thesis text width is 15.2 cm (measured on the chapter pages in `.agent/manuscript_previews/`). With the insertion fractions of `o-B14_20241024` (0.6 `\textwidth` for 10 × 6 in plots, 0.8 for two-panel rows and 2 × 2 grids, 1.0 for the 24 × 12 in grids), tick labels print at 4.5–7.3 pt and legends at 3.0–5.1 pt, the same range as the `o-B14_20241024` thesis figures (4.3–7.2 pt and 2.9–4.8 pt). The parity labels of `topology_bands_*` stay at 12 pt in the thesis version: at 14 pt neighbouring labels at X of the cubic trilayer overlap.
 - **Stale tools.** `.agent/sync_manuscripts.py` and `.agent/manuscript_sync.json` still copy from `exported_figures/`, which no longer exists.
@@ -262,7 +262,7 @@ The figure folders `figures/<n>_<topic>/`, `figures_for_publication/`, `figures_
 | `structure_2H-alpha-beryllene` | `fig3.7a2` | — |
 | `structure_1H-beta-beryllene` | `fig3.7b2` | — |
 | `structure_2H-beta-beryllene` | `fig3.7c2` | — |
-| `brillouin_zone.png` | `S3.14` | — |
+| `brillouin_zone` | `S3.14` | — |
 | `topology_bands_pristine` + `topology_bands_hydrogenated` | — | `9_topology/9.1_topology_bands` |
 | `topology_direct-gap_pristine` + `topology_direct-gap_hydrogenated` | — | `9_topology/9.2_direct_gap_maps` |
 | `topology_gap-zoom` | — | `9_topology/9.3_gap_zoom` |
