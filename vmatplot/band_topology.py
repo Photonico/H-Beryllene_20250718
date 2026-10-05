@@ -17,9 +17,14 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap, LogNorm
 from matplotlib.lines import Line2D
+from matplotlib.offsetbox import AnnotationBbox, DrawingArea
+from matplotlib.patches import Circle, PathPatch
+from matplotlib.textpath import TextPath
+from matplotlib.font_manager import FontProperties
+from matplotlib.transforms import Affine2D
 
-from vmatplot.output_settings import color_sampling, canvas_setting, figure_version
-from vmatplot.topology_figures import topology_canvas
+from vmatplot.output_settings import color_sampling, canvas_setting, figure_version, LINE_WIDTH, FERMI_STYLE
+from vmatplot.topology_figures import topology_canvas, STYLES
 
 import matplotlib as mpl
 
@@ -753,14 +758,14 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
     legend_cell = (rows - 1, columns - 1) if legend_loc and rows * columns > len(matters) else None
 
     # Figure settings (margins in inches: suptitle above, legend or tick labels below)
-    top_space = 1.0 if thesis else 1.4
+    top_space = .65 if thesis else 1.15
     bottom_space = 1.15 if legend_loc and legend_cell is None else .5
     fig_setting = topology_canvas("bands", figure_version())
     width, height = fig_setting[0]
     params = fig_setting[2]; plt.rcParams.update(params)
     fig = plt.figure(figsize=fig_setting[0], dpi=fig_setting[1])
     outer = gridspec.GridSpec(rows, columns, figure=fig, left=(.8 if thesis else 1.0) / width, right=1 - .2 / width,
-                              top=1 - top_space / height, bottom=bottom_space / height, hspace=.28 if thesis else .15, wspace=.18)
+                              top=1 - top_space / height, bottom=bottom_space / height, hspace=.16 if thesis else .15, wspace=.20)
 
     # Colors calling
     fermi_color = color_sampling("Grey")
@@ -776,6 +781,7 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
         inner = gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=outer[index // columns, index % columns],
                                                  height_ratios=[3.2, 1.3], hspace=0.06)
         ax_bands = fig.add_subplot(inner[0])
+        ax_bands._topology_band_panel = True
         ax_gap = fig.add_subplot(inner[1], sharex=ax_bands)
         kpath, eigenvalues, kpoints, positions, labels = extract_band_path(directory)
         eigenvalues = eigenvalues - extract_fermi_topology(directory)
@@ -784,11 +790,12 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
         lower = 0
         for color, subspace in zip(colors, subspaces):
             for band in range(lower, subspace):
-                ax_bands.plot(kpath, eigenvalues[:, band], c=color, lw=1.8, zorder=4)
+                ax_bands.plot(kpath, eigenvalues[:, band], c=color, lw=LINE_WIDTH, zorder=4)
             lower = subspace
         for band in range(lower, eigenvalues.shape[1]):
-            ax_bands.plot(kpath, eigenvalues[:, band], c=annotate_color[2], lw=1.2, zorder=3)
-        ax_bands.axhline(y=0, color=fermi_color[0], alpha=0.8, linestyle="--", zorder=2)
+            ax_bands.plot(kpath, eigenvalues[:, band], c=annotate_color[2], lw=LINE_WIDTH, zorder=3)
+        ax_bands.axhline(y=0, **FERMI_STYLE, zorder=2)
+        ax_bands.set_ylim(*energy_window)
 
         # Kramers-pair parities at the TRIM on the path
         parity = extract_parity(directory)
@@ -797,13 +804,17 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
 
         # Direct gap along the path and the BZ minimum
         gaps, _ = extract_gap_extrema(directory)
-        for order, (color, subspace) in enumerate(zip(colors, subspaces)):
+        gap_handles = []
+        for color, subspace in zip(colors, subspaces):
             gap = next(g for g in gaps if g["N"] == subspace)
-            ax_gap.semilogy(kpath, np.maximum(eigenvalues[:, subspace] - eigenvalues[:, subspace - 1], 1e-6), c=color, lw=1.6, zorder=4)
-            ax_gap.axhline(y=gap["direct_gap_ev"], color=color, lw=1.0, linestyle=":", zorder=3)
-            ax_gap.text(.98, .06 + .22*order, f"$N={subspace}$: {format_gap(gap['direct_gap_ev'])}",
-                        transform=ax_gap.transAxes, ha="right", va="bottom", fontsize=params["xtick.labelsize"],
-                        color=color, zorder=8, bbox=dict(boxstyle="round", facecolor="white", edgecolor="none", alpha=.9))
+            ax_gap.semilogy(kpath, np.maximum(eigenvalues[:, subspace] - eigenvalues[:, subspace - 1], 1e-6), c=color, lw=LINE_WIDTH, zorder=4)
+            ax_gap.axhline(y=gap["direct_gap_ev"], color=color, lw=LINE_WIDTH, linestyle=":", zorder=3)
+            gap_handles.append(Line2D([], [], color=color, lw=LINE_WIDTH,
+                                      label=f"N = {subspace}: {format_gap(gap['direct_gap_ev'])}"))
+        ax_gap.legend(handles=gap_handles, loc="lower right", frameon=True, fancybox=True,
+                      facecolor="white", framealpha=.9, borderpad=.35, labelspacing=.3,
+                      handlelength=1.2, fontsize=STYLES[figure_version()]["note"])
+
 
         # High symmetry path
         for k_loc in positions[1:-1]:
@@ -816,7 +827,9 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
         else:
             status = extract_wcc(directory)
             subtitle = f"{label}: Z₂ = " + "/".join(str(m["z2"]) for m in status["manifolds"].values()) + " (WCC)" if status else label
-        subtitle = f"({chr(97+index)}) {subtitle}\nN = " + "/".join(map(str, subspaces))
+        subtitle = f"({chr(97+index)}) {subtitle}"
+        if thesis:
+            subtitle = subtitle.replace(": Z₂", ":\nZ₂")
         ax_bands.set_title(subtitle, fontsize=fig_setting[3][1])
         ax_bands.set_ylim(energy_window[0], energy_window[1])
         for annotation in ax_bands.texts:
@@ -833,16 +846,16 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
 
     # Legend: below the row (article) or in the free panel of the grid (thesis)
     if legend_loc:
-        handles = [Line2D([], [], c=color_sampling("Blue")[1], lw=1.8, label="lowest-N subspace (bands 1…N)")]
+        handles = [Line2D([], [], c=color_sampling("Blue")[1], lw=LINE_WIDTH, label="lowest-N subspace (bands 1…N)")]
         for label, directory, entry, subspaces, colors in matters:
             if len(subspaces) > 1:
                 separator = "\n" if legend_cell is not None else " "
-                handles.append(Line2D([], [], c=colors[1], lw=1.8,
+                handles.append(Line2D([], [], c=colors[1], lw=LINE_WIDTH,
                                       label=f"{label} bands {subspaces[0] + 1}–{subspaces[1]}{separator}(with blue: lowest-{subspaces[1]} subspace)"))
                 break
-        handles += [Line2D([], [], c=annotate_color[2], lw=1.2, label="bands above selected subspace(s)"),
-                    Line2D([], [], c=annotate_color[0], lw=1.0, linestyle=":", label=("sampled BZ minimum of\n" + r"$E_{N+1}-E_N$") if legend_cell is not None else r"sampled BZ minimum of $E_{N+1}-E_N$"),
-                    Line2D([], [], c=fermi_color[0], lw=1.0, linestyle="--", label="Fermi energy")]
+        handles += [Line2D([], [], c=annotate_color[2], lw=LINE_WIDTH, label="bands above selected subspace(s)"),
+                    Line2D([], [], c=annotate_color[0], lw=LINE_WIDTH, linestyle=":", label=("sampled BZ minimum of\n" + r"$E_{N+1}-E_N$") if legend_cell is not None else r"sampled BZ minimum of $E_{N+1}-E_N$"),
+                    Line2D([], [], **FERMI_STYLE, label="Fermi energy")]
         if legend_cell is not None:
             ax_legend = fig.add_subplot(outer[legend_cell[0], legend_cell[1]])
             ax_legend.axis("off")
@@ -850,8 +863,13 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
         else:
             fig.legend(handles=handles, loc="lower center", ncol=3, frameon=True, fancybox=True, facecolor="white", framealpha=.9, bbox_to_anchor=(.5, .015), borderpad=.4, labelspacing=.4)
 
+    # Use one label position for both the energy and direct-gap axes.
+    for ax in fig.axes:
+        if ax.get_ylabel():
+            ax.yaxis.set_label_coords(-.16 if thesis else -.15, .5)
+
 def annotate_parities(ax, kpath, eigenvalues, kpoints, parity, text_color):
-    # Parities of the Kramers pairs of the lowest-N subspace; nearly degenerate pairs share one label
+    # Centre the actual glyph outlines, including mixed signs, in each circle.
     for index in range(len(kpoints)):
         name = identify_trim(kpoints[index])
         if name is None or (index > 0 and abs(kpath[index] - kpath[index - 1]) < 1e-12):
@@ -860,33 +878,30 @@ def annotate_parities(ax, kpath, eigenvalues, kpoints, parity, text_color):
         groups = []
         for pair, value in enumerate(pairs):
             energy = eigenvalues[index, 2 * pair:2 * pair + 2].mean()
-            if groups and energy - groups[-1][0] < 0.45:
+            if groups and energy - groups[-1][0] < .45:
                 groups[-1][1].append(value)
             else:
                 groups.append([energy, [value]])
-        right_end = kpath[index] > 0.97 * kpath[-1]
         for energy, values in groups:
-            ax.text(kpath[index] + (-0.025 if right_end else 0.025) * kpath[-1], energy, ",".join(format_sign(v) for v in values),
-                    ha="right" if right_end else "left", va="center", fontsize=12, color=text_color, zorder=5,
-                    bbox=dict(boxstyle="circle,pad=0.15", fc="white", ec=text_color, lw=.8, alpha=.9))
+            if not ax.get_ylim()[0] <= energy <= ax.get_ylim()[1]:
+                continue
+            signs = ",".join(format_sign(v) for v in values)
+            glyph = TextPath((0, 0), signs, size=STYLES[figure_version()]["note"],
+                             prop=FontProperties(family="serif"))
+            bounds = glyph.get_extents()
+            side = max(bounds.width, bounds.height) + 5
+            drawing = DrawingArea(side, side, 0, 0)
+            drawing.add_artist(Circle((side/2, side/2), side/2, fc="white", ec=text_color, lw=.8, alpha=.9))
+            transform = Affine2D().translate(side/2-(bounds.x0+bounds.x1)/2, side/2-(bounds.y0+bounds.y1)/2)
+            drawing.add_artist(PathPatch(glyph.transformed(transform), fc=text_color, lw=0))
+            offset = (-1 if kpath[index] > .97*kpath[-1] else 1) * (side/2+2)
+            annotation = AnnotationBbox(drawing, (kpath[index], energy), xybox=(offset, 0),
+                                       boxcoords="offset points", frameon=False, pad=0, zorder=8)
+            annotation._parity_signs = signs
+            ax.add_artist(annotation)
 
 def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
-    # Help information
-    help_info = """
-    Usage: plot_direct_gap_maps
-        arg[0]: suptitle;
-        arg[1]: matters list, [[label, structure directory], ...];
-        arg[2]: colour range of E_(N+1) - E_N in eV, default (1e-2, 10), log scale;
-    Direct gap over the sampled reciprocal cell (105x105 SCF grid unfolded with the point group and k -> -k);
-    crosses mark the refined minima and their symmetry images, circles the TRIM. One panel per subspace.
-    Article version: one row of up to four panels with the colour bar at the right;
-    thesis version (figure_version("thesis")): two columns, with the colour bar and the marker legend in a free
-    fourth panel when there is one.
-    """
-    if suptitle in ["help", "Help"]:
-        print(help_info)
-        return
-
+    """Direct gaps in reciprocal fractions: k = k1*b1 + k2*b2; minima are sampled values."""
     matters = create_matters_topology(matters_list)
     panels = [(matter, subspace) for matter in matters for subspace in matter[3]]
     thesis = figure_version() == "thesis"
@@ -895,79 +910,70 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
     free_cells = rows * columns - len(panels)
     gap_limits = gap_range if gap_range is not None else (1e-2, 10)
     norm = LogNorm(vmin=gap_limits[0], vmax=gap_limits[1])
-
-    # Figure settings (margins in inches)
-    fig_setting = topology_canvas("gap_maps", figure_version())
-    width, height = fig_setting[0]
-    top_space, bottom_space = (1.4, 1.2) if thesis and not free_cells else ((1.4, .5) if thesis else (1.5, 1.5))
-    right_space = .25 if free_cells else (.95 if thesis else 1.5)
-    params = fig_setting[2]; plt.rcParams.update(params)
-    fig, axes = plt.subplots(rows, columns, figsize=fig_setting[0], dpi=fig_setting[1], squeeze=False)
-
-    # Colors calling
-    annotate_color = color_sampling("Grey")
-    minimum_color = color_sampling("Red")[1]
-
-    # Title
-    fig.suptitle(f"{suptitle}", fontsize=fig_setting[3][0], y=1 - 0.25 / height, va="top")
-
-    # Data calling and plotting
-    image = None
+    settings = topology_canvas("gap_maps", figure_version())
+    width, height = settings[0]
+    if not thesis:
+        width = round(width * columns / 4)
+    plt.rcParams.update(settings[2])
+    fig, axes = plt.subplots(rows, columns, figsize=(width, height), dpi=settings[1], squeeze=False)
+    fig.suptitle(suptitle, fontsize=settings[3][0], y=1-.16/height, va="top")
+    grey = color_sampling("Grey")[0]
+    minimum_color = "orangered"
+    vector = r"\vec" if thesis else r"\mathbf"
     for index, (ax, (matter, subspace)) in enumerate(zip(axes.flat, panels)):
-        label, directory = matter[0], matter[1]
-        if thesis and label == "cubic beryllene trilayer": label = "cubic trilayer"
+        label, directory = matter[:2]
+        if thesis and label == "cubic beryllene trilayer":
+            label = "cubic trilayer"
         grid, mesh = extract_direct_gap_grid(directory, subspace)
         shift = [m // 2 for m in mesh]
         values = np.roll(grid, shift, axis=(0, 1))
-        edges = [(np.arange(m + 1) - shift[i] - 0.5) / m for i, m in enumerate(mesh)]
-        frac_1, frac_2 = np.meshgrid(edges[0], edges[1], indexing="ij")
-        reciprocal = extract_reciprocal_2d(directory)
-        kx = frac_1 * reciprocal[0, 0] + frac_2 * reciprocal[1, 0]
-        ky = frac_1 * reciprocal[0, 1] + frac_2 * reciprocal[1, 1]
-        image = ax.pcolormesh(kx, ky, np.clip(values, gap_limits[0] * 0.5, None), cmap=gap_colormap, norm=norm,
-                              shading="flat", rasterized=True)
+        edges = [(np.arange(m+1)-shift[i]-.5)/m for i, m in enumerate(mesh)]
+        k1, k2 = np.meshgrid(*edges, indexing="ij")
+        image = ax.pcolormesh(k1, k2, np.clip(values, gap_limits[0]*.5, None), cmap=gap_colormap,
+                             norm=norm, shading="flat", rasterized=True)
         for name, trim in trim_points.items():
-            point = np.array(trim) @ reciprocal
-            ax.plot(*point, marker="o", ms=6, mfc="white", mec=annotate_color[0], mew=0.9, zorder=4)
+            ax.plot(*trim, marker="o", ms=6, mfc="white", mec=grey, mew=.9, zorder=4, clip_on=False)
             if name == "Gamma":
-                ax.annotate("Γ", point, xytext=(5, 5), textcoords="offset points", fontsize=13, color=annotate_color[0])
-        zoom = extract_json(os.path.join(directory, "gap_refine_3_summary.json"))
+                ax.annotate("Γ", trim, xytext=(5, 5), textcoords="offset points", color=grey)
         gaps, _ = extract_gap_extrema(directory)
-        best = [gap for gap in gaps if gap["N"] == subspace][0]
-        minima = [basin["levels"][-1]["min_k"] for basin in zoom["basins"]] if zoom else [best["direct_gap_k"][:2]]
-        for kpoint in minima:
-            points = extract_symmetry_images(directory, kpoint) @ reciprocal
-            ax.plot(points[:, 0], points[:, 1], linestyle="none", marker="x", ms=10, mew=2.0, color=minimum_color, zorder=5)
-        ax.set_title(f"({chr(97+index)}) {label}\nN = {subspace}\nsampled min {format_gap(best['direct_gap_ev'])}", fontsize=fig_setting[3][1])
-        ax.set_aspect("equal")
-        ax.set_xlabel(r"$k_x$ (Å$^{-1}$)")
-        ax.set_ylabel(r"$k_y$ (Å$^{-1}$)")
-        ax.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
+        best = next(g for g in gaps if g["N"] == subspace)
+        zoom = extract_json(os.path.join(directory, "gap_refine_3_summary.json"))
+        minima = [b["levels"][-1]["min_k"] for b in zoom["basins"]] if zoom else [best["direct_gap_k"][:2]]
+        for point in minima:
+            points = extract_symmetry_images(directory, point)
+            ax.plot(points[:, 0], points[:, 1], ls="none", marker=r"$\odot$", ms=13,
+                    color=minimum_color, zorder=6, clip_on=False)
+        ax.set_title(f"({chr(97+index)}) {label}\nN = {subspace}: sampled min {format_gap(best['direct_gap_ev'])}",
+                     fontsize=settings[3][1])
+        ax.set(xlim=(-.54, .54), ylim=(-.54, .54), aspect="equal")
+        ax.set_xticks([-.5, 0, .5]); ax.set_yticks([-.5, 0, .5])
+        ax.set_xlabel(r"$k_1$ (units of $" + vector + r"{b}_1$)")
+        ax.set_ylabel(r"$k_2$ (units of $" + vector + r"{b}_2$)")
     for ax in list(axes.flat)[len(panels):]:
         ax.axis("off")
-
-    # Colour bar and marker legend: in the first free panel (thesis grid) or at the right and below (article row)
-    handles = [Line2D([], [], linestyle="none", marker="o", ms=6, mfc="white", mec=annotate_color[0], mew=0.9, label="TRIM"),
-               Line2D([], [], linestyle="none", marker="x", ms=10, mew=2.0, color=minimum_color,
-                      label="refined minima and\ntheir symmetry images")]
-    fig.subplots_adjust(left=0.9 / width, right=1 - right_space / width, top=1 - top_space / height, bottom=bottom_space / height,
-                        hspace=.48 if thesis else .18, wspace=.25)
+    handles = [Line2D([], [], ls="none", marker="o", ms=6, mfc="white", mec=grey, mew=.9, label="TRIM"),
+               Line2D([], [], ls="none", marker=r"$\odot$", ms=13, color=minimum_color,
+                      label="refined minima and their symmetry images")]
+    fig.subplots_adjust(left=.95/width, right=1-(.2 if free_cells else 1.05)/width,
+                        bottom=(.65 if free_cells else 1.05)/height, top=1-1.1/height,
+                        wspace=.28 if thesis else .26, hspace=.45)
     if free_cells:
         ax_free = list(axes.flat)[len(panels)]
-        colorbar = fig.colorbar(image, cax=ax_free.inset_axes([0.08, 0.62, 0.84, 0.07]), orientation="horizontal", extend="min")
-        colorbar.ax.set_label("<colorbar>")
-        colorbar.set_label(r"$E_{N+1}-E_N$ (eV)")
-        ax_free.legend(handles=handles, loc="upper center", bbox_to_anchor=(.5, .4), frameon=True, fancybox=True, facecolor="white", framealpha=.9, fontsize=params["legend.fontsize"], borderpad=.45)
+        cax = ax_free.inset_axes([.08, .62, .84, .07])
+        colorbar = fig.colorbar(image, cax=cax, orientation="horizontal", extend="min")
+        handles[1].set_label("refined minima and\ntheir symmetry images")
+        ax_free.legend(handles=handles, loc="upper center", bbox_to_anchor=(.5, .4), frameon=True,
+                       fancybox=True, facecolor="white", framealpha=.9)
     else:
-        if thesis:
-            cax = fig.add_axes([.875, bottom_space/height + .04, .02, 1-(top_space+bottom_space)/height-.08])
-            colorbar = fig.colorbar(image, cax=cax, extend="min")
-        else:
-            colorbar = fig.colorbar(image, ax=axes, shrink=0.8, pad=0.03, extend="min")
-        colorbar.ax.set_label("<colorbar>")
-        colorbar.set_label(r"$E_{N+1}-E_N$ (eV)")
-        fig.legend(handles=handles, loc="lower center", ncol=2, frameon=True, fancybox=True, facecolor="white", framealpha=.9, bbox_to_anchor=(.5, .01),
-                   fontsize=params["legend.fontsize"], borderpad=.4)
+        fig.canvas.draw()
+        boxes = [ax.get_position() for ax in axes.flat]
+        bottom, top = min(b.y0 for b in boxes), max(b.y1 for b in boxes)
+        right = max(b.x1 for b in boxes)
+        colorbar = fig.colorbar(image, cax=fig.add_axes([right+.20/width, bottom, .13/width, top-bottom]), extend="min")
+        fig.legend(handles=handles, loc="lower center", ncol=2, bbox_to_anchor=(.5, .015),
+                   frameon=True, fancybox=True, facecolor="white", framealpha=.9)
+    colorbar.ax.set_label("<colorbar>")
+    colorbar.set_label(r"$E_{N+1}-E_N$ (eV)")
 
 def plot_wcc(suptitle, matters_list=None):
     # Help information
@@ -1001,8 +1007,8 @@ def plot_wcc(suptitle, matters_list=None):
         ax.set_title(f"({chr(97+index)}) Lowest {bands} bands:{separator}Z₂ = {manifold['z2']}", fontsize=fig_setting[3][1])
         ax.set_xlim(0, 0.5)
         ax.set_ylim(0, 1)
-        ax.set_xlabel(r"$k_2$ (units of $\mathbf{b}_2$)")
-        ax.set_ylabel(r"WCC along $\mathbf{a}_1$")
+        ax.set_xlabel(r"$k_2$ (units of $\vec{b}_2$)" if figure_version() == "thesis" else r"$k_2$ (units of $\mathbf{b}_2$)")
+        ax.set_ylabel(r"WCC along $\vec{a}_1$" if figure_version() == "thesis" else r"WCC along $\mathbf{a}_1$")
         ax.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
 
     fig.subplots_adjust(left=.1, right=.98, bottom=.17, top=.84, wspace=.32)
@@ -1042,9 +1048,9 @@ def plot_gap_zoom(title, matters_list=None):
             bound = np.array([1000 * level["slope_bound_ev"] for level in basin["levels"]])
             radii.extend(radius)
             name = label + (f" basin {index + 1}" if len(zoom["basins"]) > 1 else "")
-            plt.plot(radius, gap, c=color, lw=1.8, marker=markers[index], ms=8, label=f"{name}: {gap[-1]:.3f} meV", zorder=4)
+            plt.plot(radius, gap, c=color, lw=LINE_WIDTH, marker=markers[index], ms=8, label=f"{name}: {gap[-1]:.3f} meV", zorder=4)
             positive = bound > 0
-            plt.vlines(radius[positive], bound[positive], gap[positive], color=color, lw=1.2, zorder=3)
+            plt.vlines(radius[positive], bound[positive], gap[positive], color=color, lw=LINE_WIDTH, zorder=3)
             plt.plot(radius[positive], bound[positive], linestyle="none", marker="_", ms=12, c=color, zorder=3)
 
     # Title and axes
@@ -1101,6 +1107,8 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
         qy = frac_1 * reciprocal[0, 1] + frac_2 * reciprocal[1, 1]
         points = extract_symmetry_images(directory, qpoint) @ reciprocal
         for ax, name, title in ((axes[row, 0], "chi0", r"$\chi_0(\mathbf{q})$"), (axes[row, 1], "xi", r"$\xi(\mathbf{q})$")):
+            if figure_version() == "thesis":
+                title = title.replace(r"\mathbf{q}", r"\vec{q}\,")
             values = np.roll(result[name], shift, axis=(0, 1))
             upper = np.delete(result[name].ravel(), 0).max()  # q = 0 (intraband self-nesting) excluded from the colour scale
             image = ax.pcolormesh(qx, qy, np.minimum(values, upper), cmap=sequential, vmax=upper, shading="flat", rasterized=True)
@@ -1162,7 +1170,8 @@ def plot_hse_bands(title, matters_list=None, eigen_range=None, legend_loc=True):
     annotate_color = color_sampling("Grey")
 
     # Data calling and plotting
-    for functional, width in (("PBE", 1.5), ("HSE06", 1.8)):
+    width = plt.rcParams["lines.linewidth"]
+    for functional in ("PBE", "HSE06"):
         result = curves[functional]
         energies = result["energies"] - result["vbm"][0]
         gap = result["cbm"][0] - result["vbm"][0]
@@ -1170,12 +1179,14 @@ def plot_hse_bands(title, matters_list=None, eigen_range=None, legend_loc=True):
             plt.plot(result["kpath"], energies[:, band], c=colors[functional], lw=width, linestyle="solid",
                      zorder=4 if functional == "HSE06" else 3, label=f"{functional}: indirect gap {gap:.2f} eV" if band == 0 else None)
     hse = curves["HSE06"]
-    plt.axhspan(0, hse["cbm"][0] - hse["vbm"][0], color=colors["HSE06"], alpha=0.08, lw=0, zorder=1)
-    plt.axhline(y=0, color=vbm_color[0], alpha=0.8, linestyle="--", zorder=2)
+    plt.axhspan(0, hse["cbm"][0] - hse["vbm"][0], color=colors["HSE06"], alpha=0.08, lw=0, zorder=1,
+                label="HSE06 indirect gap (shaded)")
+    # Each functional is aligned at its own VBM; zero is not the Fermi level.
+    plt.axhline(y=0, color=vbm_color[0], lw=width, alpha=0.8, linestyle="--", zorder=2)
 
     # High symmetry path
     for k_loc in positions[1:-1]:
-        plt.axvline(x=k_loc, color=annotate_color[1], linestyle="--", alpha=0.8, zorder=1)
+        plt.axvline(x=k_loc, color=annotate_color[1], lw=width, linestyle="--", alpha=0.8, zorder=1)
     plt.xticks(positions, labels)
 
     # Title, axes and ranges
@@ -1186,5 +1197,5 @@ def plot_hse_bands(title, matters_list=None, eigen_range=None, legend_loc=True):
 
     # Legend
     if legend_loc:
-        plt.legend(loc="lower right", frameon=True, framealpha=0.9)
+        plt.legend(loc="lower right", frameon=True, fancybox=True, facecolor="white", framealpha=0.9)
     plt.tight_layout()

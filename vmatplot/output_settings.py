@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 
 import matplotlib as mpl
 
+LINE_WIDTH = 1.5
+FERMI_STYLE = dict(color="#3C3C3C", linestyle="--", linewidth=LINE_WIDTH, alpha=.8)
+
 mpl.rcParams["lines.solid_capstyle"] = "round"
 mpl.rcParams["lines.dash_capstyle"]  = "round"
 mpl.rcParams["lines.solid_joinstyle"] = "round"
@@ -142,6 +145,7 @@ def canvas_setting(*args):
     if settings is None:
         return settings
     size, dpi, params, titles, legend = settings
+    params = {**params, "lines.linewidth": LINE_WIDTH}
     if figure_settings["version"] == "thesis":
         params = {**params, **thesis_params}
         if len(args) < 6:

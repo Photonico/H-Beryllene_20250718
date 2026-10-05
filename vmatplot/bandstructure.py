@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from vmatplot.output_settings import color_sampling, canvas_setting
+from vmatplot.output_settings import color_sampling, canvas_setting, FERMI_STYLE
 from vmatplot.algorithms import transpose_matrix
 from vmatplot.commons import extract_fermi, get_atoms_count, process_boundary, get_or_default
 from vmatplot.dos import extract_dos
@@ -1619,7 +1619,7 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
         fermi_last = matter[2]
 
     # Fermi energy as a horizon line
-    plt.axhline(y = 0, color=fermi_color[0], alpha=0.8, linestyle="--", label="Fermi energy", zorder=2)
+    plt.axhline(y = 0, **FERMI_STYLE, label="Fermi energy", zorder=2)
     efermi = fermi_last
     kpath_range = kpath_end-kpath_start
     # fermi_energy_text = f"Fermi energy\n{efermi:.3f} (eV)"
@@ -1762,7 +1762,7 @@ def plot_bsDoS(suptitle, matters_list=None, eigen_range=None, dos_range=None, le
         bs_fermi_last = matter[2]
 
     # Fermi energy as a horizon line
-    ax1.axhline(y = 0, color=bs_fermi_color[0], alpha=0.8, linestyle="--", label="Fermi energy", zorder=2)
+    ax1.axhline(y = 0, **FERMI_STYLE, label="Fermi energy", zorder=2)
     bs_efermi = bs_fermi_last
     kpath_range = kpath_end-kpath_start
     # bs_fermi_energy_text = f"Fermi energy\n{bs_efermi:.3f} (eV)"
@@ -1819,7 +1819,7 @@ def plot_bsDoS(suptitle, matters_list=None, eigen_range=None, dos_range=None, le
     ax2.set_yticks([])
 
     shift = dos_efermi
-    ax2.axhline(y = dos_efermi-shift, color=bs_fermi_color[0], alpha=0.8, linestyle="--", label="Fermi energy", zorder=2)
+    ax2.axhline(y = dos_efermi-shift, **FERMI_STYLE, label="Fermi energy", zorder=2)
 
     # legend
     if legend_loc is True:
@@ -1918,7 +1918,7 @@ def plot_bsPDoS(title, bs_list, pdos_list, eigen_range, dos_range, legend_loc=Fa
         bs_fermi_last = matter[2]
 
     # Fermi energy as a horizon line
-    ax1.axhline(y = 0, color=bs_fermi_color[0], alpha=0.8, linestyle="--", label="Fermi energy", zorder=2)
+    ax1.axhline(y = 0, **FERMI_STYLE, label="Fermi energy", zorder=2)
     bs_efermi = bs_fermi_last
     kpath_range = kpath_end-kpath_start
     # bs_fermi_energy_text = f"Fermi energy\n{bs_efermi:.3f} (eV)"
@@ -1963,7 +1963,7 @@ def plot_bsPDoS(title, bs_list, pdos_list, eigen_range, dos_range, legend_loc=Fa
     ax2.set_xticklabels(["0", f"{dos_range/2:.1f}", f"{dos_range:.1f}"])
     ax2.set_yticks([])
     if dos_efermi is not None:
-        ax2.axhline(y=0, linestyle="--", color=bs_fermi_color[0], alpha=0.8,
+        ax2.axhline(y=0, **FERMI_STYLE,
                     label="Fermi energy", zorder=2)
     
     # Legend settings
@@ -2182,7 +2182,7 @@ def _plot_bandstructure_spin(title, matters_list=None, eigen_range=None, legend_
     if kpath_start is None or kpath_end is None:
         raise ValueError("No bandstructure matter was provided.")
 
-    plt.axhline(y=0, color=fermi_color[0], alpha=0.8, linestyle="--",
+    plt.axhline(y=0, **FERMI_STYLE,
                 label="Fermi energy", zorder=2)
 
     plt.title(f"{title}")
@@ -2375,7 +2375,7 @@ def plot_bandstructure_spin(title, matters_list=None, state_label=None, eigen_ra
         reference_directory = matter[-1]
 
     # Fermi energy as a horizon line
-    plt.axhline(y=0, color=fermi_color[0], alpha=0.8, linestyle="--", label="Fermi energy", zorder=2)
+    plt.axhline(y=0, **FERMI_STYLE, label="Fermi energy", zorder=2)
 
     # Figure title and labels
     plt.title(f"{title}")

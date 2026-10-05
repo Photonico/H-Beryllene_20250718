@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from vmatplot.commons import extract_fermi, get_or_default, get_elements
-from vmatplot.output_settings import color_sampling, canvas_setting
+from vmatplot.output_settings import color_sampling, canvas_setting, FERMI_STYLE
 
 import matplotlib as mpl
 
@@ -2756,7 +2756,7 @@ def plot_single_pdos(title, matters_list=None, x_range=None, y_top=None, fermi_l
         return
 
     # Add Fermi energy line
-    plt.axvline(x=0, linestyle="--", color=fermi_color[0], alpha=0.8, label="Fermi energy")
+    plt.axvline(x=0, **FERMI_STYLE, label="Fermi energy")
 
     plt.title(title)
     plt.xlabel("Energy (eV)")
