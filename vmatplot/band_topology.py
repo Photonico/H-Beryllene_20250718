@@ -15,7 +15,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap, LogNorm
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap, LogNorm, Normalize
+from matplotlib.ticker import MaxNLocator
 from matplotlib.lines import Line2D
 from matplotlib.offsetbox import AnnotationBbox, DrawingArea
 from matplotlib.patches import Circle, PathPatch
@@ -41,27 +42,34 @@ superseded_ids = {"beta"}
 
 # Blue[1], Orange[1] and Cyan[1] pass the colour-blind all-pairs check (worst ΔE 15.4, tritan 6.1);
 # Orange is below 3:1 on white, so it is always direct-labelled.
-# Six segments: smooth colour inside each segment, a small jump between segments.
-# RGB anchors and the interpolated palette use multiples of five.
-heatmap_segments = np.array([
-    [(255, 255, 255), (230, 245, 250)],
-    [(210, 235, 245), (185, 225, 240)],
-    [(155, 210, 230), (120, 190, 220)],
-    [(85, 165, 205), (55, 145, 190)],
-    [(30, 120, 175), (15, 90, 155)],
-    [(10, 60, 125), (5, 30, 85)],
-])
-heatmap_rgb = 5 * np.round(np.concatenate([np.linspace(a, b, 32) for a, b in heatmap_segments]) / 5)
-response_colormap = ListedColormap(heatmap_rgb / 255, name="response_steps")
-gap_colormap = response_colormap.reversed(name="direct_gap_steps")
+# White to navy; every RGB component is a multiple of five.
+heatmap_rgb = np.array([(255, 255, 255), (210, 235, 245), (155, 210, 230),
+                        (85, 165, 205), (30, 120, 175), (10, 60, 125), (5, 30, 85)])
 
 
-def style_heatmap_colorbar(colorbar):
-    """Outline the six gradient segments without flattening their colours."""
+def make_heatmap_colormap(norm, ticks, reverse=False):
+    """Small colour jumps at major ticks, with a gradient inside each interval."""
+    positions = np.asarray(norm(ticks))
+    boundaries = np.r_[0., positions[(positions > 0) & (positions < 1)], 1.]
+    x = np.linspace(0, 1, 4096)
+    interval = np.clip(np.searchsorted(boundaries, x, side="right") - 1, 0, len(boundaries) - 2)
+    low, high = boundaries[interval], boundaries[interval + 1]
+    # Compress each interval slightly, leaving a visible colour step at its boundary.
+    start = np.where(low == 0, 0, low + .08 * (high - low))
+    end = np.where(high == 1, 1, high - .08 * (high - low))
+    progress = start + (x - low) / (high - low) * (end - start)
+    anchors = heatmap_rgb[::-1] if reverse else heatmap_rgb
+    rgb = np.column_stack([np.interp(progress, np.linspace(0, 1, len(anchors)), channel)
+                           for channel in anchors.T])
+    return ListedColormap(rgb / 255, name="tick_aligned_steps")
+
+
+def style_heatmap_colorbar(colorbar, ticks):
     colorbar.ax.set_label("<colorbar>")
-    for fraction in np.linspace(0, 1, len(heatmap_segments)+1)[1:-1]:
-        colorbar.ax.plot([0, 1], [fraction, fraction], transform=colorbar.ax.transAxes,
-                         color="#787878", lw=.5, clip_on=False)
+    colorbar.set_ticks(ticks)
+    colorbar.ax.minorticks_off()
+    colorbar.ax.tick_params(which="both", direction="in")
+    colorbar.ax.grid(False)
 
 ## Data extraction
 
@@ -927,6 +935,9 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
     free_cells = rows * columns - len(panels)
     gap_limits = gap_range if gap_range is not None else (1e-2, 10)
     norm = LogNorm(vmin=gap_limits[0], vmax=gap_limits[1])
+    ticks = np.logspace(np.ceil(np.log10(gap_limits[0])), np.floor(np.log10(gap_limits[1])),
+                        int(np.floor(np.log10(gap_limits[1])) - np.ceil(np.log10(gap_limits[0]))) + 1)
+    cmap = make_heatmap_colormap(norm, ticks, reverse=True)
     settings = topology_canvas("gap_maps", figure_version())
     width, height = settings[0]
     if not thesis:
@@ -946,7 +957,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
         values = np.roll(grid, shift, axis=(0, 1))
         edges = [(np.arange(m+1)-shift[i]-.5)/m for i, m in enumerate(mesh)]
         k1, k2 = np.meshgrid(*edges, indexing="ij")
-        image = ax.pcolormesh(k1, k2, np.clip(values, gap_limits[0]*.5, None), cmap=gap_colormap,
+        image = ax.pcolormesh(k1, k2, np.clip(values, gap_limits[0]*.5, None), cmap=cmap,
                              norm=norm, shading="flat", rasterized=True)
         for name, trim in trim_points.items():
             ax.plot(*trim, marker="o", ms=6, mfc="white", mec=grey, mew=.9, zorder=4, clip_on=False)
@@ -963,19 +974,15 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
         system = f"({chr(97+index)}) {label}"
         note = f"N = {subspace}: sampled min {format_gap(best['direct_gap_ev'])}"
         if thesis:
-            box = dict(boxstyle="round", fc="white", ec=plt.rcParams["legend.edgecolor"], alpha=.9)
-            # Leave the upper and lower refined minima visible in 2H-alpha.
-            if "2H-α" in label:
-                system = system.replace("-beryllene", "-\nberyllene")
-            title_x = .11 if "2H-β" in label else .025
-            note_y = .16 if "2H-α" in label else .025
-            ax.text(title_x, .93, system, transform=ax.transAxes, va="top", zorder=8,
+            box = dict(boxstyle="round", fc="white", ec=plt.rcParams["legend.edgecolor"], alpha=.75)
+            ax.text(.025, .975, system, transform=ax.transAxes, va="top", zorder=8,
                     fontsize=settings[3][1], bbox=box)
-            ax.text(.025, note_y, note, transform=ax.transAxes, va="bottom", zorder=8,
+            ax.text(.025, .025, note, transform=ax.transAxes, va="bottom", zorder=8,
                     fontsize=STYLES["thesis"]["note"], bbox=box)
         else:
             ax.set_title(system + "\n" + note, fontsize=settings[3][1])
-        ax.set(xlim=(-.54, .54), ylim=(-.54, .54), aspect="equal")
+        extent = .70 if thesis else .54
+        ax.set(xlim=(-extent, extent), ylim=(-extent, extent), aspect="equal")
         ax.set_xticks([-.5, 0, .5]); ax.set_yticks([-.5, 0, .5])
         ax.set_xlabel(r"$k_1$ (units of $" + vector + r"{b}_1$)")
         if not thesis or index % columns == 0:
@@ -1009,7 +1016,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
         colorbar = fig.colorbar(image, cax=fig.add_axes([right+.20/width, bottom, .13/width, top-bottom]), extend="both", extendfrac=.04)
         fig.legend(handles=handles, loc="lower center", ncol=2, bbox_to_anchor=(.5, .015),
                    frameon=True, fancybox=True, facecolor="white", framealpha=.9)
-    style_heatmap_colorbar(colorbar)
+    style_heatmap_colorbar(colorbar, ticks)
     colorbar.set_label(r"$E_{N+1}-E_N$ (eV)")
 
 def plot_wcc(suptitle, matters_list=None):
@@ -1117,12 +1124,12 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
         print(help_info)
         return
 
-    # Keep the Cartesian reciprocal-cell geometry and place the two independent colour bars together on the right.
+    # Keep the Cartesian reciprocal-cell geometry and place each independent colour bar beside its panel.
     ratio = max(np.ptp(corners[:, 0]) / np.ptp(corners[:, 1]) for matter in matters_list
                 for corners in [np.array([[0.5, 0.5], [0.5, -0.5], [-0.5, 0.5], [-0.5, -0.5]]) @ extract_reciprocal_2d(matter[1])])
-    panel_height, panel_gap = 4.8, .45
+    panel_height, panel_gap = 4.8, 2.0
     panel_width = panel_height * ratio
-    width, height = 2 * panel_width + 3.7, 6.5 * len(matters_list)
+    width, height = 2 * panel_width + 4.1, 6.1 * len(matters_list)
     fig_setting = canvas_setting(width, height)
     plt.rcParams.update(fig_setting[2])
     fig = plt.figure(figsize=fig_setting[0], dpi=fig_setting[1])
@@ -1139,7 +1146,7 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
         qx = frac_1 * reciprocal[0, 0] + frac_2 * reciprocal[1, 0]
         qy = frac_1 * reciprocal[0, 1] + frac_2 * reciprocal[1, 1]
         points = extract_symmetry_images(directory, qpoint) @ reciprocal
-        bottom = .65 + (len(matters_list) - row - 1) * 6.5
+        bottom = .65 + (len(matters_list) - row - 1) * 6.1
         for column, (name, title, unit) in enumerate((("chi0", r"$\chi_0(\mathbf{q})$", r"eV$^{-1}$"),
                                                    ("xi", r"$\xi(\mathbf{q})$", r"eV$^{-2}$"))):
             if figure_version() == "thesis":
@@ -1148,22 +1155,28 @@ def plot_lindhard_susceptibility(suptitle, matters_list=None, sigma=0.05):
             ax = fig.add_axes([left / width, bottom / height, panel_width / width, panel_height / height])
             values = np.roll(result[name], shift, axis=(0, 1))
             upper = np.delete(result[name].ravel(), 0).max()  # q = 0 (intraband self-nesting) excluded from the colour scale
-            image = ax.pcolormesh(qx, qy, np.minimum(values, upper), cmap=response_colormap, vmax=upper,
+            clipped = np.minimum(values, upper)
+            norm = Normalize(vmin=clipped.min(), vmax=upper)
+            ticks = MaxNLocator(nbins=5).tick_values(norm.vmin, norm.vmax)
+            ticks = ticks[(ticks >= norm.vmin) & (ticks <= norm.vmax)]
+            image = ax.pcolormesh(qx, qy, clipped, cmap=make_heatmap_colormap(norm, ticks), norm=norm,
                                  shading="flat", rasterized=True)
             ax.plot(points[:, 0], points[:, 1], linestyle="none", marker=r"$\odot$", ms=13,
                     color="#FF4600", zorder=5)
             ax.plot(0, 0, marker="o", ms=6, mfc="white", mec=annotate_color[0], mew=.9, zorder=4)
-            ax.set_title(f"{label}\n{title}, σ = {sigma:g} eV", fontsize=fig_setting[3][1] - 4)
+            ax.text(.04, .97, f"{title}\nσ = {sigma:g} eV", transform=ax.transAxes, ha="left", va="top",
+                    fontsize=fig_setting[3][1] - 4,
+                    bbox=dict(boxstyle="round", facecolor="white", edgecolor="grey", alpha=.75), zorder=6)
             ax.set_aspect("equal")
             ax.set_xlabel(r"$q_x$ (Å$^{-1}$)")
-            if column == 0:
-                ax.set_ylabel(r"$q_y$ (Å$^{-1}$)")
+            ax.set_ylabel(r"$q_y$ (Å$^{-1}$)")
             ax.tick_params(direction="in", which="both", top=True, right=True, bottom=True, left=True)
-            bar_left = .80 + 2 * panel_width + panel_gap + .28 + column * 1.02
+            bar_left = left + panel_width + .20
             cax = fig.add_axes([bar_left / width, bottom / height, .16 / width, panel_height / height])
-            colorbar = fig.colorbar(image, cax=cax, extend="both", extendfrac=.04)
+            colorbar = fig.colorbar(image, cax=cax, extend="both", extendfrac=.04, ticks=ticks)
             colorbar.set_label(f"{title} ({unit})")
-            style_heatmap_colorbar(colorbar)
+            style_heatmap_colorbar(colorbar, ticks)
+
 
 def plot_hse_bands(title, matters_list=None, eigen_range=None, legend_loc=True):
     # Help information
@@ -1239,5 +1252,5 @@ def plot_hse_bands(title, matters_list=None, eigen_range=None, legend_loc=True):
 
     # Legend
     if legend_loc:
-        plt.legend(loc="lower right", frameon=True, fancybox=True, facecolor="white", framealpha=0.9)
+        plt.legend(loc="lower right", frameon=True, fancybox=True, facecolor="white", framealpha=.75)
     plt.tight_layout()
