@@ -1,0 +1,16 @@
+#!/bin/bash
+#PBS -N topo_bands
+#PBS -q cmt
+#PBS -l select=1:ncpus=24:mpiprocs=24:mem=48gb
+#PBS -l walltime=2:00:00
+#PBS -j oe
+# Rerun the fixed-density SOC band path of one structure with the KPOINTS already written to <dir>/bands, then validate it.
+# Submit from 9.0_topology: qsub -N bands_<id> -v STRUCTURE=<dir>,ID=<structure id> tools/bands_path.pbs
+set -euo pipefail
+source '/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology/tools/modules.sh'
+campaign='/cmt2/lniu6305/H-Beryllene_20250718/9.0_topology'
+python="$campaign/packages/soc_topology/venv/bin/python"
+cd "$campaign/$STRUCTURE/bands"
+cp ../scf/CHGCAR CHGCAR
+mpirun -np "$(wc -l < "$PBS_NODEFILE")" '/cmt2/ocon2505/VASP/vasp.6.5.0/bin/vasp_ncl' > vasp.log 2>&1
+"$python" -B "$campaign/tools/check_topology_outputs.py" . --manifest "$campaign/$STRUCTURE/manifest.json" --structure-id "$ID"
