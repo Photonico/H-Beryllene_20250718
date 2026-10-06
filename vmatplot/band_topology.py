@@ -149,9 +149,17 @@ def extract_band_path(directory):
     steps = np.linalg.norm(np.diff(cartesian, axis=0), axis=1)
     steps[per_segment - 1::per_segment] = 0.0  # segment ends are repeated (or jump)
     kpath = np.concatenate([[0.0], np.cumsum(steps)])
+    # Distorted hexagonal cells (neither hexagonal nor square): the TRIM on the path are named as in the parity tables,
+    # X = (1/2, 0), Y = (0, 1/2), M = (1/2, 1/2); the KPOINTS labels follow the hexagonal parent (M = (1/2, 0))
+    reciprocal = extract_reciprocal_2d(directory)
+    lengths = np.linalg.norm(reciprocal, axis=1)
+    cosine = abs(reciprocal[0] @ reciprocal[1]) / lengths.prod()
+    distorted = abs(lengths[0] - lengths[1]) > 1e-3 * lengths[0] or min(abs(cosine - 0.5), cosine) > 1e-3
     positions, labels = [], []
     for segment in range(len(kpoints) // per_segment):
         for index, label in ((segment * per_segment, ends[2 * segment]), ((segment + 1) * per_segment - 1, ends[2 * segment + 1])):
+            trim = identify_trim(kpoints[index]) if distorted else None
+            label = {"Gamma": "Γ"}.get(trim, trim) if trim else label
             if positions and abs(kpath[index] - positions[-1]) < 1e-9:
                 if label != labels[-1]:
                     labels[-1] += "|" + label

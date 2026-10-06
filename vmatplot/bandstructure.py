@@ -1506,6 +1506,16 @@ def extract_weights_bands_spinUp(directory, start_label=None, end_label=None):
 def extract_weights_bands_spinDown(directory, start_label=None, end_label=None):
     return extract_weights_bands(directory, "spin2", start_label, end_label)
 
+# Fermi energy for a band structure: the E-fermi of a non-self-consistent line-mode run (ICHARG = 11) is obtained by
+# occupying only the path k-points, so it can differ from the self-consistent value by tenths of an eV.
+# reference: None (the band run itself), the directory of the self-consistent run, or a value in eV.
+def extract_reference_fermi(directory, reference=None):
+    if reference is None:
+        return extract_fermi(directory)
+    if isinstance(reference, (int, float)):
+        return float(reference)
+    return extract_fermi(reference)
+
 # plot bandstructure
 def create_matters_bs(matters_list):
     # Ensure input is a list of lists
@@ -1522,42 +1532,43 @@ def create_matters_bs(matters_list):
         weight = get_or_default(optional[2] if len(optional) > 2 else None, 1.5)
         alpha = get_or_default(optional[3] if len(optional) > 3 else None, 1.0)
         current_tolerance = get_or_default(optional[4] if len(optional) > 4 else None, 0)
+        fermi_reference = optional[5] if len(optional) > 5 else None
         # Band structure plotting style: monocolor
         if bstype.lower() in ["monocolor", "monocolor nonpolarized"]:
-            fermi_energy = extract_fermi(directory)
+            fermi_energy = extract_reference_fermi(directory, fermi_reference)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
             bands = extract_eigenvalues_bands_nonpolarized(directory)
             kpath, bands = _apply_breaks_insert_nan(kpath, breaks, bands)
             matters.append([bstype, label, fermi_energy, kpath, bands, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["monocolor spin up", "spin up monocolor"]:
-            fermi_energy = extract_fermi(directory)
+            fermi_energy = extract_reference_fermi(directory, fermi_reference)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
             bands = extract_eigenvalues_bands_spinUp(directory)
             kpath, bands = _apply_breaks_insert_nan(kpath, breaks, bands)
             matters.append([bstype, label, fermi_energy, kpath, bands, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["monocolor spin down", "spin down monocolor"]:
-            fermi_energy = extract_fermi(directory)
+            fermi_energy = extract_reference_fermi(directory, fermi_reference)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
             bands = extract_eigenvalues_bands_spinDown(directory)
             kpath, bands = _apply_breaks_insert_nan(kpath, breaks, bands)
             matters.append([bstype, label, fermi_energy, kpath, bands, color, lstyle, weight, alpha, current_tolerance])
         # Band structure plotting style: bands
         elif bstype.lower() in ["bands", "bands nonpolarized"]:
-            fermi_energy = extract_fermi(directory)
+            fermi_energy = extract_reference_fermi(directory, fermi_reference)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
             conduction_bands = extract_eigenvalues_conductionBands_nonpolarized(directory, current_tolerance)
             valence_bands = extract_eigenvalues_valenceBands_nonpolarized(directory, current_tolerance)
             kpath, conduction_bands, valence_bands = _apply_breaks_insert_nan(kpath, breaks, conduction_bands, valence_bands)
             matters.append([bstype, label, fermi_energy, kpath, conduction_bands, valence_bands, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["bands spin up", "spin up bands"]:
-            fermi_energy = extract_fermi(directory)
+            fermi_energy = extract_reference_fermi(directory, fermi_reference)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
             conduction_bands = extract_eigenvalues_conductionBands_spinUp(directory, current_tolerance)
             valence_bands = extract_eigenvalues_valenceBands_spinUp(directory, current_tolerance)
             kpath, conduction_bands, valence_bands = _apply_breaks_insert_nan(kpath, breaks, conduction_bands, valence_bands)
             matters.append([bstype, label, fermi_energy, kpath, conduction_bands, valence_bands, color, lstyle, weight, alpha, current_tolerance])
         elif bstype.lower() in ["bands spin down", "spin down bands"]:
-            fermi_energy = extract_fermi(directory)
+            fermi_energy = extract_reference_fermi(directory, fermi_reference)
             kpath, breaks = extract_kpath(directory, return_breaks=True)
             conduction_bands = extract_eigenvalues_conductionBands_spinDown(directory, current_tolerance)
             valence_bands = extract_eigenvalues_valenceBands_spinDown(directory, current_tolerance)
@@ -1571,7 +1582,9 @@ def plot_bandstructure(title, matters_list=None, eigen_range=None, legend_loc=Fa
     Usage: plot_bandstructure
         arg[0]: title;
         arg[1]: the range of eigenvalues, from -arg[1] to arg[1];
-        arg[2]: matters list;
+        arg[2]: matters list, [[type, label, band directory, color, linestyle, linewidth, alpha, tolerance, Fermi reference], ...];
+                Fermi reference (optional): the self-consistent directory, or a value in eV, whose Fermi energy is the zero;
+                use it for non-self-consistent band runs, whose own E-fermi is obtained from the path k-points only;
         arg[3]: legend location;
     """
     if title in ["help", "Help"]:
