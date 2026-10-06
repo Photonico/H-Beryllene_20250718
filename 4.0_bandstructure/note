@@ -1,0 +1,32 @@
+Band paths and Fermi levels of the PBE band structures (2026-10-06)
+
+1H-beta and 2H-beta: path through all four TRIM
+- b-Beryllene_b_trim (1H-beta) and b-Beryllene_bb_trim (2H-beta): non-self-consistent PBE runs (ICHARG = 11) on the path
+  Gamma-X-M-Gamma-Y-M'-Gamma, X = (1/2, 0), M = (1/2, 1/2), Y = (0, 1/2), M' = (-1/2, 1/2), 60 points per segment, the same
+  path as the phonons in 3.7_phonon_dispersion_with_hydrogen_pbe. INCAR as in ../b-Beryllene_b and ../b-Beryllene_bb, plus
+  NBANDS = 24, KPAR = 4, NCORE = 6, LCHARG = LWAVE = .FALSE.; jobs 45819 and 45820 (24 cores, about 1 min each, exit 0).
+- CHGCAR is a symlink to ../b-Beryllene_b/CHGCAR and ../b-Beryllene_bb/CHGCAR (the self-consistent densities of
+  2.5_self_consistent_with_hydrogen/b-Beryllene_h and b-Beryllene_hh, same geometry); LCHARG = .FALSE. keeps them unchanged.
+- Why: the *_ollie paths K-Gamma-M|M-K-K'-M'-Gamma-K' were written for a cell with an angle of 60 degrees between a1 and a2.
+  In the actual cells (117.0 degrees for 1H-beta, 132.7 degrees for 2H-beta) their "K" = (0.315, 0.630) and (0.298, 0.702) is
+  not a zone corner but a general point inside the zone, and the labels did not match the phonon paths or the Brillouin-zone
+  sketch. The *_ollie runs are kept but no longer plotted (notebooks 4.1 and 4.3 read the *_trim runs).
+
+Fermi level of every PBE band plot
+- The E-fermi of a non-self-consistent line-mode run is obtained by occupying only the path k-points. It differs from the
+  self-consistent value by 0.05-0.08 eV (hcp, alpha, beta, cubic trilayer), 0.40 eV (bcc), 0.58 eV (1H-beta, *_ollie) and
+  0.77 eV (2H-beta, *_ollie); the earlier band figures were shifted by these amounts.
+- plot_bandstructure now takes the self-consistent run as the last entry of each bs_list (extract_reference_fermi in
+  vmatplot/bandstructure.py): 2.4_self_consistent/<structure> for the pristine phases and
+  2.5_self_consistent_with_hydrogen/b-Beryllene_h, b-Beryllene_hh for 1H-beta and 2H-beta. 2H-alpha is aligned at the VBM.
+
+| Structure      | band run E-fermi (eV) | self-consistent E-fermi (eV) |
+| hcp            |  7.0380               |  6.9540                      |
+| bcc            |  8.3551               |  7.9512                      |
+| alpha          | -4.2180               | -4.2663                      |
+| beta P-3m1     | -3.9792               | -4.0545                      |
+| cubic trilayer | -3.1993               | -3.2683                      |
+| 1H-beta        | -3.0466 (ollie), -3.5099 (trim) | -3.6302            |
+| 2H-beta        | -2.3315 (ollie), -4.0040 (trim) | -3.0970            |
+
+The self-consistent values agree with the relaxations, the PDoS runs and the SOC SCF of 9.0_topology within 0.05 eV.
