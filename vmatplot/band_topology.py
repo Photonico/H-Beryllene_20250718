@@ -36,7 +36,7 @@ mpl.rcParams["lines.dash_joinstyle"]  = "round"
 
 # Four 2D TRIM in the reciprocal basis of the DFT cell
 trim_points = {"Gamma": (0.0, 0.0), "X": (0.5, 0.0), "Y": (0.0, 0.5), "M": (0.5, 0.5)}
-structure_labels = {"alpha": "α", "beta": "β (P-1, superseded)", "beta_p3m1": "β", "st": "cubic trilayer", "alpha_2h": "2H-α", "beta_1h": "1H-β", "beta_2h": "2H-β"}
+structure_labels = {"alpha": "α", "beta": "β (P-1, superseded)", "beta_p3m1": "β", "st": "trilayer cubic", "alpha_2h": "2H-α", "beta_1h": "1H-β", "beta_2h": "2H-β"}
 # Manifest entries left out of the tables: the P-1 β cell is an artefact of an 11×11-k relaxation (P-3m1 at 27×27 k)
 superseded_ids = {"beta"}
 
@@ -958,8 +958,6 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
     vector = r"\vec" if thesis else r"\mathbf"
     for index, (ax, (matter, subspace)) in enumerate(zip(axes.flat, panels)):
         label, directory = matter[:2]
-        if thesis and label == "cubic beryllene trilayer":
-            label = "cubic trilayer"
         grid, mesh = extract_direct_gap_grid(directory, subspace)
         shift = [m // 2 for m in mesh]
         values = np.roll(grid, shift, axis=(0, 1))
@@ -1100,7 +1098,8 @@ def plot_gap_zoom(title, matters_list=None):
             bound = np.array([1000 * level["slope_bound_ev"] for level in basin["levels"]])
             radii.extend(radius)
             name = label + (f" basin {index + 1}" if len(zoom["basins"]) > 1 else "")
-            plt.plot(radius, gap, c=color, lw=LINE_WIDTH, marker=markers[index], ms=8, label=f"{name}: {gap[-1]:.3f} meV", zorder=4)
+            # Legend without values: the minimum over all samples is reported with the sampled gap maps and band figures
+            plt.plot(radius, gap, c=color, lw=LINE_WIDTH, marker=markers[index], ms=8, label=name, zorder=4)
             positive = bound > 0
             plt.vlines(radius[positive], bound[positive], gap[positive], color=color, lw=LINE_WIDTH, zorder=3)
             plt.plot(radius[positive], bound[positive], linestyle="none", marker="_", ms=12, c=color, zorder=3)
