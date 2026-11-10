@@ -96,12 +96,14 @@ def style_topology_figure(fig, version):
     return fig
 
 
-def draw_topology_figure(plotter, filename, *args, figure_version, readers=(), preview=True, **kwargs):
-    """Read fresh inputs once per pair, redraw both layouts, and save both PDFs."""
+def draw_topology_figure(plotter, filename, *args, figure_version, readers=(), preview=True,
+                         filename_suffix="", **kwargs):
+    """Read fresh inputs once per pair and save both layouts with an optional final suffix."""
     for reader in readers:
         reader.cache_clear()
     path = Path(filename).with_suffix(".pdf")
-    paths = (path, path.with_name(path.stem + "_thesis.pdf"))
+    paths = tuple(path.with_name(path.stem + layout + filename_suffix + ".pdf")
+                  for layout in ("", "_thesis"))
     previous = figure_version()
     try:
         for version, output in zip(("article", "thesis"), paths):

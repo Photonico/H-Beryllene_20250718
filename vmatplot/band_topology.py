@@ -18,6 +18,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap, LogNorm, Normalize
 from matplotlib.ticker import MaxNLocator
 from matplotlib.lines import Line2D
+from matplotlib.path import Path as MarkerPath
 from matplotlib.offsetbox import AnnotationBbox, DrawingArea
 from matplotlib.patches import Circle, PathPatch
 from matplotlib.textpath import TextPath
@@ -933,8 +934,22 @@ def annotate_parities(ax, kpath, eigenvalues, kpoints, parity, text_color):
             annotation._parity_signs = signs
             ax.add_artist(annotation)
 
-def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
-    """Direct gaps in reciprocal fractions: k = k1*b1 + k2*b2; minima are sampled values."""
+def _gap_minimum_marker_style(kind):
+    """Use the same minimum marker in the map and legend; lengths are in display space."""
+    if kind == "circle":
+        return dict(marker=r"$\odot$", ms=13, color="#FF4600")
+    arms = {"cross": 4, "hex": 6}
+    if kind not in arms:
+        raise ValueError("minimum_marker must be 'circle', 'cross' or 'hex'")
+    angles = np.arange(arms[kind]) * 2 * np.pi / arms[kind]
+    directions = np.column_stack((np.cos(angles), np.sin(angles)))
+    vertices = np.stack((.14 * directions, .5 * directions), axis=1).reshape(-1, 2)
+    marker = MarkerPath(vertices, np.tile([MarkerPath.MOVETO, MarkerPath.LINETO], arms[kind]))
+    return dict(marker=marker, ms=13, mfc="none", mec="#FF6400", mew=1.5, color="#FF6400")
+
+
+def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None, minimum_marker="circle"):
+    """Direct gaps in reciprocal fractions; optional cross/hex markers label sampled minima."""
     matters = create_matters_topology(matters_list)
     panels = [(matter, subspace) for matter in matters for subspace in matter[3]]
     thesis = figure_version() == "thesis"
@@ -954,7 +969,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
     fig, axes = plt.subplots(rows, columns, figsize=(width, height), dpi=settings[1], squeeze=False)
     fig.suptitle(suptitle, fontsize=settings[3][0], y=1-.16/height, va="top")
     grey = color_sampling("Grey")[0]
-    minimum_color = "#FF4600"
+    minimum_style = _gap_minimum_marker_style(minimum_marker)
     vector = r"\vec" if thesis else r"\mathbf"
     for index, (ax, (matter, subspace)) in enumerate(zip(axes.flat, panels)):
         label, directory = matter[:2]
@@ -975,8 +990,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
         minima = [b["levels"][-1]["min_k"] for b in zoom["basins"]] if zoom else [best["direct_gap_k"][:2]]
         for point in minima:
             points = extract_symmetry_images(directory, point)
-            ax.plot(points[:, 0], points[:, 1], ls="none", marker=r"$\odot$", ms=13,
-                    color=minimum_color, zorder=6, clip_on=False)
+            ax.plot(points[:, 0], points[:, 1], ls="none", **minimum_style, zorder=6, clip_on=False)
         system = f"({chr(97+index)}) {label}"
         note = f"N = {subspace}: sampled min {format_gap(best['direct_gap_ev'])}"
         if thesis:
@@ -999,7 +1013,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None):
     for ax in list(axes.flat)[len(panels):]:
         ax.axis("off")
     handles = [Line2D([], [], ls="none", marker="o", ms=6, mfc="white", mec=grey, mew=.9, label="TRIM"),
-               Line2D([], [], ls="none", marker=r"$\odot$", ms=13, color=minimum_color,
+               Line2D([], [], ls="none", **minimum_style,
                       label="refined minima and their symmetry images")]
     fig.subplots_adjust(left=(.75 if thesis else .95)/width,
                         right=1-(.18 if free_cells else (1.0 if thesis else 1.3))/width,
