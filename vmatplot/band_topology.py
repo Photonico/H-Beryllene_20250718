@@ -830,6 +830,7 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
             ax_bands.plot(kpath, eigenvalues[:, band], c=annotate_color[2], lw=LINE_WIDTH, zorder=3)
         ax_bands.axhline(y=0, **FERMI_STYLE, zorder=2)
         ax_bands.set_ylim(*energy_window)
+        ax_bands.set_xlim(kpath[0], kpath[-1])
 
         # Kramers-pair parities at the TRIM on the path
         parity = extract_parity(directory)
@@ -868,7 +869,6 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
         ax_bands.set_ylim(energy_window[0], energy_window[1])
         for annotation in ax_bands.texts:
             annotation.set_visible(energy_window[0] <= annotation.get_position()[1] <= energy_window[1])
-        ax_bands.set_xlim(kpath[0], kpath[-1])
         ax_gap.set_ylim(3e-4, 30)
         ax_gap.set_xticks(positions)
         ax_gap.set_xticklabels(labels)
@@ -903,36 +903,56 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
             ax.yaxis.set_label_coords(-.16 if thesis else -.15, .5)
 
 def annotate_parities(ax, kpath, eigenvalues, kpoints, parity, text_color):
-    # Centre the actual glyph outlines, including mixed signs, in each circle.
+    # One circle per Kramers pair; move labels horizontally, never in energy.
+    glyphs = {format_sign(value): TextPath((0, 0), format_sign(value),
+              size=STYLES[figure_version()]["note"], prop=FontProperties(family="serif"))
+              for value in (-1, 1)}
+    side = max(max(glyph.get_extents().width, glyph.get_extents().height)
+               for glyph in glyphs.values()) + 5
+    radius, gap = (side + .8) / 2, 2
+    points_per_pixel = 72 / ax.figure.dpi
+    left, right = ax.bbox.x0 * points_per_pixel, ax.bbox.x1 * points_per_pixel
+    labels = []
     for index in range(len(kpoints)):
         name = identify_trim(kpoints[index])
         if name is None or (index > 0 and abs(kpath[index] - kpath[index - 1]) < 1e-12):
             continue
         pairs = [p for block in parity["trims"][name]["blocks"] for p in block["kramers_pair_parities_unordered_within_block"]]
-        groups = []
         for pair, value in enumerate(pairs):
             energy = eigenvalues[index, 2 * pair:2 * pair + 2].mean()
-            if groups and energy - groups[-1][0] < .45:
-                groups[-1][1].append(value)
-            else:
-                groups.append([energy, [value]])
-        for energy, values in groups:
             if not ax.get_ylim()[0] <= energy <= ax.get_ylim()[1]:
                 continue
-            signs = ",".join(format_sign(v) for v in values)
-            glyph = TextPath((0, 0), signs, size=STYLES[figure_version()]["note"],
-                             prop=FontProperties(family="serif"))
-            bounds = glyph.get_extents()
-            side = max(bounds.width, bounds.height) + 5
-            drawing = DrawingArea(side, side, 0, 0)
-            drawing.add_artist(Circle((side/2, side/2), side/2, fc="white", ec=text_color, lw=.8, alpha=.9))
-            transform = Affine2D().translate(side/2-(bounds.x0+bounds.x1)/2, side/2-(bounds.y0+bounds.y1)/2)
-            drawing.add_artist(PathPatch(glyph.transformed(transform), fc=text_color, lw=0))
-            offset = (-1 if kpath[index] > .97*kpath[-1] else 1) * (side/2+2)
-            annotation = AnnotationBbox(drawing, (kpath[index], energy), xybox=(offset, 0),
-                                       boxcoords="offset points", frameon=False, pad=0, zorder=8)
-            annotation._parity_signs = signs
-            ax.add_artist(annotation)
+            x, y = ax.transData.transform((kpath[index], energy)) * points_per_pixel
+            labels.append((x, y, kpath[index], energy, format_sign(value)))
+    # Reserve endpoint labels before placing nearby internal-TRIM labels.
+    labels.sort(key=lambda label: min(label[0] - left, right - label[0]))
+    placed = []
+    for x, y, anchor, energy, sign in labels:
+        direction = -1 if x > right - .03 * (right - left) else 1
+        candidates = [x + direction * (radius + gap), x - direction * (radius + gap),
+                      left + radius, right - radius]
+        for px, py in placed:
+            if abs(y - py) < 2 * radius + gap:
+                clearance = math.sqrt((2 * radius + gap)**2 - (y - py)**2)
+                candidates.extend((px - clearance, px + clearance))
+        available = [cx for cx in candidates if left + radius <= cx <= right - radius
+                     and all(math.hypot(cx - px, y - py) >= 2 * radius + gap - 1e-6
+                             for px, py in placed)]
+        center = min(available, key=lambda cx: (abs(cx - x), direction * (x - cx) > 0))
+        placed.append((center, y))
+        glyph = glyphs[sign]
+        bounds = glyph.get_extents()
+        drawing = DrawingArea(side, side, 0, 0)
+        drawing.add_artist(Circle((side/2, side/2), side/2, fc="white", ec=text_color, lw=.8, alpha=.9))
+        transform = Affine2D().translate(side/2-(bounds.x0+bounds.x1)/2, side/2-(bounds.y0+bounds.y1)/2)
+        drawing.add_artist(PathPatch(glyph.transformed(transform), fc=text_color, lw=0))
+        offset = center - x
+        leader = dict(arrowstyle="-", color=text_color, lw=.6) if abs(offset) > radius + gap + 1 else None
+        annotation = AnnotationBbox(drawing, (anchor, energy), xybox=(offset, 0),
+                                   boxcoords="offset points", frameon=False, pad=0,
+                                   arrowprops=leader, zorder=8)
+        annotation._parity_signs = sign
+        ax.add_artist(annotation)
 
 def _gap_minimum_marker_style(kind):
     """Use the same minimum marker in the map and legend; lengths are in display space."""
