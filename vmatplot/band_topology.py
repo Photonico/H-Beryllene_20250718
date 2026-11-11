@@ -938,9 +938,19 @@ def _gap_minimum_marker_style(kind):
     """Use the same minimum marker in the map and legend; lengths are in display space."""
     if kind == "circle":
         return dict(marker=r"$\odot$", ms=13, color="#FF4600")
+    if kind == "ring":
+        return dict(marker="o", ms=11, mfc="none", mec="#FF6400", mew=1.5, color="#FF6400")
+    if kind == "dots":
+        angles = np.arange(12) * 2 * np.pi / 12
+        centers = .45 * np.column_stack((np.cos(angles), np.sin(angles)))
+        dot = MarkerPath.unit_circle()
+        marker = MarkerPath.make_compound_path(*[
+            dot.transformed(Affine2D().scale(.05).translate(*center)) for center in centers
+        ])
+        return dict(marker=marker, ms=11, mfc="#FF6400", mec="#FF6400", mew=0, color="#FF6400")
     arms = {"cross": 4, "hex": 6}
     if kind not in arms:
-        raise ValueError("minimum_marker must be 'circle', 'cross' or 'hex'")
+        raise ValueError("minimum_marker must be 'circle', 'cross', 'hex', 'ring' or 'dots'")
     angles = np.arange(arms[kind]) * 2 * np.pi / arms[kind]
     directions = np.column_stack((np.cos(angles), np.sin(angles)))
     vertices = np.stack((.14 * directions, .5 * directions), axis=1).reshape(-1, 2)
@@ -949,7 +959,7 @@ def _gap_minimum_marker_style(kind):
 
 
 def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None, minimum_marker="circle"):
-    """Direct gaps in reciprocal fractions; optional cross/hex markers label sampled minima."""
+    """Direct gaps in reciprocal fractions; custom markers label sampled minima."""
     matters = create_matters_topology(matters_list)
     panels = [(matter, subspace) for matter in matters for subspace in matter[3]]
     thesis = figure_version() == "thesis"
