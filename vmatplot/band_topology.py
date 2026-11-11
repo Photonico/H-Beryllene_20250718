@@ -938,8 +938,12 @@ def _gap_minimum_marker_style(kind):
     """Use the same minimum marker in the map and legend; lengths are in display space."""
     if kind == "circle":
         return dict(marker=r"$\odot$", ms=13, color="#FF4600")
-    if kind == "ring":
-        return dict(marker="o", ms=11, mfc="none", mec="#FF6400", mew=1.5, color="#FF6400")
+    if kind in ("ring", "small_ring"):
+        size, edge = 11, 1.5
+        if kind == "small_ring":
+            inner, edge = (5, 1.5) if figure_version() == "thesis" else (8, 2)
+            size = inner + edge  # Inner diameter is ms - mew.
+        return dict(marker="o", ms=size, mfc="none", mec="#FF6400", mew=edge, color="#FF6400")
     if kind == "dots":
         angles = np.arange(12) * 2 * np.pi / 12
         centers = .45 * np.column_stack((np.cos(angles), np.sin(angles)))
@@ -950,7 +954,7 @@ def _gap_minimum_marker_style(kind):
         return dict(marker=marker, ms=11, mfc="#FF6400", mec="#FF6400", mew=0, color="#FF6400")
     arms = {"cross": 4, "hex": 6}
     if kind not in arms:
-        raise ValueError("minimum_marker must be 'circle', 'cross', 'hex', 'ring' or 'dots'")
+        raise ValueError("minimum_marker must be 'circle', 'cross', 'hex', 'ring', 'small_ring' or 'dots'")
     angles = np.arange(arms[kind]) * 2 * np.pi / arms[kind]
     directions = np.column_stack((np.cos(angles), np.sin(angles)))
     vertices = np.stack((.14 * directions, .5 * directions), axis=1).reshape(-1, 2)
@@ -980,6 +984,8 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None, minimum_ma
     fig.suptitle(suptitle, fontsize=settings[3][0], y=1-.16/height, va="top")
     grey = color_sampling("Grey")[0]
     minimum_style = _gap_minimum_marker_style(minimum_marker)
+    trim_style = (dict(minimum_style, mec=grey, color=grey) if minimum_marker == "small_ring" else
+                  dict(marker="o", ms=6, mfc="white", mec=grey, mew=.9))
     vector = r"\vec" if thesis else r"\mathbf"
     for index, (ax, (matter, subspace)) in enumerate(zip(axes.flat, panels)):
         label, directory = matter[:2]
@@ -991,7 +997,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None, minimum_ma
         image = ax.pcolormesh(k1, k2, np.clip(values, gap_limits[0]*.5, None), cmap=cmap,
                              norm=norm, shading="flat", rasterized=True)
         for name, trim in trim_points.items():
-            ax.plot(*trim, marker="o", ms=6, mfc="white", mec=grey, mew=.9, zorder=4, clip_on=False)
+            ax.plot(*trim, **trim_style, zorder=4, clip_on=False)
             if name == "Gamma":
                 ax.annotate("Γ", trim, xytext=(5, 5), textcoords="offset points", color=grey)
         gaps, _ = extract_gap_extrema(directory)
@@ -1022,7 +1028,7 @@ def plot_direct_gap_maps(suptitle, matters_list=None, gap_range=None, minimum_ma
             ax.tick_params(labelbottom=False)
     for ax in list(axes.flat)[len(panels):]:
         ax.axis("off")
-    handles = [Line2D([], [], ls="none", marker="o", ms=6, mfc="white", mec=grey, mew=.9, label="TRIM"),
+    handles = [Line2D([], [], ls="none", **trim_style, label="TRIM"),
                Line2D([], [], ls="none", **minimum_style,
                       label="refined minima and their symmetry images")]
     fig.subplots_adjust(left=(.75 if thesis else .95)/width,
