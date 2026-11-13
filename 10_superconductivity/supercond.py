@@ -63,9 +63,9 @@ def isotropic(ax, sheet, raw_columns, fit_columns, color, marker, label):
     temperature, gap = read_pair(sheet, *raw_columns)
     fit_temperature, fit_gap = read_pair(sheet, *fit_columns)
     ax.plot(fit_temperature, fit_gap, color=color, zorder=2)
-    ax.plot(temperature, gap, ls="none", marker=marker, ms=6.5, color=color,
-            mec="white", mew=.8, zorder=3)
-    return Line2D([], [], color=color, marker=marker, ms=6.5, mec="white", mew=.8, label=label)
+    ax.plot(temperature, gap, ls="none", marker=marker, ms=8.0, color=color,
+            mec="white", mew=1.0, zorder=3)
+    return Line2D([], [], color=color, marker=marker, ms=8.0, mec="white", mew=1.0, label=label)
 
 def anisotropic(ax, sheet, columns, color, label):
     temperature, gap = read_pair(sheet, *columns)
@@ -97,10 +97,9 @@ def iteration_panel(ax, sheet, temperatures, colors, ymax):
     ax.xaxis.set_major_locator(MultipleLocator(1000))
     ax.xaxis.set_minor_locator(AutoMinorLocator(2))
     ax.yaxis.set_major_locator(LogLocator(base=10))
-    ax.yaxis.set_minor_locator(LogLocator(base=10, subs=np.arange(2, 10)))
+    ax.yaxis.set_minor_locator(LogLocator(base=10, subs=list(range(2, 10))))
     ax.yaxis.set_minor_formatter(NullFormatter())
     legend(ax, loc="lower right")
-
 
 def make_figure(workbook_path):
     workbook = load_workbook(workbook_path, read_only=True, data_only=True)
@@ -123,10 +122,11 @@ def make_figure(workbook_path):
                        isotropic(ax, sheet, (1, 2), (4, 5), CYAN, "s", "Trilayer cubic beryllene, isotropic"),
                        anisotropic(ax, sheet, (13, 14), BLUE, "1H-β-beryllene, anisotropic")]
             critical_window(ax, sheet, (17, 18), BLUE, "14.2")
-            ax.set(xlim=(0, 16), ylim=(0, 3), xlabel=r"$T$ (K)")
+            # ax.set(xlim=(0, 16), ylim=(0, 2.5), xlabel=r"$T$ (K)")
+            ax.set(xlim=(0, 16), ylim=(0, 2.5), xlabel=r"Temperature (K)")
             ax.set_title("(a) Trilayer cubic and 1H-β-beryllene")
-            ax.text(1.1, .8, r"$T_\mathrm{c}^{\mathrm{iso}}=3.7$ K", color=CYAN, fontsize=12)
-            ax.text(8.4, .25, r"$T_\mathrm{c}^{\mathrm{iso}}=11.6$ K", color=BLUE, fontsize=12)
+            ax.text(1.2, 0.8, r"$T_\mathrm{c}^{\mathrm{iso}}=3.7$ K", color=CYAN, fontsize=16)
+            ax.text(8.5, 1.6, r"$T_\mathrm{c}^{\mathrm{iso}}=11.6$ K", color=BLUE, fontsize=16)
             ax.xaxis.set_major_locator(MultipleLocator(5))
             ax.xaxis.set_minor_locator(AutoMinorLocator(5))
             ax.yaxis.set_minor_locator(AutoMinorLocator(5))
@@ -143,9 +143,10 @@ def make_figure(workbook_path):
             handles = [isotropic(ax, sheet, (1, 2), (4, 5), WINE, "o", "2H-β-beryllene, isotropic"),
                        anisotropic(ax, sheet, (7, 8), WINE, "2H-β-beryllene, anisotropic")]
             critical_window(ax, sheet, (11, 12), WINE, "31.7")
-            ax.set(xlim=(0, 35), ylim=(0, 6), xlabel=r"$T$ (K)")
+            # ax.set(xlim=(0, 35), ylim=(0, 6), xlabel=r"$T$ (K)")
+            ax.set(xlim=(0, 35), ylim=(0, 6), xlabel=r"Temperature (K)")
             ax.set_title("(c) 2H-β-beryllene")
-            ax.text(20, .45, r"$T_\mathrm{c}^{\mathrm{iso}}=28.3$ K", color=WINE, fontsize=12)
+            ax.text(20, 5, r"$T_\mathrm{c}^{\mathrm{iso}}=28.3$ K", color=WINE, fontsize=16)
             ax.xaxis.set_major_locator(MultipleLocator(10))
             ax.xaxis.set_minor_locator(AutoMinorLocator(5))
             ax.yaxis.set_minor_locator(AutoMinorLocator(5))
