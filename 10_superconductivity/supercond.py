@@ -81,9 +81,9 @@ def anisotropic(ax, sheet, columns, color, label):
 def critical_window(ax, sheet, columns, color, estimate):
     lower, upper = (float(sheet.cell(5, column).value) for column in columns)
     ax.axvspan(lower, upper, color=color, alpha=.12, lw=0, zorder=0)
-    ax.text(upper + .35, .57, rf"anisotropic $T_\mathrm{{c}} \approx {estimate}$ K",
+    ax.text(upper, 0.6, rf"anisotropic $T_\mathrm{{c}} \approx {estimate}$ K",
             transform=ax.get_xaxis_transform(), rotation=90, ha="center", va="center",
-            fontsize=12, color="#3C3C3C")
+            fontsize=16, color="#141414")
 
 def legend(ax, handles=None, loc="upper right"):
     return ax.legend(handles=handles, loc=loc, frameon=True, fancybox=True,
