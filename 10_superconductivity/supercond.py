@@ -23,8 +23,8 @@ import numpy as np
 from openpyxl import load_workbook
 
 HERE = Path(__file__).resolve().parent
-BLUE = "#1478E1"
-CYAN = "#19A0A0"
+BLUE = "#1464cd"
+CYAN = "#0a8c8c"
 WINE = "#C82364"
 GREY = "#787878"
 LINE_WIDTH = 1.5
@@ -60,12 +60,16 @@ def read_pair(sheet, x_column, y_column, first_row=5):
     return data.T
 
 def isotropic(ax, sheet, raw_columns, fit_columns, color, marker, label):
+    ms = 10.0  # circle diameter (pt)
+    if marker == "s":
+        ms *= np.sqrt(np.pi) / 2  # square side giving the same area as the circle
+        # ms = 8
     temperature, gap = read_pair(sheet, *raw_columns)
     fit_temperature, fit_gap = read_pair(sheet, *fit_columns)
     ax.plot(fit_temperature, fit_gap, color=color, zorder=2)
-    ax.plot(temperature, gap, ls="none", marker=marker, ms=8.0, color=color,
+    ax.plot(temperature, gap, ls="none", marker=marker, ms=ms, color=color,
             mec="white", mew=1.0, zorder=3)
-    return Line2D([], [], color=color, marker=marker, ms=8.0, mec="white", mew=1.0, label=label)
+    return Line2D([], [], color=color, marker=marker, ms=ms, mec="white", mew=1.0, label=label)
 
 def anisotropic(ax, sheet, columns, color, label):
     temperature, gap = read_pair(sheet, *columns)
@@ -111,7 +115,7 @@ def make_figure(workbook_path):
             fig.subplots_adjust(left=.085, right=.98, bottom=.075, top=.905,
                                 wspace=.25, hspace=.28)
             for ax in axes.flat:
-                ax.set_ylabel(r"$\Delta(i\omega_1)$ (meV)")
+                ax.set_ylabel(r"$\Delta(\mathrm{i}\omega_1)$ (meV)")
                 ax.tick_params(which="both", direction="in", top=True, right=True)
                 ax.tick_params(which="major", length=5)
                 ax.tick_params(which="minor", length=2.5)
@@ -134,7 +138,7 @@ def make_figure(workbook_path):
 
             ax = axes[0, 1]
             iteration_panel(ax, workbook["Fig. 1b"], ("14.0", "14.1", "14.2", "14.5"),
-                            ("#145AAA", BLUE, GREY, "#FA8C00"), 3)
+                            ("#1464cd", "#238C4B", "#FA8C00", "#C81423"), 3)
             ax.set_xlim(0, 5200)
             ax.set_title("(b) 1H-β-beryllene: anisotropic")
 
@@ -154,7 +158,7 @@ def make_figure(workbook_path):
 
             ax = axes[1, 1]
             iteration_panel(ax, workbook["Fig. 1d"], ("30", "31", "32", "34"),
-                            ("#145AAA", BLUE, "#FA8C00", "#C81423"), 10)
+                            ("#1464cd", "#238C4B", "#FA8C00", "#C81423"), 10)
             ax.set_xlim(0, 3100)
             ax.set_title("(d) 2H-β-beryllene: anisotropic")
             fig.align_ylabels(axes[:, 0])
