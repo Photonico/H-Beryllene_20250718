@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! python
 """Redraw the four superconductivity panels from supercond_data.xlsx.
 
 Run from any directory: python /path/to/10_superconductivity/supercond.py
@@ -10,7 +10,6 @@ The supplied fit samples are drawn directly, without refitting or extending
 them to the anisotropic critical temperatures. Diamonds are extrapolated
 anisotropic limits, not the final values of the iteration traces.
 """
-
 import argparse
 from pathlib import Path
 
@@ -22,7 +21,6 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import AutoMinorLocator, LogLocator, MultipleLocator, NullFormatter
 import numpy as np
 from openpyxl import load_workbook
-
 
 HERE = Path(__file__).resolve().parent
 BLUE = "#1478E1"
@@ -44,7 +42,6 @@ STYLE = {
     "path.simplify": False,
 }
 
-
 def read_pair(sheet, x_column, y_column, first_row=5):
     """Read one independent series; zero is data and blank tails are absent."""
     values = []
@@ -62,7 +59,6 @@ def read_pair(sheet, x_column, y_column, first_row=5):
         raise ValueError(f"Missing or non-finite data in {sheet.title}")
     return data.T
 
-
 def isotropic(ax, sheet, raw_columns, fit_columns, color, marker, label):
     temperature, gap = read_pair(sheet, *raw_columns)
     fit_temperature, fit_gap = read_pair(sheet, *fit_columns)
@@ -71,7 +67,6 @@ def isotropic(ax, sheet, raw_columns, fit_columns, color, marker, label):
             mec="white", mew=.8, zorder=3)
     return Line2D([], [], color=color, marker=marker, ms=6.5, mec="white", mew=.8, label=label)
 
-
 def anisotropic(ax, sheet, columns, color, label):
     temperature, gap = read_pair(sheet, *columns)
     ax.plot(temperature, gap, ls="none", marker="D", ms=8, mfc="none",
@@ -79,20 +74,17 @@ def anisotropic(ax, sheet, columns, color, label):
     return Line2D([], [], ls="none", marker="D", ms=8, mfc="none", mec=color,
                   mew=LINE_WIDTH, label=label)
 
-
 def critical_window(ax, sheet, columns, color, estimate):
     lower, upper = (float(sheet.cell(5, column).value) for column in columns)
     ax.axvspan(lower, upper, color=color, alpha=.12, lw=0, zorder=0)
-    ax.text(upper + .35, .57, rf"anisotropic $T_c \approx {estimate}$ K",
+    ax.text(upper + .35, .57, rf"anisotropic $T_\mathrm{{c}} \approx {estimate}$ K",
             transform=ax.get_xaxis_transform(), rotation=90, ha="center", va="center",
             fontsize=12, color="#3C3C3C")
-
 
 def legend(ax, handles=None, loc="upper right"):
     return ax.legend(handles=handles, loc=loc, frameon=True, fancybox=True,
                      facecolor="white", edgecolor="#CCCCCC", framealpha=.75,
                      handlelength=1.6, handletextpad=.6, borderpad=.4)
-
 
 def iteration_panel(ax, sheet, temperatures, colors, ymax):
     for column, (temperature, color) in enumerate(zip(temperatures, colors), start=2):
@@ -100,7 +92,7 @@ def iteration_panel(ax, sheet, temperatures, colors, ymax):
         if np.any(gap <= 0):
             raise ValueError(f"Non-positive gap on logarithmic axis in {sheet.title}")
         ax.semilogy(iteration, gap, color=color, label=f"{temperature} K")
-    ax.set_xlabel("Eliashberg iteration")
+    ax.set_xlabel("Migdal–Eliashberg iteration")
     ax.set_ylim(1e-2 if ymax == 3 else 1e-3, ymax)
     ax.xaxis.set_major_locator(MultipleLocator(1000))
     ax.xaxis.set_minor_locator(AutoMinorLocator(2))
@@ -114,8 +106,8 @@ def make_figure(workbook_path):
     workbook = load_workbook(workbook_path, read_only=True, data_only=True)
     try:
         with plt.rc_context(STYLE):
-            fig, axes = plt.subplots(2, 2, figsize=(14, 10.5), dpi=196)
-            fig.suptitle("Superconductivity in pristine and hydrogenated beryllenes",
+            fig, axes = plt.subplots(2, 2, figsize=(12, 10), dpi=196)
+            fig.suptitle("Superconductivity in pristine and hydrogen-functionalized beryllenes",
                          fontsize=20, y=.98)
             fig.subplots_adjust(left=.085, right=.98, bottom=.075, top=.905,
                                 wspace=.25, hspace=.28)
@@ -133,8 +125,8 @@ def make_figure(workbook_path):
             critical_window(ax, sheet, (17, 18), BLUE, "14.2")
             ax.set(xlim=(0, 16), ylim=(0, 3), xlabel=r"$T$ (K)")
             ax.set_title("(a) Trilayer cubic and 1H-β-beryllene")
-            ax.text(1.1, .8, r"$T_c^{\mathrm{iso}}=3.7$ K", color=CYAN, fontsize=12)
-            ax.text(8.4, .25, r"$T_c^{\mathrm{iso}}=11.6$ K", color=BLUE, fontsize=12)
+            ax.text(1.1, .8, r"$T_\mathrm{c}^{\mathrm{iso}}=3.7$ K", color=CYAN, fontsize=12)
+            ax.text(8.4, .25, r"$T_\mathrm{c}^{\mathrm{iso}}=11.6$ K", color=BLUE, fontsize=12)
             ax.xaxis.set_major_locator(MultipleLocator(5))
             ax.xaxis.set_minor_locator(AutoMinorLocator(5))
             ax.yaxis.set_minor_locator(AutoMinorLocator(5))
@@ -153,7 +145,7 @@ def make_figure(workbook_path):
             critical_window(ax, sheet, (11, 12), WINE, "31.7")
             ax.set(xlim=(0, 35), ylim=(0, 6), xlabel=r"$T$ (K)")
             ax.set_title("(c) 2H-β-beryllene")
-            ax.text(20, .45, r"$T_c^{\mathrm{iso}}=28.3$ K", color=WINE, fontsize=12)
+            ax.text(20, .45, r"$T_\mathrm{c}^{\mathrm{iso}}=28.3$ K", color=WINE, fontsize=12)
             ax.xaxis.set_major_locator(MultipleLocator(10))
             ax.xaxis.set_minor_locator(AutoMinorLocator(5))
             ax.yaxis.set_minor_locator(AutoMinorLocator(5))
@@ -170,7 +162,6 @@ def make_figure(workbook_path):
     finally:
         workbook.close()
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=HERE / "supercond_data.xlsx")
@@ -183,7 +174,5 @@ def main():
     plt.close(fig)
     print(args.output.resolve())
 
-
 if __name__ == "__main__":
     main()
-#
