@@ -110,9 +110,7 @@ def make_figure(workbook_path):
     try:
         with plt.rc_context(STYLE):
             fig, axes = plt.subplots(2, 2, figsize=(12, 10), dpi=196)
-            fig.suptitle("Superconductivity in pristine and hydrogen-functionalized beryllenes",
-                         fontsize=20, y=.98)
-            fig.subplots_adjust(left=.085, right=.98, bottom=.075, top=.905,
+            fig.subplots_adjust(left=.085, right=.98, bottom=.075, top=.955,
                                 wspace=.25, hspace=.28)
             for ax in axes.flat:
                 ax.set_ylabel(r"$\Delta(\mathrm{i}\omega_1)$ (meV)")
