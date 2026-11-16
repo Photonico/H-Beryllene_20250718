@@ -1,0 +1,58 @@
+--
+&inputepw
+  prefix      = 'ph'
+  outdir      = './tmp'
+  iverbosity  = 2
+
+  dvscf_dir = '../../23_ollie_q12/run01/collect/save/'
+
+  elph = .false., ep_coupling = .false., epbwrite = .true., epbread = .false., ephwrite = .false., epwwrite = .false., epwread = .true., wannierize  = .false.
+
+  nbndsub     = 10
+  bands_skipped = 'exclude_bands = 1:2'
+  num_iter    = 1000
+  dis_froz_max= -1.1100
+
+  proj(1) = 'Be:s;p'
+  proj(2) = 'H:s'
+
+  wdata(1) = 'guiding_centres = true'
+  wdata(2) = 'use_ws_distance = .true.'
+  wdata(3) = 'bands_plot = .true.'
+  wdata(4) = 'begin kpoint_path'
+  wdata(5) = 'G 0.000000 0.000000 0.000 X 0.500000 0.000000 0.000'
+  wdata(6) = 'X 0.500000 0.000000 0.000 K 0.299832 -0.299832 0.000'
+  wdata(7) = 'K 0.299832 -0.299832 0.000 G 0.000000 0.000000 0.000'
+  wdata(8) = 'G 0.000000 0.000000 0.000 Y 0.000000 -0.500000 0.000'
+  wdata(9) = 'Y 0.000000 -0.500000 0.000 Kp -0.299832 -0.700168 0.000'
+  wdata(10) = 'Kp -0.299832 -0.700168 0.000 M -0.500000 -0.500000 0.000'
+  wdata(11) = 'M -0.500000 -0.500000 0.000 G 0.000000 0.000000 0.000'
+  wdata(12) = 'end kpoint_path'
+
+  eliashberg     = .true.
+  laniso         = .false.
+  liso           = .true.
+  limag          = .true.
+  lpade          = .true.
+  nsiter         = 500
+  conv_thr_iaxis = 1.0d-4
+
+
+  temps = 34.0
+
+  fsthick     = 0.6
+  degaussw    = 0.15
+  degaussq    = 0.5
+  nqstep      = 500
+  wscut       = 1.20
+  muc         = 0.13
+  eps_acoustic = 40.0
+
+  nk1 = 24, nk2 = 24, nk3 = 1
+  nq1 = 12, nq2 = 12, nq3 = 1
+
+  mp_mesh_k = .true.
+  nkf1 = 80, nkf2 = 80, nkf3 = 1
+  nqf1 = 80,  nqf2 = 80,  nqf3 = 1
+
+/

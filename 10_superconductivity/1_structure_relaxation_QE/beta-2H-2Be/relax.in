@@ -1,0 +1,49 @@
+&CONTROL
+  calculation = 'vc-relax'
+  prefix = 'relax'
+  outdir = './tmp'
+  pseudo_dir = '/software/projects/pawsey0328/hma/apps/quantum-espresso/pseudo/ONCV'
+  tprnfor = .true.
+  tstress = .true.
+  forc_conv_thr = 1.0d-5
+  etot_conv_thr = 1.0d-8
+  nstep = 300
+/
+&SYSTEM
+  ibrav = 0
+  nat = 4
+  ntyp = 2
+  ecutwfc = 80
+  ecutrho = 640
+  occupations = 'smearing'
+  smearing = 'mv'
+  degauss = 0.02
+  assume_isolated = '2D'
+/
+&ELECTRONS
+  conv_thr = 1.0d-12
+  mixing_beta = 0.4
+  diago_full_acc = .true.
+/
+&IONS
+  ion_dynamics = 'bfgs'
+/
+&CELL
+  cell_dynamics = 'bfgs'
+  cell_dofree = '2Dxy'
+  press_conv_thr = 0.1
+/
+ATOMIC_SPECIES
+Be   9.012182 Be_ONCV_PBE-1.0.upf
+H    1.007940 H_ONCV_PBE-1.0.upf
+CELL_PARAMETERS angstrom
+    2.2820901244    -1.0354986748     0.0000000000
+    2.2820901244     1.0354986748     0.0000000000
+    0.0000000000     0.0000000000    40.0000000000
+ATOMIC_POSITIONS crystal
+Be   0.857532008315   0.857532008315   0.522350865769
+Be   0.142467991685   0.142467991685   0.477649134231
+H    0.364834269521   0.364834269521   0.547460256423
+H    0.635165730479   0.635165730479   0.452539743577
+K_POINTS automatic
+48 48 1 0 0 0

@@ -1,0 +1,40 @@
+&CONTROL
+  calculation = 'scf'
+  prefix = 'ph'
+  outdir = './tmp'
+  pseudo_dir = '/software/projects/pawsey0328/hma/apps/quantum-espresso/pseudo/ONCV'
+  tprnfor = .true.
+  tstress = .true.
+/
+&SYSTEM
+  ibrav = 0
+  nat = 4
+  ntyp = 2
+  ecutwfc = 80
+  ecutrho = 640
+  occupations = 'smearing'
+  smearing = 'mv'
+  degauss = 0.02
+  assume_isolated = '2D'
+  vdw_corr = 'dft-d3'
+  dftd3_version = 4
+  dftd3_threebody = .false.
+/
+&ELECTRONS
+  conv_thr = 1.0d-14
+  mixing_beta = 0.4
+/
+ATOMIC_SPECIES
+Be   9.012182 Be_ONCV_PBE-1.0.upf
+H    1.007940 H_ONCV_PBE-1.0.upf
+CELL_PARAMETERS angstrom
+    2.3145645191    -1.0333651877    -0.0000000000
+    2.3145645191     1.0333651877     0.0000000000
+    0.0000000000     0.0000000000    40.0000000000
+ATOMIC_POSITIONS crystal
+Be   0.142360568368   0.142359867864   0.477773072737
+Be   0.857639431990   0.857640131822   0.522226927263
+H    0.634389548505   0.634392000514   0.452668019198
+H    0.365610451371   0.365607999651   0.547331980802
+K_POINTS automatic
+46 46 1 0 0 0
