@@ -88,7 +88,8 @@ def make_figure():
                 label = r"$80\times80\times1$" if mesh.endswith("80x80") else r"$40\times40\times1$"
                 handles.append(Line2D([], [], color=line_color, ls=style, label=label))
             for ax, ymax, ylabel in ((ax_f, fmax, r"$\alpha^2F(\omega)$"), (ax_l, lmax, r"$\lambda(\omega)$")):
-                ax.axvspan(0, THRESHOLD, color=GREY, alpha=.12, lw=0, zorder=0)
+                # Highlight the low-frequency window below 40 cm^-1.
+                ax.axvspan(0, THRESHOLD, color="#698cd7", alpha=.20, lw=0, zorder=0)
                 ax.set(xlim=(0, wmax), ylim=(0, ymax), ylabel=ylabel)
                 ax.set_title(f"({next(letters)}) {title}")
                 ax.xaxis.set_major_locator(MultipleLocator(wtick))
