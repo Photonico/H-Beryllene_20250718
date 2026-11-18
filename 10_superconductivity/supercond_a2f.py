@@ -3,10 +3,10 @@
 
 Run from any directory: python /path/to/10_superconductivity/supercond_a2f.py
 It writes figures/superconductivity_a2f.pdf, the one version used by both the paper and the
-thesis. The columns are titled above the top row, the subplot titles sit in rounded boxes
-inside the upper-left corners of the panels, and an upper y limit is raised only as far as
-needed to keep the curves clear of the box. The two meshes are solid lines, the 40x40x1
-reference in grey beneath the 80x80x1 curve.
+thesis. The columns are titled above the top row with a clear gap to the panels, the subplot
+titles sit in rounded boxes inside the upper-left corners of the panels, and an upper y limit
+is raised only as far as needed to keep the curves clear of the box. The two meshes are solid
+lines, the 40x40x1 reference in grey beneath the 80x80x1 curve.
 Dependencies: matplotlib, numpy.
 
 The curves are read directly from the EPW ph.a2f files of the 40x40x1 and
@@ -104,11 +104,12 @@ def clear_panel_label(fig, ax, label, gap=4):
         ax.set_ylim(lower, math.ceil(needed / step - 1e-9) * step)
 
 COLUMN_TITLES = ("Eliashberg spectral function", "Cumulative coupling strength")
+COLUMN_TITLE_PAD = 16  # points of clear space between the column titles and the top row
 
 def make_figure():
     with plt.rc_context(STYLE):
         fig, axes = plt.subplots(3, 2, figsize=(12, 14), dpi=196)
-        fig.subplots_adjust(left=.085, right=.98, bottom=.055, top=.965,
+        fig.subplots_adjust(left=.085, right=.98, bottom=.055, top=.945,
                             wspace=.25, hspace=.16)
         letters = iter("abcdef")
         labels = []
@@ -124,7 +125,7 @@ def make_figure():
                 handles.append(Line2D([], [], color=line_color, label=label))
             for ax, ymax, ylabel in ((ax_f, fmax, r"$\alpha^2F(\omega)$"), (ax_l, lmax, r"$\lambda(\omega)$")):
                 # Highlight the low-frequency window below 40 cm^-1.
-                ax.axvspan(0, THRESHOLD, color="#698cd7", alpha=.20, lw=0, zorder=0)
+                ax.axvspan(0, THRESHOLD, color="#698cd7", alpha=.25, lw=0, zorder=0)
                 ax.set(xlim=(0, wmax), ylim=(0, ymax), ylabel=ylabel)
                 labels.append((ax, panel_label(ax, f"({next(letters)}) {title}")))
                 ax.xaxis.set_major_locator(MultipleLocator(wtick))
@@ -137,7 +138,7 @@ def make_figure():
                     ax.set_xlabel(r"$\hbar\omega$ (meV)")
             legend(ax_l, handles, "lower right", fontsize=STYLE["xtick.labelsize"])
         for ax, column_title in zip(axes[0], COLUMN_TITLES):
-            ax.set_title(column_title)
+            ax.set_title(column_title, pad=COLUMN_TITLE_PAD)
         fig.align_ylabels(axes[:, 0])
         fig.align_ylabels(axes[:, 1])
         fig.canvas.draw()

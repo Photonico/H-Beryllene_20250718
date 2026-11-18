@@ -194,7 +194,7 @@ def fit_thesis_text(fig=None, margin=0.01):
 ## Thesis subplot labels
 # Same look as the chapter 6 (o-B14) thesis figures: the subplot title sits inside the upper-left corner of the axes
 # in a translucent white rounded box with a light grey border, and a shared legend panel keeps a rounded frame.
-PANEL_LABEL_FONTSIZE = None                                     # None: the subtitle size of the current typography
+PANEL_LABEL_FONTSIZE = None     # None: the thesis subtitle size (thesis_titles[1]), never above the figure's suptitle
 PANEL_LABEL_BOX = dict(boxstyle="round,pad=0.2", facecolor="white", alpha=.75, edgecolor="#B4B4B4", linewidth=1.5)
 PANEL_LABEL_INSET = 8                                           # points from the left and top edges of the axes
 PANEL_LEGEND_FONTSIZE = 22                                      # shared legend in the free panel of a thesis grid
@@ -203,7 +203,7 @@ def panel_label(ax, text):
     # Thesis subplot title inside the upper-left corner of the axes
     label = ax.annotate(text, xy=(0, 1), xycoords="axes fraction", xytext=(PANEL_LABEL_INSET, -PANEL_LABEL_INSET),
                         textcoords="offset points", ha="left", va="top",
-                        fontsize=PANEL_LABEL_FONTSIZE or plt.rcParams["axes.titlesize"],
+                        fontsize=PANEL_LABEL_FONTSIZE or thesis_titles[1],
                         bbox=PANEL_LABEL_BOX, zorder=6)
     ax._thesis_panel_label = label
     return label
@@ -221,8 +221,10 @@ def panel_legend(ax, handles, labels):
 
 PANEL_INSET_LEGEND_FONTSIZE = None                              # None: the tick-label size of the current typography
 PANEL_GAP = 4                                                   # points kept between a curve and a label or legend
-LEGEND_PLACES = ("upper right", "upper right below label", "lower right", "lower left", "center right",
-                 "upper center", "lower center", "center left", "center")  # preference order at equal cost
+LEGEND_CORNERS = ("upper right", "upper right below label", "upper left below label", "lower right", "lower left")
+LEGEND_OTHERS = ("center right", "upper center", "lower center", "center left", "center")
+LEGEND_PLACES = LEGEND_CORNERS + LEGEND_OTHERS                   # preference order at equal cost
+CORNER_PREFERENCE = .25     # a corner wins unless another place needs at least 25 % less of the y range
 
 def subplot_legend(ax):
     # Legend inside a subplot: placed by matplotlib ("best") for the article version; for the thesis version set in
@@ -278,9 +280,18 @@ def _fit_limits(lower, upper, below, above):
 def arrange_thesis_panels(fig=None, gap=PANEL_GAP):
     # Keep curves clear of the thesis panel labels and in-panel legends with the smallest change of the y limits.
     # Each legend place is tried; anchored places (upper/lower) may widen the y range, other places must already be
-    # free. The place that needs the smallest widening wins, upper right when nothing needs to change. Curves clipped
-    # by a limit are left clipped, and images spanning the full height (visible-spectrum bands) follow the new limits.
+    # free. Corners are preferred (CORNER_PREFERENCE); among them the place needing the smallest widening wins, upper
+    # right when nothing needs to change. A legend set below the panel label lines up with the label box. Curves
+    # clipped by a limit are left clipped, and images spanning the full height (visible-spectrum bands) follow the
+    # new limits.
     fig = plt.gcf() if fig is None else fig
+    # A panel label is never larger than the figure's suptitle (which fit_thesis_text may have scaled down)
+    suptitle = fig._suptitle
+    if suptitle is not None and suptitle.get_text().strip():
+        for ax in fig.axes:
+            label = getattr(ax, "_thesis_panel_label", None)
+            if label is not None and label.get_fontsize() > suptitle.get_fontsize():
+                label.set_fontsize(suptitle.get_fontsize())
     axes = [ax for ax in fig.axes if getattr(ax, "_thesis_panel_label", None) is not None and ax.get_yscale() == "linear"]
     if not axes:
         return fig
@@ -312,12 +323,20 @@ def arrange_thesis_panels(fig=None, gap=PANEL_GAP):
         everything = _segments_between(ax, frame.x0, frame.x1)
         negative = everything[0].size > 0 and min(everything[0].min(), everything[1].min()) < 0
 
+        # Below the label, a legend keeps the label box's inset from the side and a gap of 1.5 x `gap` below it
+        inset = (label.x0 - frame.x0)/frame.width
+        below_label = (label.y0 - 1.5*pad - frame.y0)/frame.height
+
         def place_legend(place):
-            if place == "upper right below label":
-                legend.set_loc("upper right")
-                legend.set_bbox_to_anchor((0, 0, 1, (label.y0 - frame.y0)/frame.height), transform=ax.transAxes)
+            if place.endswith("below label"):
+                corner = place.replace(" below label", "")
+                legend.set_loc(corner)
+                legend.borderaxespad = 0
+                left = inset if corner == "upper left" else 0
+                legend.set_bbox_to_anchor((left, 0, 1 - inset - left, below_label), transform=ax.transAxes)
             else:
                 legend.set_loc(place)
+                legend.borderaxespad = plt.rcParams["legend.borderaxespad"]
                 legend.set_bbox_to_anchor(None)
 
         if legend is not None:
@@ -343,7 +362,7 @@ def arrange_thesis_panels(fig=None, gap=PANEL_GAP):
                     high = frame.y0 + (np.maximum(starts, ends) - fitted[0])*scale
                     if ((low <= box.y1 + pad) & (high >= box.y0 - pad)).any():
                         continue
-                cost = (fitted[1] - fitted[0])/(upper - lower)
+                cost = (fitted[1] - fitted[0])/(upper - lower) + (0 if place in LEGEND_CORNERS else CORNER_PREFERENCE)
                 if choice is None or cost < choice[0] - 1e-9:
                     choice = (cost, place, fitted)
             if choice is None:
