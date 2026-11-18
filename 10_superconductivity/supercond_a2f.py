@@ -2,10 +2,11 @@
 """Draw the Eliashberg spectral functions and cumulative coupling strengths.
 
 Run from any directory: python /path/to/10_superconductivity/supercond_a2f.py
-Add --version thesis for the thesis figure (figures/superconductivity_a2f_thesis.pdf): subplot
-titles sit in rounded boxes inside the upper-left corners of the panels, both meshes are drawn as
-solid lines, and an upper y limit is raised only as far as needed to keep the curves clear of
-the panel title.
+It writes figures/superconductivity_a2f.pdf, the one version used by both the paper and the
+thesis. The columns are titled above the top row, the subplot titles sit in rounded boxes
+inside the upper-left corners of the panels, and an upper y limit is raised only as far as
+needed to keep the curves clear of the box. The two meshes are solid lines, the 40x40x1
+reference in grey beneath the 80x80x1 curve.
 Dependencies: matplotlib, numpy.
 
 The curves are read directly from the EPW ph.a2f files of the 40x40x1 and
@@ -29,10 +30,10 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 EPW = HERE / "5_electron_phonon_EPW"
 # One colour per material, shared with the other superconductivity figure and the topology gap-zoom figure
-TRILAYER = "#FA8C00"   # trilayer cubic beryllene
-BETA_1H = "#146ED7"    # 1H-β-beryllene
-BETA_2H = "#19A0A0"    # 2H-β-beryllene
-GREY = "#646464"
+TRILAYER = "#fa8c00"   # trilayer cubic beryllene
+BETA_1H = "#1478e1"    # 1H-β-beryllene
+BETA_2H = "#19a0a0"    # 2H-β-beryllene
+GREY = "#787878"
 LINE_WIDTH = 2.0  # thicker than supercond.py: the dense a2F spectra read better at print size
 THRESHOLD = 40 * 0.12398419843320026  # 40 cm^-1 in meV
 
@@ -54,7 +55,8 @@ STRUCTURES = (
     ("beta-H-2Be", "1H-β-beryllene", BETA_1H, 220, 50, 0.7, 0.8),
     ("beta-2H-2Be", "2H-β-beryllene", BETA_2H, 220, 50, 1.8, 3.5),
 )
-MESHES = (("2_80x80", "solid"), ("1_coarse_to_40x40", "dashed"))
+# (folder, legend label, drawn in the material colour); the 40x40x1 reference is grey
+MESHES = (("2_80x80", r"$80\times80\times1$", True), ("1_coarse_to_40x40", r"$40\times40\times1$", False))
 
 def read_a2f(path):
     """Return frequency (meV), a2F, and cumulative lambda for the first smearing."""
@@ -101,38 +103,30 @@ def clear_panel_label(fig, ax, label, gap=4):
         step = (ticks[1] - ticks[0]) / 5
         ax.set_ylim(lower, math.ceil(needed / step - 1e-9) * step)
 
-def make_figure(version="article"):
-    thesis = version == "thesis"
+COLUMN_TITLES = ("Eliashberg spectral function", "Cumulative coupling strength")
+
+def make_figure():
     with plt.rc_context(STYLE):
         fig, axes = plt.subplots(3, 2, figsize=(12, 14), dpi=196)
-        if thesis:
-            fig.subplots_adjust(left=.085, right=.98, bottom=.055, top=.985,
-                                wspace=.25, hspace=.16)
-        else:
-            fig.subplots_adjust(left=.085, right=.98, bottom=.055, top=.965,
-                                wspace=.25, hspace=.36)
+        fig.subplots_adjust(left=.085, right=.98, bottom=.055, top=.965,
+                            wspace=.25, hspace=.16)
         letters = iter("abcdef")
         labels = []
         for row, (folder, title, color, wmax, wtick, fmax, lmax) in enumerate(STRUCTURES):
             ax_f, ax_l = axes[row]
             handles = []
-            for mesh, style in MESHES:
+            for mesh, label, fine in MESHES:
                 w, a2f, lam = read_a2f(EPW / folder / mesh / "ph.a2f")
-                line_color = color if style == "solid" else GREY
-                # Thesis version: both meshes solid, the 40x40x1 reference in grey beneath the 80x80x1 curve
-                line_style, order = ("solid", 3 if style == "solid" else 2) if thesis else (style, 3)
-                ax_f.plot(w, a2f, color=line_color, ls=line_style, zorder=order)
-                ax_l.plot(w, lam, color=line_color, ls=line_style, zorder=order)
-                label = r"$80\times80\times1$" if mesh.endswith("80x80") else r"$40\times40\times1$"
-                handles.append(Line2D([], [], color=line_color, ls=line_style, label=label))
+                # Solid lines; the grey 40x40x1 reference lies beneath the 80x80x1 curve
+                line_color, order = (color, 3) if fine else (GREY, 2)
+                ax_f.plot(w, a2f, color=line_color, zorder=order)
+                ax_l.plot(w, lam, color=line_color, zorder=order)
+                handles.append(Line2D([], [], color=line_color, label=label))
             for ax, ymax, ylabel in ((ax_f, fmax, r"$\alpha^2F(\omega)$"), (ax_l, lmax, r"$\lambda(\omega)$")):
                 # Highlight the low-frequency window below 40 cm^-1.
                 ax.axvspan(0, THRESHOLD, color="#698cd7", alpha=.20, lw=0, zorder=0)
                 ax.set(xlim=(0, wmax), ylim=(0, ymax), ylabel=ylabel)
-                if thesis:
-                    labels.append((ax, panel_label(ax, f"({next(letters)}) {title}")))
-                else:
-                    ax.set_title(f"({next(letters)}) {title}")
+                labels.append((ax, panel_label(ax, f"({next(letters)}) {title}")))
                 ax.xaxis.set_major_locator(MultipleLocator(wtick))
                 ax.xaxis.set_minor_locator(AutoMinorLocator(5))
                 ax.yaxis.set_minor_locator(AutoMinorLocator(5))
@@ -141,26 +135,21 @@ def make_figure(version="article"):
                 ax.tick_params(which="minor", length=2.5)
                 if row == len(STRUCTURES) - 1:
                     ax.set_xlabel(r"$\hbar\omega$ (meV)")
-            if thesis:
-                legend(ax_l, handles, "lower right", fontsize=STYLE["xtick.labelsize"])
-            else:
-                legend(ax_l, handles, "lower right")
+            legend(ax_l, handles, "lower right", fontsize=STYLE["xtick.labelsize"])
+        for ax, column_title in zip(axes[0], COLUMN_TITLES):
+            ax.set_title(column_title)
         fig.align_ylabels(axes[:, 0])
         fig.align_ylabels(axes[:, 1])
-        if thesis:
-            fig.canvas.draw()
-            for ax, label in labels:
-                clear_panel_label(fig, ax, label)
+        fig.canvas.draw()
+        for ax, label in labels:
+            clear_panel_label(fig, ax, label)
         return fig
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", choices=("article", "thesis"), default="article")
-    parser.add_argument("--output", type=Path)
+    parser.add_argument("--output", type=Path, default=HERE.parent / "figures/superconductivity_a2f.pdf")
     args = parser.parse_args()
-    suffix = "_thesis" if args.version == "thesis" else ""
-    args.output = args.output or HERE.parent / f"figures/superconductivity_a2f{suffix}.pdf"
-    fig = make_figure(args.version)
+    fig = make_figure()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with plt.rc_context(STYLE):
         fig.savefig(args.output, metadata={"CreationDate": None})

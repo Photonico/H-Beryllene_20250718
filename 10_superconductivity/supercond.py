@@ -7,10 +7,13 @@ Dependencies: matplotlib, numpy, openpyxl.
 The draft's ST-beryllene is trilayer cubic beryllene; beta-H-2Be and
 beta-2H-2Be are called 1H-beta-beryllene and 2H-beta-beryllene in this repo.
 The supplied fit samples are drawn directly, without refitting or extending
-them to the anisotropic critical temperatures. Diamonds are extrapolated
-anisotropic limits, not the final values of the iteration traces.
+them to the anisotropic critical temperatures. Open pentagons are extrapolated
+anisotropic limits, not the final values of the iteration traces. Each
+iteration trace is found by the temperature in its column header, so the
+temperatures passed to iteration_panel may be in any column order.
 """
 import argparse
+import re
 from pathlib import Path
 
 import matplotlib
@@ -25,8 +28,8 @@ from openpyxl import load_workbook
 HERE = Path(__file__).resolve().parent
 # One colour per material, as in supercond_a2f.py, except trilayer cubic beryllene: orange marks a
 # temperature in the iteration panels (b) and (d), so trilayer cubic beryllene is drawn in rose here
-TRILAYER = "#d22864"   # trilayer cubic beryllene
-BETA_1H = "#146ed7"    # 1H-β-beryllene
+TRILAYER = "#fa8c00"   # trilayer cubic beryllene
+BETA_1H = "#1478e1"    # 1H-β-beryllene
 BETA_2H = "#19a0a0"    # 2H-β-beryllene
 GREY = "#787878"
 LINE_WIDTH = 1.5
@@ -93,9 +96,24 @@ def legend(ax, handles=None, loc="upper right"):
                      facecolor="white", edgecolor="#CCCCCC", framealpha=.75,
                      handlelength=1.6, handletextpad=.6, borderpad=.4)
 
-def iteration_panel(ax, sheet, temperatures, colors, ymax):
-    for column, (temperature, color) in enumerate(zip(temperatures, colors), start=2):
-        iteration, gap = read_pair(sheet, 1, column, first_row=4)
+def iteration_columns(sheet):
+    """Map each temperature in the header row (row 3) to its column number."""
+    header = next(sheet.iter_rows(min_row=3, max_row=3, values_only=True))
+    columns = {}
+    for number, title in enumerate(header, start=1):
+        match = re.search(r",\s*([\d.]+)\s*K$", str(title or ""))
+        if match:
+            columns[float(match[1])] = number
+    return columns
+
+def iteration_panel(ax, sheet, temperatures, colors, ymax, legend_loc="lower right"):
+    if len(temperatures) != len(colors):
+        raise ValueError(f"{len(temperatures)} temperatures but {len(colors)} colours for {sheet.title}")
+    columns = iteration_columns(sheet)
+    for temperature, color in zip(temperatures, colors):
+        if float(temperature) not in columns:
+            raise KeyError(f"No {temperature} K column in {sheet.title}; found {sorted(columns)}")
+        iteration, gap = read_pair(sheet, 1, columns[float(temperature)], first_row=4)
         if np.any(gap <= 0):
             raise ValueError(f"Non-positive gap on logarithmic axis in {sheet.title}")
         ax.semilogy(iteration, gap, color=color, label=f"{temperature} K")
@@ -106,7 +124,7 @@ def iteration_panel(ax, sheet, temperatures, colors, ymax):
     ax.yaxis.set_major_locator(LogLocator(base=10))
     ax.yaxis.set_minor_locator(LogLocator(base=10, subs=list(range(2, 10))))
     ax.yaxis.set_minor_formatter(NullFormatter())
-    legend(ax, loc="lower right")
+    legend(ax, loc=legend_loc)
 
 def make_figure(workbook_path):
     workbook = load_workbook(workbook_path, read_only=True, data_only=True)
@@ -130,8 +148,8 @@ def make_figure(workbook_path):
             # ax.set(xlim=(0, 16), ylim=(0, 2.5), xlabel=r"$T$ (K)")
             ax.set(xlim=(0, 16), ylim=(0, 2.5), xlabel=r"Temperature (K)")
             ax.set_title("(a) Trilayer cubic and 1H-β-beryllene")
-            ax.text(1.2, 0.8, r"$T_\mathrm{c}^{\mathrm{iso}}=3.7$ K", color=TRILAYER, fontsize=16)
-            ax.text(8.5, 1.6, r"$T_\mathrm{c}^{\mathrm{iso}}=11.6$ K", color=BETA_1H, fontsize=16)
+            ax.text(1.2, 0.8, r"$T_\mathrm{c}^{\mathrm{iso}}=3.7$ K", color="#eb731e", fontsize=18)
+            ax.text(8.5, 1.6, r"$T_\mathrm{c}^{\mathrm{iso}}=11.6$ K", color="#146ed7", fontsize=18)
             ax.xaxis.set_major_locator(MultipleLocator(5))
             ax.xaxis.set_minor_locator(AutoMinorLocator(5))
             ax.yaxis.set_minor_locator(AutoMinorLocator(5))
@@ -139,7 +157,8 @@ def make_figure(workbook_path):
 
             ax = axes[0, 1]
             iteration_panel(ax, workbook["Fig. 1b"], ("14.0","14.1","14.2","14.5","15.5","17.0"),
-                            ("#8c64f0", "#146ed7", "#28AF3C", "#FA8C00", "#FAC828", "#FF644B"), 3)
+                            ("#8c64f0", "#1478e1", "#28AF3C", "#FAC828", "#FA8C00", "#FF644B"), 3,
+                            legend_loc="upper right")  # lower right would touch the 14.2 K line
             ax.set_xlim(0, 5200)
             ax.set_title("(b) 1H-β-beryllene: anisotropic")
 
@@ -151,7 +170,7 @@ def make_figure(workbook_path):
             # ax.set(xlim=(0, 35), ylim=(0, 6), xlabel=r"$T$ (K)")
             ax.set(xlim=(0, 35), ylim=(0, 6), xlabel=r"Temperature (K)")
             ax.set_title("(c) 2H-β-beryllene")
-            ax.text(20, 5, r"$T_\mathrm{c}^{\mathrm{iso}}=28.3$ K", color=BETA_2H, fontsize=16)
+            ax.text(18, 5, r"$T_\mathrm{c}^{\mathrm{iso}}=28.3$ K", color="#1e7878", fontsize=18)
             ax.xaxis.set_major_locator(MultipleLocator(10))
             ax.xaxis.set_minor_locator(AutoMinorLocator(5))
             ax.yaxis.set_minor_locator(AutoMinorLocator(5))
@@ -159,7 +178,7 @@ def make_figure(workbook_path):
 
             ax = axes[1, 1]
             iteration_panel(ax, workbook["Fig. 1d"], ("29", "30", "31", "32", "34","36"),
-                            ("#8c64f0", "#146ed7", "#28AF3C", "#FA8C00", "#FAC828", "#FF644B"), 10)
+                            ("#8c64f0", "#1478e1", "#28AF3C", "#FAC828", "#FA8C00", "#FF644B"), 10)
             ax.set_xlim(0, 3100)
             ax.set_title("(d) 2H-β-beryllene: anisotropic")
             fig.align_ylabels(axes[:, 0])
