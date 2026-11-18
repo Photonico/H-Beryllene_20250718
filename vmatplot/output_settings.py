@@ -428,7 +428,7 @@ def color_sampling(color_family):
         color_set.append("#D25ADC") # color[4]: px-orbital
         color_set.append("#F03C64") # color[5]: py-orbital
         color_set.append("#FA8C00") # color[6]: pz-orbital
-        color_set.append("#FAC828") # color[7]
+        color_set.append("#f5be1e") # color[7]
         color_set.append("#96C800") # color[8]: d-orbital
         color_set.append("#14AFAF") # color[9]: f-orbital
         color_set.append("#1E8CA0") # color[10]
@@ -441,7 +441,7 @@ def color_sampling(color_family):
 
         color_set.append("#E1322D")
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         color_set.append("#19A0A0")
@@ -456,7 +456,7 @@ def color_sampling(color_family):
 
         color_set.append("#E1322D")
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         color_set.append("#19A0A0")
@@ -470,7 +470,7 @@ def color_sampling(color_family):
         color_set.append("#FF644B")
 
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         color_set.append("#19A0A0")
@@ -484,7 +484,7 @@ def color_sampling(color_family):
         color_set.append("#FA8C00")
         color_set.append("#FFA03C")
 
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         color_set.append("#19A0A0")
@@ -495,9 +495,9 @@ def color_sampling(color_family):
         return color_set
 
     if color_family in ("Yellow", "yellow", "Gold", "gold"):
-        color_set.append("#EBC31E")
-        color_set.append("#FAC828")
-        color_set.append("#FFD732")
+        color_set.append("#ebb914")
+        color_set.append("#f5be1e")
+        color_set.append("#ffd21e")
 
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
@@ -521,7 +521,7 @@ def color_sampling(color_family):
         color_set.append("#D25ADC")
         color_set.append("#F03C64")
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         return color_set
 
     if color_family in ("Green", "green"):
@@ -535,7 +535,7 @@ def color_sampling(color_family):
         color_set.append("#D25ADC")
         color_set.append("#F03C64")
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         return color_set
 
@@ -549,7 +549,7 @@ def color_sampling(color_family):
         color_set.append("#D25ADC")
         color_set.append("#F03C64")
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         return color_set
@@ -563,7 +563,7 @@ def color_sampling(color_family):
         color_set.append("#D25ADC") # color[4]
         color_set.append("#F03C64") # color[5]
         color_set.append("#FA8C00") # color[6]
-        color_set.append("#FAC828") # color[7]
+        color_set.append("#f5be1e") # color[7]
         color_set.append("#96BE2D") # color[8]
         color_set.append("#28AF3C") # color[9]
         color_set.append("#19A0A0") # color[10]
@@ -577,7 +577,7 @@ def color_sampling(color_family):
         color_set.append("#D25ADC")
         color_set.append("#F03C64")
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         color_set.append("#19A0A0")
@@ -591,7 +591,7 @@ def color_sampling(color_family):
 
         color_set.append("#F03C64")
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         color_set.append("#19A0A0")
@@ -605,7 +605,7 @@ def color_sampling(color_family):
         color_set.append("#F03C64")
 
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         color_set.append("#19A0A0")
@@ -620,7 +620,7 @@ def color_sampling(color_family):
         color_set.append("#D29650")
 
         color_set.append("#FA8C00")
-        color_set.append("#FAC828")
+        color_set.append("#f5be1e")
         color_set.append("#96BE2D")
         color_set.append("#28AF3C")
         color_set.append("#19A0A0")

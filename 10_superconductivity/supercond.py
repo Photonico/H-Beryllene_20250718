@@ -33,6 +33,7 @@ BETA_1H = "#1478e1"    # 1H-β-beryllene
 BETA_2H = "#19a0a0"    # 2H-β-beryllene
 GREY = "#787878"
 LINE_WIDTH = 1.5
+ITERATION_COLORS = ("#8c64f0", "#1478e1", "#19a0a0", "#28AF3C", "#f5be1e", "#fa8c00", "#FF644B")
 
 # Local copies of the repository's article presentation settings; standalone
 # by design, with no imports from or changes to vmatplot.
@@ -116,7 +117,7 @@ def iteration_panel(ax, sheet, temperatures, colors, ymax, legend_loc="lower rig
         iteration, gap = read_pair(sheet, 1, columns[float(temperature)], first_row=4)
         if np.any(gap <= 0):
             raise ValueError(f"Non-positive gap on logarithmic axis in {sheet.title}")
-        ax.semilogy(iteration, gap, color=color, label=f"{temperature} K")
+        ax.semilogy(iteration, gap, color=color, linewidth=2.0, label=f"{temperature} K")
     ax.set_xlabel("Migdal–Eliashberg iteration")
     ax.set_ylim(1e-2 if ymax == 3 else 1e-3, ymax)
     ax.xaxis.set_major_locator(MultipleLocator(1000))
@@ -156,8 +157,8 @@ def make_figure(workbook_path):
             legend(ax, handles, loc="upper left")
 
             ax = axes[0, 1]
-            iteration_panel(ax, workbook["Fig. 1b"], ("14.0","14.1","14.2","14.5","15.5","17.0"),
-                            ("#8c64f0", "#1478e1", "#28AF3C", "#f0be1e", "#fa8c00", "#ff644b"), 3,
+            iteration_panel(ax, workbook["Fig. 1b"], ("14.0", "14.1", "14.2", "14.5", "15.5", "16.0", "17.0"),
+                            ITERATION_COLORS, 3,
                             legend_loc="upper right")  # lower right would touch the 14.2 K line
             ax.set_xlim(0, 5200)
             ax.set_title("(b) 1H-β-beryllene: anisotropic")
@@ -177,8 +178,8 @@ def make_figure(workbook_path):
             legend(ax, handles, loc="lower left")
 
             ax = axes[1, 1]
-            iteration_panel(ax, workbook["Fig. 1d"], ("29", "30", "31", "32", "34","36"),
-                            ("#8c64f0", "#1478e1", "#28AF3C", "#f0be1e", "#fa8c00", "#FF644B"), 10)
+            iteration_panel(ax, workbook["Fig. 1d"], ("29", "30", "31", "32", "34", "36", "38"),
+                            ITERATION_COLORS, 10)
             ax.set_xlim(0, 3100)
             ax.set_title("(d) 2H-β-beryllene: anisotropic")
             fig.align_ylabels(axes[:, 0])
