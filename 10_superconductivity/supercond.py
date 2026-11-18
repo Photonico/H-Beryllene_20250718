@@ -139,7 +139,7 @@ def make_figure(workbook_path):
 
             ax = axes[0, 1]
             iteration_panel(ax, workbook["Fig. 1b"], ("14.0","14.1","14.2","14.5","15.5","17.0"),
-                            ("#8c64f0", "#146ed7", "#238C4B", "#FA8C00", "#FAC828", "#FF644B"), 3)
+                            ("#8c64f0", "#146ed7", "#28AF3C", "#FA8C00", "#FAC828", "#FF644B"), 3)
             ax.set_xlim(0, 5200)
             ax.set_title("(b) 1H-β-beryllene: anisotropic")
 
@@ -159,7 +159,7 @@ def make_figure(workbook_path):
 
             ax = axes[1, 1]
             iteration_panel(ax, workbook["Fig. 1d"], ("29", "30", "31", "32", "34","36"),
-                            ("#8c64f0", "#146ed7", "#238C4B", "#FA8C00", "#FAC828", "#FF644B"), 10)
+                            ("#8c64f0", "#146ed7", "#28AF3C", "#FA8C00", "#FAC828", "#FF644B"), 10)
             ax.set_xlim(0, 3100)
             ax.set_title("(d) 2H-β-beryllene: anisotropic")
             fig.align_ylabels(axes[:, 0])
