@@ -10,7 +10,7 @@ import numpy as np
 import h5py
 
 from vmatplot.commons import extract_fermi, process_boundary_alt, process_boundaries_rescaling_alt, extract_part
-from vmatplot.output_settings import canvas_setting, color_sampling
+from vmatplot.output_settings import canvas_setting, color_sampling, subplot_title, subplot_legend, figure_version
 from vmatplot.algorithms import energy_to_wavelength, wavelength_to_energy
 
 from matplotlib.colors import ListedColormap
@@ -1940,7 +1940,8 @@ def plot_dielectric_function(suptitle, systems=None, components=None,
     dataset = dielectric_systems_list(systems)
 
     ## suptitle
-    fig.suptitle(f"{suptitle}\n", fontsize=fig_setting[3][0])
+    # the blank line keeps the article subtitles clear of the suptitle; thesis subtitles sit inside the axes
+    fig.suptitle(suptitle if figure_version() == "thesis" else f"{suptitle}\n", fontsize=fig_setting[3][0])
 
     ## data boundary
     photon_start, photon_end = process_boundary_alt(x_boundary)
@@ -1960,7 +1961,7 @@ def plot_dielectric_function(suptitle, systems=None, components=None,
 
             ## subtitles and axis label (self-assertive)
             # subtitles
-            ax.set_title([f"Real part for {comp_aliases[component_index]}", f"Imaginary part for {comp_aliases[component_index]}"][subplot_index%2])
+            subplot_title(ax, [f"Real part for {comp_aliases[component_index]}", f"Imaginary part for {comp_aliases[component_index]}"][subplot_index%2])
             # ylabel
             if layout_flag == "vertical" and subplot_index%2 == 0:
                 ax.set_ylabel("Dielectric function", fontsize=14+2*ncols)
@@ -2060,7 +2061,7 @@ def plot_dielectric_function(suptitle, systems=None, components=None,
             else: pass
 
             # Legend
-            ax.legend(loc="best")
+            subplot_legend(ax)
             ax.ticklabel_format(style="sci", axis="y", scilimits=(-3,3), useOffset=False, useMathText=True)
     else:
         for subplot_index in range(len(components)):
@@ -2148,7 +2149,7 @@ def plot_dielectric_function(suptitle, systems=None, components=None,
             else: pass
 
             # subtitles and axis label (self-assertive): subtitles
-            ax.set_title(comp_aliases[component_index])
+            subplot_title(ax, comp_aliases[component_index])
             if allcomps_flag is True and layout_flag == "horizontal":
                 if subplot_index in [0, len(components)/3, 2*len(components)/3]:
                     ax.set_ylabel("Dielectric function", fontsize=14+2*ncols)
@@ -2178,7 +2179,7 @@ def plot_dielectric_function(suptitle, systems=None, components=None,
                 if subplot_index == 0:
                     ax.set_ylabel("Dielectric function", fontsize=14+2*ncols)
 
-            ax.legend(loc="best")
+            subplot_legend(ax)
             ax.ticklabel_format(style="sci", axis="y", scilimits=(-3,3), useOffset=False, useMathText=True)
 
     plt.tight_layout()

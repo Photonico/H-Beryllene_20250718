@@ -3,6 +3,7 @@
 
 import os
 import math
+import numpy as np
 import matplotlib.pyplot as plt
 
 import matplotlib as mpl
@@ -190,6 +191,175 @@ def fit_thesis_text(fig=None, margin=0.01):
             ax.tick_params(axis="x", which="both", labelsize=size*spacing/needed)
     return fig
 
+## Thesis subplot labels
+# Same look as the chapter 6 (o-B14) thesis figures: the subplot title sits inside the upper-left corner of the axes
+# in a translucent white rounded box with a light grey border, and a shared legend panel keeps a rounded frame.
+PANEL_LABEL_FONTSIZE = None                                     # None: the subtitle size of the current typography
+PANEL_LABEL_BOX = dict(boxstyle="round,pad=0.2", facecolor="white", alpha=.75, edgecolor="#B4B4B4", linewidth=1.5)
+PANEL_LABEL_INSET = 8                                           # points from the left and top edges of the axes
+PANEL_LEGEND_FONTSIZE = 22                                      # shared legend in the free panel of a thesis grid
+
+def panel_label(ax, text):
+    # Thesis subplot title inside the upper-left corner of the axes
+    label = ax.annotate(text, xy=(0, 1), xycoords="axes fraction", xytext=(PANEL_LABEL_INSET, -PANEL_LABEL_INSET),
+                        textcoords="offset points", ha="left", va="top",
+                        fontsize=PANEL_LABEL_FONTSIZE or plt.rcParams["axes.titlesize"],
+                        bbox=PANEL_LABEL_BOX, zorder=6)
+    ax._thesis_panel_label = label
+    return label
+
+def subplot_title(ax, text):
+    # Above the axes for the article version, inside the upper-left corner for the thesis version
+    if figure_settings["version"] == "thesis":
+        return panel_label(ax, text)
+    return ax.set_title(text)
+
+def panel_legend(ax, handles, labels):
+    # Shared legend centred in an empty panel, framed like the chapter 6 legend panels
+    ax.axis("off")
+    return ax.legend(handles, labels, loc="center", frameon=True, fancybox=True, fontsize=PANEL_LEGEND_FONTSIZE)
+
+PANEL_INSET_LEGEND_FONTSIZE = None                              # None: the tick-label size of the current typography
+PANEL_GAP = 4                                                   # points kept between a curve and a label or legend
+LEGEND_PLACES = ("upper right", "upper right below label", "lower right", "lower left", "center right",
+                 "upper center", "lower center", "center left", "center")  # preference order at equal cost
+
+def subplot_legend(ax):
+    # Legend inside a subplot: placed by matplotlib ("best") for the article version; for the thesis version set in
+    # the tick-label size and placed when the figure is saved, see arrange_thesis_panels()
+    if figure_settings["version"] != "thesis":
+        return ax.legend(loc="best")
+    legend = ax.legend(loc="upper right", fontsize=PANEL_INSET_LEGEND_FONTSIZE or plt.rcParams["xtick.labelsize"])
+    ax._thesis_legend = legend
+    return legend
+
+def _segments_between(ax, left, right):
+    # Data-y values at both ends of every visible curve segment, clipped to the display-x window [left, right]
+    starts, ends = [], []
+    lower = ax.get_ylim()[0]
+    for line in ax.lines:
+        if not line.get_visible():
+            continue
+        xy = np.asarray(line.get_xydata(), dtype=float)
+        xy = xy[np.isfinite(xy).all(axis=1)]
+        if len(xy) == 0:
+            continue
+        x = ax.transData.transform(np.column_stack([xy[:, 0], np.full(len(xy), lower)]))[:, 0]
+        y = xy[:, 1]
+        if len(x) == 1:
+            x, y = np.repeat(x, 2), np.repeat(y, 2)
+        x0, x1, y0, y1 = x[:-1], x[1:], y[:-1], y[1:]
+        keep = (np.maximum(x0, x1) >= left) & (np.minimum(x0, x1) <= right)
+        x0, x1, y0, y1 = x0[keep], x1[keep], y0[keep], y1[keep]
+        vertical = x1 == x0
+        span = np.where(vertical, 1., x1 - x0)
+        t_left, t_right = (left - x0)/span, (right - x0)/span
+        t0 = np.where(vertical, 0., np.clip(np.minimum(t_left, t_right), 0, 1))
+        t1 = np.where(vertical, 1., np.clip(np.maximum(t_left, t_right), 0, 1))
+        starts.append(y0 + t0*(y1 - y0))
+        ends.append(y0 + t1*(y1 - y0))
+    if not starts:
+        return np.empty(0), np.empty(0)
+    return np.concatenate(starts), np.concatenate(ends)
+
+def _fit_limits(lower, upper, below, above):
+    # Smallest expansion of (lower, upper) such that every (value, fraction) in `below` lies below that fraction of the
+    # axes height and every (value, fraction) in `above` lies above it; None when no expansion can satisfy both
+    if any(not 0 < f < 1 for _, f in below + above):
+        return None
+    for _ in range(200):
+        new_upper = max([upper] + [lower + (v - lower)/f for v, f in below])
+        new_lower = min([lower] + [(v - f*new_upper)/(1 - f) for v, f in above])
+        if np.isclose(new_upper, upper, rtol=1e-9) and np.isclose(new_lower, lower, rtol=1e-9):
+            return new_lower, new_upper
+        lower, upper = new_lower, new_upper
+    return None
+
+def arrange_thesis_panels(fig=None, gap=PANEL_GAP):
+    # Keep curves clear of the thesis panel labels and in-panel legends with the smallest change of the y limits.
+    # Each legend place is tried; anchored places (upper/lower) may widen the y range, other places must already be
+    # free. The place that needs the smallest widening wins, upper right when nothing needs to change. Curves clipped
+    # by a limit are left clipped, and images spanning the full height (visible-spectrum bands) follow the new limits.
+    fig = plt.gcf() if fig is None else fig
+    axes = [ax for ax in fig.axes if getattr(ax, "_thesis_panel_label", None) is not None and ax.get_yscale() == "linear"]
+    if not axes:
+        return fig
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    pad = gap*fig.dpi/72
+    for ax in axes:
+        lower, upper = ax.get_ylim()
+        frame = ax.bbox
+
+        def rule(box, keep_below):
+            # (value, fraction) constraint for the curves under a box anchored to the top or bottom of the axes
+            starts, ends = _segments_between(ax, box.x0 - pad, box.x1 + pad)
+            if starts.size == 0:
+                return []
+            if keep_below:
+                if max(starts.max(), ends.max()) > upper:
+                    return None
+                return [(max(starts.max(), ends.max()), (box.y0 - pad - frame.y0)/frame.height)]
+            if min(starts.min(), ends.min()) < lower:
+                return None
+            return [(min(starts.min(), ends.min()), (box.y1 + pad - frame.y0)/frame.height)]
+
+        label = ax._thesis_panel_label.get_bbox_patch().get_window_extent(renderer)
+        label_rule = rule(label, True) or []
+        legend = getattr(ax, "_thesis_legend", None)
+        limits = _fit_limits(lower, upper, label_rule, [])
+        # A non-negative quantity (e.g. an imaginary part) is never given room below zero
+        everything = _segments_between(ax, frame.x0, frame.x1)
+        negative = everything[0].size > 0 and min(everything[0].min(), everything[1].min()) < 0
+
+        def place_legend(place):
+            if place == "upper right below label":
+                legend.set_loc("upper right")
+                legend.set_bbox_to_anchor((0, 0, 1, (label.y0 - frame.y0)/frame.height), transform=ax.transAxes)
+            else:
+                legend.set_loc(place)
+                legend.set_bbox_to_anchor(None)
+
+        if legend is not None:
+            choice = None
+            for place in LEGEND_PLACES:
+                place_legend(place)
+                box = legend.get_window_extent(renderer)
+                if box.padded(pad).overlaps(label):
+                    continue
+                below, above = list(label_rule), []
+                if place.startswith(("upper", "lower")):
+                    extra = rule(box, place.startswith("upper"))
+                    if extra is None:
+                        continue
+                    (below if place.startswith("upper") else above).extend(extra)
+                fitted = _fit_limits(lower, upper, below, above)
+                if fitted is None or (fitted[0] < lower and not negative):
+                    continue
+                if not place.startswith(("upper", "lower")):
+                    starts, ends = _segments_between(ax, box.x0 - pad, box.x1 + pad)
+                    scale = frame.height/(fitted[1] - fitted[0])
+                    low = frame.y0 + (np.minimum(starts, ends) - fitted[0])*scale
+                    high = frame.y0 + (np.maximum(starts, ends) - fitted[0])*scale
+                    if ((low <= box.y1 + pad) & (high >= box.y0 - pad)).any():
+                        continue
+                cost = (fitted[1] - fitted[0])/(upper - lower)
+                if choice is None or cost < choice[0] - 1e-9:
+                    choice = (cost, place, fitted)
+            if choice is None:
+                place_legend("best")
+            else:
+                place_legend(choice[1])
+                limits = choice[2]
+        if limits is None or np.allclose(limits, (lower, upper)):
+            continue
+        for image in ax.images:
+            x0, x1, y0, y1 = image.get_extent()
+            if np.isclose(y0, lower) and np.isclose(y1, upper):
+                image.set_extent([x0, x1, *limits])
+        ax.set_ylim(*limits)
+    return fig
+
 def save_figure(name, directory="figures", **kwargs):
     # Save the current figure as <directory>/<name>.pdf (article) or <directory>/<name>_thesis.pdf (thesis);
     # the PDF carries no creation date, so rerunning a notebook reproduces the file byte for byte
@@ -198,6 +368,7 @@ def save_figure(name, directory="figures", **kwargs):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     if suffix:
         fit_thesis_text(plt.gcf())
+        arrange_thesis_panels(plt.gcf())
     plt.savefig(path, metadata={"CreationDate": None}, **kwargs)
     return path
 

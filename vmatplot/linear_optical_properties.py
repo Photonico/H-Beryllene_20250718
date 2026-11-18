@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from vmatplot.dielectric_function import dielectric_systems_list
 from vmatplot.commons import process_boundary_alt, extract_part
-from vmatplot.output_settings import canvas_setting, color_sampling, figure_version
+from vmatplot.output_settings import canvas_setting, color_sampling, figure_version, subplot_title, subplot_legend, panel_legend
 from vmatplot.algorithms import energy_to_wavelength, energy_to_frequency, wavelength_to_energy
 
 from matplotlib.colors import ListedColormap
@@ -585,7 +585,7 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
 
             # components index and subtitles
             component_index = subplot_index
-            ax.set_title(comp_aliases[component_index])
+            subplot_title(ax, comp_aliases[component_index])
 
             # current component key and label
             current_component = comp_labels[component_index].lower()
@@ -634,7 +634,7 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
 
             # axis labels
             if legend_panel is None:
-                ax.legend(loc="best")
+                subplot_legend(ax)
             if layout_flag == "horizontal" and len(components) == 2:
                 ax.set_xlabel(xaxis_str, fontsize=14+2*nrows)
                 if subplot_index == 0:
@@ -676,9 +676,8 @@ def plot_linear_optical_property(suptitle, systems=None, properties=None, compon
 
         # shared legend in the free panel of the thesis grid
         if legend_panel is not None:
-            legend_panel.axis("off")
             handles, labels = axes_element[0].get_legend_handles_labels()
-            legend_panel.legend(handles, labels, loc="center", frameon=False, fontsize=params["legend.fontsize"]+3)
+            panel_legend(legend_panel, handles, labels)
             plt.tight_layout()
 
 def plot_merged_linear_optical_property(suptitle, systems=None, properties=None, components="xx",

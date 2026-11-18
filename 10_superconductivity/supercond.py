@@ -23,9 +23,11 @@ import numpy as np
 from openpyxl import load_workbook
 
 HERE = Path(__file__).resolve().parent
-BLUE = "#1464cd"
-CYAN = "#0a8c8c"
-WINE = "#C82364"
+# One colour per material, as in supercond_a2f.py, except trilayer cubic beryllene: orange marks a
+# temperature in the iteration panels (b) and (d), so trilayer cubic beryllene is drawn in rose here
+TRILAYER = "#d22864"   # trilayer cubic beryllene
+BETA_1H = "#146ed7"    # 1H-β-beryllene
+BETA_2H = "#19a0a0"    # 2H-β-beryllene
 GREY = "#787878"
 LINE_WIDTH = 1.5
 
@@ -61,9 +63,8 @@ def read_pair(sheet, x_column, y_column, first_row=5):
 
 def isotropic(ax, sheet, raw_columns, fit_columns, color, marker, label):
     ms = 10.0  # circle diameter (pt)
-    if marker == "s":
-        ms *= np.sqrt(np.pi) / 2  # square side giving the same area as the circle
-        # ms = 8
+    if marker in ("s", "D"):
+        ms *= np.sqrt(np.pi) / 2  # square side (a diamond is a rotated square) giving the circle's area
     temperature, gap = read_pair(sheet, *raw_columns)
     fit_temperature, fit_gap = read_pair(sheet, *fit_columns)
     ax.plot(fit_temperature, fit_gap, color=color, zorder=2)
@@ -71,16 +72,18 @@ def isotropic(ax, sheet, raw_columns, fit_columns, color, marker, label):
             mec="white", mew=1.0, zorder=3)
     return Line2D([], [], color=color, marker=marker, ms=ms, mec="white", mew=1.0, label=label)
 
+ANISOTROPIC_MS = 10.0  # open pentagon, circumscribed-circle diameter (pt)
+
 def anisotropic(ax, sheet, columns, color, label):
     temperature, gap = read_pair(sheet, *columns)
-    ax.plot(temperature, gap, ls="none", marker="D", ms=8, mfc="none",
+    ax.plot(temperature, gap, ls="none", marker="p", ms=ANISOTROPIC_MS, mfc="none",
             mec=color, mew=LINE_WIDTH, zorder=4)
-    return Line2D([], [], ls="none", marker="D", ms=8, mfc="none", mec=color,
+    return Line2D([], [], ls="none", marker="p", ms=ANISOTROPIC_MS, mfc="none", mec=color,
                   mew=LINE_WIDTH, label=label)
 
 def critical_window(ax, sheet, columns, color, estimate):
     lower, upper = (float(sheet.cell(5, column).value) for column in columns)
-    ax.axvspan(lower, upper, color=color, alpha=.12, lw=0, zorder=0)
+    ax.axvspan(lower, upper, color=color, alpha=.15, lw=0, zorder=0)
     ax.text(upper, 0.6, rf"anisotropic $T_\mathrm{{c}} \approx {estimate}$ K",
             transform=ax.get_xaxis_transform(), rotation=90, ha="center", va="center",
             fontsize=16, color="#141414")
@@ -120,43 +123,43 @@ def make_figure(workbook_path):
 
             ax = axes[0, 0]
             sheet = workbook["Fig. 1a"]
-            handles = [isotropic(ax, sheet, (7, 8), (10, 11), BLUE, "o", "1H-β-beryllene, isotropic"),
-                       isotropic(ax, sheet, (1, 2), (4, 5), CYAN, "s", "Trilayer cubic beryllene, isotropic"),
-                       anisotropic(ax, sheet, (13, 14), BLUE, "1H-β-beryllene, anisotropic")]
-            critical_window(ax, sheet, (17, 18), BLUE, "14.2")
+            handles = [isotropic(ax, sheet, (7, 8), (10, 11), BETA_1H, "o", "1H-β-beryllene, isotropic"),
+                       isotropic(ax, sheet, (1, 2), (4, 5), TRILAYER, "D", "Trilayer cubic beryllene, isotropic"),
+                       anisotropic(ax, sheet, (13, 14), BETA_1H, "1H-β-beryllene, anisotropic")]
+            critical_window(ax, sheet, (17, 18), BETA_1H, "14.2")
             # ax.set(xlim=(0, 16), ylim=(0, 2.5), xlabel=r"$T$ (K)")
             ax.set(xlim=(0, 16), ylim=(0, 2.5), xlabel=r"Temperature (K)")
             ax.set_title("(a) Trilayer cubic and 1H-β-beryllene")
-            ax.text(1.2, 0.8, r"$T_\mathrm{c}^{\mathrm{iso}}=3.7$ K", color=CYAN, fontsize=16)
-            ax.text(8.5, 1.6, r"$T_\mathrm{c}^{\mathrm{iso}}=11.6$ K", color=BLUE, fontsize=16)
+            ax.text(1.2, 0.8, r"$T_\mathrm{c}^{\mathrm{iso}}=3.7$ K", color=TRILAYER, fontsize=16)
+            ax.text(8.5, 1.6, r"$T_\mathrm{c}^{\mathrm{iso}}=11.6$ K", color=BETA_1H, fontsize=16)
             ax.xaxis.set_major_locator(MultipleLocator(5))
             ax.xaxis.set_minor_locator(AutoMinorLocator(5))
             ax.yaxis.set_minor_locator(AutoMinorLocator(5))
             legend(ax, handles, loc="upper left")
 
             ax = axes[0, 1]
-            iteration_panel(ax, workbook["Fig. 1b"], ("14.0", "14.1", "14.2", "14.5"),
-                            ("#1464cd", "#238C4B", "#FA8C00", "#C81423"), 3)
+            iteration_panel(ax, workbook["Fig. 1b"], ("14.0","14.1","14.2","14.5","15.5","17.0"),
+                            ("#8c64f0", "#146ed7", "#238C4B", "#FA8C00", "#FAC828", "#FF644B"), 3)
             ax.set_xlim(0, 5200)
             ax.set_title("(b) 1H-β-beryllene: anisotropic")
 
             ax = axes[1, 0]
             sheet = workbook["Fig. 1c"]
-            handles = [isotropic(ax, sheet, (1, 2), (4, 5), WINE, "o", "2H-β-beryllene, isotropic"),
-                       anisotropic(ax, sheet, (7, 8), WINE, "2H-β-beryllene, anisotropic")]
-            critical_window(ax, sheet, (11, 12), WINE, "31.7")
+            handles = [isotropic(ax, sheet, (1, 2), (4, 5), BETA_2H, "o", "2H-β-beryllene, isotropic"),
+                       anisotropic(ax, sheet, (7, 8), BETA_2H, "2H-β-beryllene, anisotropic")]
+            critical_window(ax, sheet, (11, 12), BETA_2H, "31.7")
             # ax.set(xlim=(0, 35), ylim=(0, 6), xlabel=r"$T$ (K)")
             ax.set(xlim=(0, 35), ylim=(0, 6), xlabel=r"Temperature (K)")
             ax.set_title("(c) 2H-β-beryllene")
-            ax.text(20, 5, r"$T_\mathrm{c}^{\mathrm{iso}}=28.3$ K", color=WINE, fontsize=16)
+            ax.text(20, 5, r"$T_\mathrm{c}^{\mathrm{iso}}=28.3$ K", color=BETA_2H, fontsize=16)
             ax.xaxis.set_major_locator(MultipleLocator(10))
             ax.xaxis.set_minor_locator(AutoMinorLocator(5))
             ax.yaxis.set_minor_locator(AutoMinorLocator(5))
             legend(ax, handles, loc="lower left")
 
             ax = axes[1, 1]
-            iteration_panel(ax, workbook["Fig. 1d"], ("30", "31", "32", "34"),
-                            ("#1464cd", "#238C4B", "#FA8C00", "#C81423"), 10)
+            iteration_panel(ax, workbook["Fig. 1d"], ("29", "30", "31", "32", "34","36"),
+                            ("#8c64f0", "#146ed7", "#238C4B", "#FA8C00", "#FAC828", "#FF644B"), 10)
             ax.set_xlim(0, 3100)
             ax.set_title("(d) 2H-β-beryllene: anisotropic")
             fig.align_ylabels(axes[:, 0])

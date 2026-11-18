@@ -28,6 +28,8 @@ from matplotlib.transforms import Affine2D
 from vmatplot.output_settings import color_sampling, canvas_setting, figure_version, LINE_WIDTH, FERMI_STYLE
 from vmatplot.topology_figures import topology_canvas, STYLES
 
+UPPER_BAND_COLOR = "#A0A0A0"    # bands above the selected subspace(s) in the topology band figures
+
 import matplotlib as mpl
 
 mpl.rcParams["lines.solid_capstyle"] = "round"
@@ -43,6 +45,8 @@ superseded_ids = {"beta"}
 
 # Blue[1], Orange[1] and Cyan[1] pass the colour-blind all-pairs check (worst ΔE 15.4, tritan 6.1);
 # Orange is below 3:1 on white, so it is always direct-labelled.
+# The gap-zoom figure uses the same three colours with Orange for trilayer cubic beryllene (as in the a2F figure)
+# and Cyan for β-beryllene.
 # White to navy; every RGB component is a multiple of five.
 heatmap_rgb = np.array([(255, 255, 255), (210, 235, 245), (155, 210, 230),
                         (85, 165, 205), (30, 120, 175), (10, 60, 125), (5, 30, 85)])
@@ -827,7 +831,7 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
                 ax_bands.plot(kpath, eigenvalues[:, band], c=color, lw=LINE_WIDTH, zorder=4)
             lower = subspace
         for band in range(lower, eigenvalues.shape[1]):
-            ax_bands.plot(kpath, eigenvalues[:, band], c=annotate_color[2], lw=LINE_WIDTH, zorder=3)
+            ax_bands.plot(kpath, eigenvalues[:, band], c=UPPER_BAND_COLOR, lw=LINE_WIDTH, zorder=3)
         ax_bands.axhline(y=0, **FERMI_STYLE, zorder=2)
         ax_bands.set_ylim(*energy_window)
 
@@ -887,7 +891,7 @@ def plot_topology_bands(suptitle, matters_list=None, eigen_range=None, legend_lo
                 handles.append(Line2D([], [], c=colors[1], lw=LINE_WIDTH,
                                       label=f"{label} bands {subspaces[0] + 1}–{subspaces[1]}{separator}(with blue: lowest-{subspaces[1]} subspace)"))
                 break
-        handles += [Line2D([], [], c=annotate_color[2], lw=LINE_WIDTH, label="bands above selected subspace(s)"),
+        handles += [Line2D([], [], c=UPPER_BAND_COLOR, lw=LINE_WIDTH, label="bands above selected subspace(s)"),
                     Line2D([], [], c=annotate_color[0], lw=LINE_WIDTH, linestyle=":", label=("sampled BZ minimum of\n" + r"$E_{N+1}-E_N$") if legend_cell is not None else r"sampled BZ minimum of $E_{N+1}-E_N$"),
                     Line2D([], [], **FERMI_STYLE, label="Fermi energy")]
         if legend_cell is not None:
@@ -1096,12 +1100,13 @@ def plot_wcc(suptitle, matters_list=None):
 
     fig.subplots_adjust(left=.1, right=.98, bottom=.17, top=.84, wspace=.32)
 
-def plot_gap_zoom(title, matters_list=None):
+def plot_gap_zoom(title, matters_list=None, gap_range=(0, None)):
     # Help information
     help_info = """
     Usage: plot_gap_zoom
         arg[0]: title;
         arg[1]: matters list, [[label, structure directory, colour family], ...];
+        gap_range: limits of the gap axis in meV, default (0, None);
     Minimum direct gap of every adaptive-zoom level against the sampling radius; the vertical whisker reaches
     the heuristic local bound (minimum - largest neighbour slope x sampling radius) where that bound is positive.
     """
@@ -1141,7 +1146,7 @@ def plot_gap_zoom(title, matters_list=None):
     plt.title(f"{title}")
     plt.xscale("log")
     plt.xlim(max(radii) * 1.6, min(radii) / 1.6)
-    plt.ylim(0, None)
+    plt.ylim(*gap_range)
     plt.xlabel(r"Sampling radius (Å$^{-1}$), finer $\rightarrow$")
     plt.ylabel(r"Min. $E_{N+1}-E_N$ in patch (meV)")
 
