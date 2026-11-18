@@ -278,13 +278,14 @@ def _fit_limits(lower, upper, below, above):
         lower, upper = new_lower, new_upper
     return None
 
-def arrange_thesis_panels(fig=None, gap=PANEL_GAP):
+def arrange_thesis_panels(fig=None, gap=PANEL_GAP, legend_place=None):
     # Keep curves clear of the thesis panel labels and in-panel legends with the smallest change of the y limits.
     # Each legend place is tried; anchored places (upper/lower) may widen the y range, other places must already be
     # free. Corners are preferred (CORNER_PREFERENCE); among them the place needing the smallest widening wins, upper
     # right when nothing needs to change. A legend set below the panel label lines up with the label box. Curves
     # clipped by a limit are left clipped, and images spanning the full height (visible-spectrum bands) follow the
-    # new limits.
+    # new limits. legend_place (one of LEGEND_PLACES) fixes every legend of the figure to that place; the y limits
+    # are still widened as far as needed for it.
     fig = plt.gcf() if fig is None else fig
     # A panel label stays at least SUBTITLE_STEP points below the suptitle (which fit_thesis_text may have scaled down)
     suptitle = fig._suptitle
@@ -343,7 +344,7 @@ def arrange_thesis_panels(fig=None, gap=PANEL_GAP):
 
         if legend is not None:
             choice = None
-            for place in LEGEND_PLACES:
+            for place in ((legend_place,) if legend_place else LEGEND_PLACES):
                 place_legend(place)
                 box = legend.get_window_extent(renderer)
                 if box.padded(pad).overlaps(label):
@@ -381,15 +382,18 @@ def arrange_thesis_panels(fig=None, gap=PANEL_GAP):
         ax.set_ylim(*limits)
     return fig
 
-def save_figure(name, directory="figures", **kwargs):
+def save_figure(name, directory="figures", legend_place=None, **kwargs):
     # Save the current figure as <directory>/<name>.pdf (article) or <directory>/<name>_thesis.pdf (thesis);
-    # the PDF carries no creation date, so rerunning a notebook reproduces the file byte for byte
+    # the PDF carries no creation date, so rerunning a notebook reproduces the file byte for byte.
+    # legend_place fixes the in-panel legends of the thesis version, see arrange_thesis_panels()
+    if legend_place is not None and legend_place not in LEGEND_PLACES:
+        raise ValueError(f"legend_place must be one of {LEGEND_PLACES}")
     suffix = "_thesis" if figure_settings["version"] == "thesis" else ""
     path = os.path.join(directory, f"{name}{suffix}.pdf")
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     if suffix:
         fit_thesis_text(plt.gcf())
-        arrange_thesis_panels(plt.gcf())
+        arrange_thesis_panels(plt.gcf(), legend_place=legend_place)
     plt.savefig(path, metadata={"CreationDate": None}, **kwargs)
     return path
 
