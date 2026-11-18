@@ -194,7 +194,8 @@ def fit_thesis_text(fig=None, margin=0.01):
 ## Thesis subplot labels
 # Same look as the chapter 6 (o-B14) thesis figures: the subplot title sits inside the upper-left corner of the axes
 # in a translucent white rounded box with a light grey border, and a shared legend panel keeps a rounded frame.
-PANEL_LABEL_FONTSIZE = None     # None: the thesis subtitle size (thesis_titles[1]), never above the figure's suptitle
+SUBTITLE_STEP = 2               # subplot titles are at least this many points smaller than the figure's suptitle
+PANEL_LABEL_FONTSIZE = None     # None: thesis suptitle size minus SUBTITLE_STEP, and never above suptitle - SUBTITLE_STEP
 PANEL_LABEL_BOX = dict(boxstyle="round,pad=0.2", facecolor="white", alpha=.75, edgecolor="#B4B4B4", linewidth=1.5)
 PANEL_LABEL_INSET = 8                                           # points from the left and top edges of the axes
 PANEL_LEGEND_FONTSIZE = 22                                      # shared legend in the free panel of a thesis grid
@@ -203,7 +204,7 @@ def panel_label(ax, text):
     # Thesis subplot title inside the upper-left corner of the axes
     label = ax.annotate(text, xy=(0, 1), xycoords="axes fraction", xytext=(PANEL_LABEL_INSET, -PANEL_LABEL_INSET),
                         textcoords="offset points", ha="left", va="top",
-                        fontsize=PANEL_LABEL_FONTSIZE or thesis_titles[1],
+                        fontsize=PANEL_LABEL_FONTSIZE or thesis_titles[0] - SUBTITLE_STEP,
                         bbox=PANEL_LABEL_BOX, zorder=6)
     ax._thesis_panel_label = label
     return label
@@ -285,13 +286,14 @@ def arrange_thesis_panels(fig=None, gap=PANEL_GAP):
     # clipped by a limit are left clipped, and images spanning the full height (visible-spectrum bands) follow the
     # new limits.
     fig = plt.gcf() if fig is None else fig
-    # A panel label is never larger than the figure's suptitle (which fit_thesis_text may have scaled down)
+    # A panel label stays at least SUBTITLE_STEP points below the suptitle (which fit_thesis_text may have scaled down)
     suptitle = fig._suptitle
     if suptitle is not None and suptitle.get_text().strip():
+        ceiling = suptitle.get_fontsize() - SUBTITLE_STEP
         for ax in fig.axes:
             label = getattr(ax, "_thesis_panel_label", None)
-            if label is not None and label.get_fontsize() > suptitle.get_fontsize():
-                label.set_fontsize(suptitle.get_fontsize())
+            if label is not None and label.get_fontsize() > ceiling:
+                label.set_fontsize(ceiling)
     axes = [ax for ax in fig.axes if getattr(ax, "_thesis_panel_label", None) is not None and ax.get_yscale() == "linear"]
     if not axes:
         return fig

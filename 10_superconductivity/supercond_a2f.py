@@ -74,11 +74,13 @@ def read_a2f(path):
         raise ValueError(f"Missing or non-finite data in {path}")
     return data[:, 0], data[:, 1], data[:, 11]
 
+SUBTITLE_STEP = 2  # subplot titles are this many points smaller than the column titles, as in the other thesis figures
+
 def panel_label(ax, text):
     """Subplot title inside the upper-left corner, styled like the chapter 6 thesis figures."""
     return ax.annotate(text, xy=(0, 1), xycoords="axes fraction", xytext=(8, -8),
                        textcoords="offset points", ha="left", va="top", zorder=6,
-                       fontsize=STYLE["axes.titlesize"],
+                       fontsize=STYLE["axes.titlesize"] - SUBTITLE_STEP,
                        bbox=dict(boxstyle="round,pad=0.2", facecolor="white", alpha=.75,
                                  edgecolor="#B4B4B4", linewidth=1.5))
 
