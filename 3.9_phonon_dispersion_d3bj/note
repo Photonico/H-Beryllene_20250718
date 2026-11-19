@@ -8,4 +8,9 @@ You can take the data from the band.yaml file and plot the phonon dispersion cur
 
 * about this calculation
 
-Cell: 12 * 12 * 1
+- Structure: double-sided hydrogenated β-beryllene (2H-β-beryllene, top-top adsorption). The primitive cell contains 2 Be and 2 H atoms. Phonopy identifies space group C2/m (No. 12) with a symmetry tolerance of 10^-5 Å. The in-plane lattice vectors are 2.535 Å long with an angle of 131.88°. The cell height is 23.774 Å.
+- Supercell: 12 × 12 × 1, containing 576 atoms. Phonopy 4.10.0 generated eight finite displacements with amplitudes of ±0.010 Å. FORCE_SETS contains the forces for those displacements.
+- Force calculations: VASP with PBE PAW potentials and D3(BJ) dispersion (GGA = PE, IVDW = 12). The force inputs use a 600 eV plane-wave cutoff, a Γ-centred 5 × 5 × 1 electronic k-point mesh for the supercell, Gaussian smearing of 0.05 eV, and an electronic convergence threshold of 10^-8 eV. Ionic positions are fixed for each force calculation (NSW = 0, IBRION = -1), with a dipole correction along z. The launch script points to VASP 6.6.0.
+- Phonon dispersion: phonopy.yaml records Phonopy 2.38.1 for this step. The harmonic bands follow S–X–Γ–S–X1–Γ–Y–X1, with 201 points per segment (1,407 records including repeated endpoints). band.yaml stores all 12 branches in THz and their eigenvectors. Band connection is enabled. Separate enforcement of the acoustic sum rule and non-analytical corrections are undocumented in the supplied files.
+- Result along the plotted path: the lowest frequency is −0.4639 THz near Γ at q = (−0.0475, 0.0475, 0), in fractional reciprocal coordinates. At q = (−0.4, 0.4, 0), the location of the finite-q soft mode in the earlier PBE calculation, the lowest frequency is +4.8558 THz. This is a Fourier-interpolated value at a wave vector incommensurate with the 12 × 12 × 1 supercell.
+- Plotting: run plot_phonon_dispersion.py to render band.yaml in the repository's article and thesis styles. The PDFs are saved in ../figures/ as phonon_2H-beta-beryllene_d3bj.pdf and phonon_2H-beta-beryllene_d3bj_thesis.pdf.
