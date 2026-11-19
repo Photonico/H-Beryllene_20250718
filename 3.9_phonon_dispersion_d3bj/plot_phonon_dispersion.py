@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Plot the supplied 2H-β-beryllene PBE-D3(BJ) phonon bands."""
+"""Plot the supplied 2H-β-beryllene PBE-D3(BJ) phonon bands.
+
+The bands follow the PBE path Γ–X–K–Γ–Y–K′–M–Γ; 2H_beryllene_phonons_thesis_path/make_band_yaml.py
+recomputes them from the supplied force sets in 2H_beryllene_phonons.
+"""
 
 from pathlib import Path
 import sys
@@ -18,7 +22,7 @@ from vmatplot.phonon import plot_phonons
 
 
 def main():
-    data_dir = HERE / "2H_beryllene_phonons"
+    data_dir = HERE / "2H_beryllene_phonons_thesis_path"
     title = "2H-β-beryllene"
     # Match the 2H-β panel in 3.5_phonon_dispersion_with_hydrogen_selected.ipynb.
     matters = [[title, data_dir, "blue", "solid", 1.5, 1.0, 0]]
