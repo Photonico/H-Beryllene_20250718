@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Overlay the PBE and PBE-D3(BJ) phonon bands of 2H-β-beryllene.
 
-PBE: 3.7_phonon_dispersion_with_hydrogen_pbe/b-Beryllene_bb (blue, alpha 0.6, below).
-PBE+D3: 2H_beryllene_phonons_thesis_path (violet, drawn on top).
+PBE: 3.7_phonon_dispersion_with_hydrogen_pbe/b-Beryllene_bb (blue, alpha 0.75, below).
+PBE+D3: 2H_beryllene_phonons_thesis_path (purple, drawn on top).
 Both follow Γ–X–K–Γ–Y–K′–M–Γ. The D3 cell is 2.4 % smaller, so each D3 segment is mapped
 linearly onto the corresponding PBE segment; the high-symmetry points then coincide.
 """
@@ -27,8 +27,8 @@ from vmatplot.phonon import plot_phonons
 PBE_DIR = ROOT / "3.7_phonon_dispersion_with_hydrogen_pbe" / "b-Beryllene_bb"
 D3_DIR = HERE / "2H_beryllene_phonons_thesis_path"
 PBE_COLOR = "#1e78e1"
-D3_COLOR = "#d25adc"
-PBE_ALPHA = 0.6
+D3_COLOR = "#aa3cb9"
+PBE_ALPHA = 0.75
 LINE_WIDTH = 1.5
 
 
