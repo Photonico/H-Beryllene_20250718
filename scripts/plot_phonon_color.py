@@ -41,7 +41,7 @@ FIGURES = (
     ("phonon_1H-beta-beryllene", "1H-β-beryllene", "3.7_phonon_dispersion_with_hydrogen_pbe/b-Beryllene_b", [-10, 60], (9, 6)),
     ("phonon_2H-beta-beryllene", "2H-β-beryllene", "3.7_phonon_dispersion_with_hydrogen_pbe/b-Beryllene_bb", [-10, 60], (9, 6)),
     # 3.9_phonon_dispersion_d3bj/plot_phonon_dispersion.py
-    ("phonon_2H-beta-beryllene_d3bj", "2H-β-beryllene", "3.9_phonon_dispersion_d3bj/2H_beryllene_phonons_thesis_path", [-10, 60], (9, 6)),
+    ("phonon_2H-beta-beryllene_d3bj", "2H-β-beryllene, PBE+D3", "3.9_phonon_dispersion_d3bj/2H_beryllene_phonons_thesis_path", [-10, 60], (9, 6)),
 )
 
 def draw(title, directory, eigen_range, size, colored):

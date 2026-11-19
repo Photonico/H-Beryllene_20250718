@@ -23,7 +23,7 @@ from vmatplot.phonon import plot_phonons
 
 def main():
     data_dir = HERE / "2H_beryllene_phonons_thesis_path"
-    title = "2H-β-beryllene"
+    title = "2H-β-beryllene, PBE+D3"
     # Match the 2H-β panel in 3.5_phonon_dispersion_with_hydrogen_selected.ipynb.
     matters = [[title, data_dir, "blue", "solid", 1.5, 1.0, 0]]
     for version in ("article", "thesis"):
