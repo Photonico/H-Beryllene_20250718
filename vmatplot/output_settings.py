@@ -382,14 +382,15 @@ def arrange_thesis_panels(fig=None, gap=PANEL_GAP, legend_place=None):
         ax.set_ylim(*limits)
     return fig
 
-def save_figure(name, directory="figures", legend_place=None, **kwargs):
+def save_figure(name, directory="figures", legend_place=None, variant="", **kwargs):
     # Save the current figure as <directory>/<name>.pdf (article) or <directory>/<name>_thesis.pdf (thesis);
     # the PDF carries no creation date, so rerunning a notebook reproduces the file byte for byte.
     # legend_place fixes the in-panel legends of the thesis version, see arrange_thesis_panels()
+    # variant is appended after the version suffix, e.g. "_color" gives <name>_color.pdf and <name>_thesis_color.pdf
     if legend_place is not None and legend_place not in LEGEND_PLACES:
         raise ValueError(f"legend_place must be one of {LEGEND_PLACES}")
     suffix = "_thesis" if figure_settings["version"] == "thesis" else ""
-    path = os.path.join(directory, f"{name}{suffix}.pdf")
+    path = os.path.join(directory, f"{name}{suffix}{variant}.pdf")
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     if suffix:
         fit_thesis_text(plt.gcf())
@@ -464,10 +465,10 @@ def color_sampling(color_family):
         color_set.append("#8C64F0")
         return color_set
 
-    if color_family in ("Red", "red"):
+    if color_family in ("Red", "red", "Coral", "coral"):
         color_set.append("#C81423")
         color_set.append("#E1322D")
-        color_set.append("#FF644B")
+        color_set.append("#FF594B")
 
         color_set.append("#FA8C00")
         color_set.append("#f5be1e")

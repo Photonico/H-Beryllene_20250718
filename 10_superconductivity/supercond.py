@@ -33,7 +33,7 @@ BETA_1H = "#1478e1"    # 1H-β-beryllene
 BETA_2H = "#19a0a0"    # 2H-β-beryllene
 GREY = "#787878"
 LINE_WIDTH = 1.5
-ITERATION_COLORS = ("#8c64f0", "#1478e1", "#19a0a0", "#28AF3C", "#f5be1e", "#fa8c00", "#FF644B")
+ITERATION_COLORS = ("#8c64f0", "#1478e1", "#19a0a0", "#28AF3C", "#f5be1e", "#fa8c00", "#FF594B")
 
 # Local copies of the repository's article presentation settings; standalone
 # by design, with no imports from or changes to vmatplot.

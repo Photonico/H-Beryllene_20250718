@@ -677,7 +677,13 @@ def create_matters_phonons(matters_list):
         matters.append([label, 0, qpath, bands, color, lstyle, weight, alpha, tolerance, backend])
     return matters
 
-def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False):
+# Branch palette for the colour versions of the phonon figures: branch i (frequency order) takes colour i, so a figure
+# with N branches uses the first N colours. The colours only make the branches easy to follow; they carry no atomic
+# or polarisation information.
+PHONON_BRANCH_COLORS = ("#1478e1", "#fa8c00", "#28af3c", "#8c64f0", "#f5be1e", "#19a0a0",
+                        "#ff594b", "#96be2d", "#d25adc", "#698cd7", "#f03c64", "#8c8c8c")
+
+def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False, branch_colors=None):
     """
     Plot the phonon dispersion curves in a style consistent with the bandstructure program.
     Parameters:
@@ -685,6 +691,8 @@ def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False):
       - eigen_range: The frequency range (in THz) for the y-axis, e.g., 50 indicates [-50, 50].
       - matters_list: A list of phonon matters, each in the format [ label, directory, *optional ].
       - legend_loc: The location for the legend (e.g., "best"); if False, no legend is shown.
+      - branch_colors: None (default) draws every branch in the matter colour; a sequence of colours (e.g.
+        PHONON_BRANCH_COLORS) gives branch i colour i instead and must hold at least as many colours as branches.
     """
     help_info = """
     Usage: plot_phonons
@@ -764,11 +772,14 @@ def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False):
         current_label = matter[0]
         qpath = matter[2]; bands = matter[3]; color = matter[4]; lstyle = matter[5]; weight = matter[6]; alpha = matter[7]
         # tolerance = matter[8]  # Currently not used in plotting
+        if branch_colors is not None and len(bands) > len(branch_colors):
+            raise ValueError(f"{current_label}: {len(bands)} branches but only {len(branch_colors)} branch colors")
         for band_index, band in enumerate(bands):
+            band_color = color_sampling(color)[1] if branch_colors is None else branch_colors[band_index]
             if band_index == 0:
-                plt.plot(qpath, band, c=color_sampling(color)[1], linestyle=lstyle, lw=weight, alpha=alpha, label=f"{current_label}", zorder=4)
+                plt.plot(qpath, band, c=band_color, linestyle=lstyle, lw=weight, alpha=alpha, label=f"{current_label}", zorder=4)
             else:
-                plt.plot(qpath, band, c=color_sampling(color)[1], linestyle=lstyle, lw=weight, alpha=alpha, zorder=4)
+                plt.plot(qpath, band, c=band_color, linestyle=lstyle, lw=weight, alpha=alpha, zorder=4)
     plt.axhline(y=0, color=fermi_color[0], alpha=0.8, linestyle="--", zorder=2)
     # plt.axhline(y=0, color=fermi_color[0], alpha=0.8, linestyle="--", label="0 (THz)", zorder=2)
     plt.title(title)
