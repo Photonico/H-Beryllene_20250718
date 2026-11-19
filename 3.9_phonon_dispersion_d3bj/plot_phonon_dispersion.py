@@ -28,7 +28,7 @@ def main():
             plot_phonons(title, matters, [-10, 60], legend_loc=None)
             figure = plt.gcf()
             figure.set_size_inches(9, 6)
-            print(save_figure("phonon_2H-beta-beryllene_d3bj", directory=ROOT / "figures"))
+            print(save_figure("phonon_2H-beta-beryllene_d3bj", directory=ROOT / "figures" / "phonon"))
             plt.close(figure)
 
 

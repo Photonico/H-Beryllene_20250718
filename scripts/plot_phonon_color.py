@@ -5,7 +5,7 @@ Every figure is drawn exactly as in its source - 3.0_phonon_dispersion.ipynb,
 3.5_phonon_dispersion_with_hydrogen_selected.ipynb and
 3.9_phonon_dispersion_d3bj/plot_phonon_dispersion.py - except that branch i takes
 colour i of vmatplot.phonon.PHONON_BRANCH_COLORS. The files are saved next to the
-monochrome ones as figures/<name>_color.pdf and figures/<name>_thesis_color.pdf;
+monochrome ones as figures/phonon/<name>_color.pdf and figures/phonon/<name>_thesis_color.pdf;
 the monochrome PDFs are not touched.
 
     python scripts/plot_phonon_color.py              # write the 18 colour PDFs
@@ -57,7 +57,7 @@ def main():
     parser.add_argument("--mono", type=Path, metavar="DIR", help="redraw the monochrome figures into DIR instead")
     args = parser.parse_args()
     os.chdir(ROOT)  # the data directories are relative to the repository, as in the notebooks
-    directory = args.mono.resolve() if args.mono else ROOT / "figures"
+    directory = args.mono.resolve() if args.mono else ROOT / "figures" / "phonon"
     for version in ("article", "thesis"):
         figure_version(version)
         for name, title, data, eigen_range, size in FIGURES:

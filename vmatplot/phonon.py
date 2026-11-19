@@ -680,8 +680,8 @@ def create_matters_phonons(matters_list):
 # Branch palette for the colour versions of the phonon figures: branch i (frequency order) takes colour i, so a figure
 # with N branches uses the first N colours. The colours only make the branches easy to follow; they carry no atomic
 # or polarisation information.
-PHONON_BRANCH_COLORS = ("#1478e1", "#fa8c00", "#28af3c", "#8c64f0", "#f5be1e", "#19a0a0",
-                        "#ff594b", "#96be2d", "#d25adc", "#698cd7", "#f03c64", "#8c8c8c")
+PHONON_BRANCH_COLORS = ("#1478e1", "#fa8c00", "#28af3c", "#8c64f0", "#ebb914", "#19a0a0",
+                        "#698cd7", "#96be2d", "#ff594b", "#d25adc", "#f03c64", "#8c8c8c")
 
 def plot_phonons(title, matters_list=None, eigen_range=None, legend_loc=False, branch_colors=None):
     """
